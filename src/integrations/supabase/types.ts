@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      checkout_events: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          lead_id: string | null
+          status: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          lead_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          lead_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_visits: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string | null
+          step: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          step: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          step?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          opted_in: boolean
+          profile_scores: Json
+          quiz_answers: Json
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          opted_in?: boolean
+          profile_scores?: Json
+          quiz_answers?: Json
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          opted_in?: boolean
+          profile_scores?: Json
+          quiz_answers?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
