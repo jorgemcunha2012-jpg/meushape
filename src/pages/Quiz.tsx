@@ -1,42 +1,102 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { quizQuestions, calculateProfile } from "@/lib/quizData";
+import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { quizScreens, type QuizScreen } from "@/lib/quizData";
 import { cn } from "@/lib/utils";
 
 const Quiz = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [numericValue, setNumericValue] = useState("");
+  const [animating, setAnimating] = useState(false);
 
-  const question = quizQuestions[currentStep];
-  const totalSteps = quizQuestions.length;
-  const progress = ((currentStep + 1) / (totalSteps + 1)) * 100; // +1 for email step
-  const selectedOption = answers[question.id];
+  const screen = quizScreens[currentStep];
+  const totalSteps = quizScreens.length;
+  const progress = ((currentStep + 1) / totalSteps) * 100;
 
-  const handleSelect = (optionId: string) => {
-    setAnswers((prev) => ({ ...prev, [question.id]: optionId }));
+  const goNext = useCallback(() => {
+    if (animating) return;
+    setAnimating(true);
+    setTimeout(() => {
+      if (currentStep < totalSteps - 1) {
+        setCurrentStep((s) => s + 1);
+        setNumericValue("");
+      } else {
+        navigate("/quiz/loading", { state: { answers } });
+      }
+      setAnimating(false);
+    }, 300);
+  }, [currentStep, totalSteps, navigate, answers, animating]);
+
+  const handleSingleSelect = (optionId: string) => {
+    setAnswers((prev) => ({ ...prev, [screen.id]: optionId }));
+    // Auto-advance after short delay
+    setTimeout(goNext, 400);
   };
 
-  const handleNext = () => {
-    if (!selectedOption) return;
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep((s) => s + 1);
-    } else {
-      // Go to email collection
-      navigate("/quiz/email", { state: { answers } });
-    }
+  const handleMultiToggle = (optionId: string) => {
+    setAnswers((prev) => {
+      const current = (prev[screen.id] as string[]) || [];
+      // Special case: "Não tenho dor" / "Nunca desisti" clears others
+      const option = screen.options?.find((o) => o.id === optionId);
+      if (option && (optionId.endsWith("a") || optionId.endsWith("f")) && screen.id === "t14") {
+        return { ...prev, [screen.id]: current.includes(optionId) ? [] : [optionId] };
+      }
+      if (option && optionId === "t16f") {
+        return { ...prev, [screen.id]: current.includes(optionId) ? [] : [optionId] };
+      }
+      // Remove "no pain" / "never quit" option if selecting others
+      const filtered = current.filter((id) => {
+        if (screen.id === "t14" && id === "t14a") return false;
+        if (screen.id === "t16" && id === "t16f") return false;
+        return true;
+      });
+      if (filtered.includes(optionId)) {
+        return { ...prev, [screen.id]: filtered.filter((id) => id !== optionId) };
+      }
+      return { ...prev, [screen.id]: [...filtered, optionId] };
+    });
+  };
+
+  const handleNumericSubmit = () => {
+    const val = parseFloat(numericValue);
+    if (isNaN(val)) return;
+    if (screen.inputMin && val < screen.inputMin) return;
+    if (screen.inputMax && val > screen.inputMax) return;
+    setAnswers((prev) => ({ ...prev, [screen.id]: numericValue }));
+    goNext();
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep((s) => s - 1);
+      setNumericValue("");
     } else {
       navigate("/");
     }
   };
+
+  const canContinueMulti = () => {
+    const selected = (answers[screen.id] as string[]) || [];
+    return selected.length > 0;
+  };
+
+  const canContinueNumeric = () => {
+    const val = parseFloat(numericValue);
+    if (isNaN(val)) return false;
+    if (screen.inputMin && val < screen.inputMin) return false;
+    if (screen.inputMax && val > screen.inputMax) return false;
+    return true;
+  };
+
+  // Count only actual questions for the step counter
+  const questionScreens = quizScreens.filter((s) => s.type !== "intermediate");
+  const currentQuestionIndex = questionScreens.findIndex((s) => s.id === screen.id);
+  const isQuestion = screen.type !== "intermediate";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -47,57 +107,239 @@ const Quiz = () => {
             <button onClick={handleBack} className="text-muted-foreground hover:text-foreground transition-colors p-1">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <span className="text-sm text-muted-foreground font-medium">
-              {currentStep + 1} de {totalSteps}
-            </span>
+            {isQuestion && (
+              <span className="text-sm text-muted-foreground font-medium">
+                {currentQuestionIndex + 1} de {questionScreens.length}
+              </span>
+            )}
           </div>
           <Progress value={progress} className="h-2 bg-secondary" />
         </div>
       </div>
 
-      {/* Question */}
+      {/* Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="max-w-lg mx-auto w-full animate-fade-in" key={question.id}>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 text-center">
-            {question.question}
-          </h2>
-          {question.subtitle && (
-            <p className="text-muted-foreground text-center mb-8">{question.subtitle}</p>
+        <div
+          className={cn(
+            "max-w-lg mx-auto w-full transition-all duration-300",
+            animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
           )}
-          {!question.subtitle && <div className="mb-8" />}
+          key={screen.id}
+        >
+          {screen.type === "intermediate" && (
+            <IntermediateScreen screen={screen} onContinue={goNext} />
+          )}
 
-          <div className="space-y-3">
-            {question.options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleSelect(option.id)}
-                className={cn(
-                  "w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium",
-                  selectedOption === option.id
-                    ? "border-primary bg-rose-soft text-foreground shadow-sm"
-                    : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          {screen.type === "single-select" && (
+            <SingleSelectScreen
+              screen={screen}
+              selected={answers[screen.id] as string}
+              onSelect={handleSingleSelect}
+            />
+          )}
 
-          <div className="mt-8 flex justify-center">
-            <Button
-              size="lg"
-              disabled={!selectedOption}
-              onClick={handleNext}
-              className="rounded-full px-10 py-6 text-base font-semibold"
-            >
-              {currentStep < totalSteps - 1 ? "Próxima" : "Ver meu resultado"}
-              <ArrowRight className="w-5 h-5 ml-1" />
-            </Button>
-          </div>
+          {screen.type === "multi-select" && (
+            <MultiSelectScreen
+              screen={screen}
+              selected={(answers[screen.id] as string[]) || []}
+              onToggle={handleMultiToggle}
+              onContinue={goNext}
+              canContinue={canContinueMulti()}
+            />
+          )}
+
+          {screen.type === "numeric-input" && (
+            <NumericInputScreen
+              screen={screen}
+              value={numericValue}
+              onChange={setNumericValue}
+              onSubmit={handleNumericSubmit}
+              canSubmit={canContinueNumeric()}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 };
+
+// --- Sub-components ---
+
+function IntermediateScreen({ screen, onContinue }: { screen: QuizScreen; onContinue: () => void }) {
+  return (
+    <div className="text-center animate-fade-in-up">
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-soft rounded-full mb-6">
+        <Sparkles className="w-7 h-7 text-primary" />
+      </div>
+      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4 leading-tight">
+        {screen.headline}
+      </h2>
+      {screen.body && (
+        <p className="text-muted-foreground leading-relaxed mb-8 whitespace-pre-line">
+          {screen.body}
+        </p>
+      )}
+      <Button
+        size="lg"
+        onClick={onContinue}
+        className="rounded-full px-10 py-6 text-base font-semibold"
+      >
+        {screen.buttonText || "Continuar"}
+        <ArrowRight className="w-5 h-5 ml-1" />
+      </Button>
+    </div>
+  );
+}
+
+function SingleSelectScreen({
+  screen,
+  selected,
+  onSelect,
+}: {
+  screen: QuizScreen;
+  selected: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="animate-fade-in">
+      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 text-center">
+        {screen.question}
+      </h2>
+      {screen.subtitle && (
+        <p className="text-muted-foreground text-center mb-8">{screen.subtitle}</p>
+      )}
+      {!screen.subtitle && <div className="mb-8" />}
+
+      <div className="space-y-3">
+        {screen.options?.map((option) => (
+          <button
+            key={option.id}
+            onClick={() => onSelect(option.id)}
+            className={cn(
+              "w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium",
+              selected === option.id
+                ? "border-primary bg-rose-soft text-foreground shadow-sm"
+                : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent"
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MultiSelectScreen({
+  screen,
+  selected,
+  onToggle,
+  onContinue,
+  canContinue,
+}: {
+  screen: QuizScreen;
+  selected: string[];
+  onToggle: (id: string) => void;
+  onContinue: () => void;
+  canContinue: boolean;
+}) {
+  return (
+    <div className="animate-fade-in">
+      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 text-center">
+        {screen.question}
+      </h2>
+      <p className="text-muted-foreground text-center mb-8 text-sm">Selecione todas que se aplicam</p>
+
+      <div className="space-y-3">
+        {screen.options?.map((option) => {
+          const isSelected = selected.includes(option.id);
+          return (
+            <button
+              key={option.id}
+              onClick={() => onToggle(option.id)}
+              className={cn(
+                "w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium flex items-center justify-between",
+                isSelected
+                  ? "border-primary bg-rose-soft text-foreground shadow-sm"
+                  : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent"
+              )}
+            >
+              <span>{option.label}</span>
+              {isSelected && <Check className="w-5 h-5 text-primary shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Button
+          size="lg"
+          disabled={!canContinue}
+          onClick={onContinue}
+          className="rounded-full px-10 py-6 text-base font-semibold"
+        >
+          Continuar
+          <ArrowRight className="w-5 h-5 ml-1" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function NumericInputScreen({
+  screen,
+  value,
+  onChange,
+  onSubmit,
+  canSubmit,
+}: {
+  screen: QuizScreen;
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  canSubmit: boolean;
+}) {
+  return (
+    <div className="animate-fade-in">
+      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 text-center">
+        {screen.question}
+      </h2>
+      {screen.microcopy && (
+        <p className="text-muted-foreground text-center mb-8 text-sm">{screen.microcopy}</p>
+      )}
+      {!screen.microcopy && <div className="mb-8" />}
+
+      <div className="max-w-xs mx-auto">
+        <div className="relative">
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && canSubmit && onSubmit()}
+            placeholder={screen.inputLabel}
+            className="h-14 rounded-xl bg-card text-center text-2xl font-semibold pr-14"
+            min={screen.inputMin}
+            max={screen.inputMax}
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+            {screen.inputUnit}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Button
+          size="lg"
+          disabled={!canSubmit}
+          onClick={onSubmit}
+          className="rounded-full px-10 py-6 text-base font-semibold"
+        >
+          Continuar
+          <ArrowRight className="w-5 h-5 ml-1" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default Quiz;
