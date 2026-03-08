@@ -232,7 +232,11 @@ const AppDashboard = () => {
               Olá, {firstName}! 💪
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-orange-500/10 text-orange-500 px-3 py-1.5 rounded-full">
+              <Flame className="w-4 h-4 fill-current" />
+              <span className="font-bold text-sm">{streak}</span>
+            </div>
             <button onClick={() => navigate("/app/manage")} className="text-muted-foreground hover:text-foreground p-2">
               <Settings className="w-5 h-5" />
             </button>
