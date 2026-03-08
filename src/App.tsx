@@ -44,6 +44,7 @@ const App = () => (
             <Route path="/app/workout/:workoutId" element={<AppWorkout />} />
             <Route path="/app/history" element={<AppHistory />} />
             <Route path="/app/community" element={<AppCommunity />} />
+            <Route path="/app/manage" element={<AppManageWorkouts />} />
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
