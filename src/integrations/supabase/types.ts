@@ -379,10 +379,55 @@ export type Database = {
           },
         ]
       }
+      progression_cycles: {
+        Row: {
+          created_at: string
+          current_week: number
+          cycle_number: number
+          id: string
+          last_regenerated_at: string | null
+          phase: string
+          program_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_week?: number
+          cycle_number?: number
+          id?: string
+          last_regenerated_at?: string | null
+          phase?: string
+          program_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_week?: number
+          cycle_number?: number
+          id?: string
+          last_regenerated_at?: string | null
+          phase?: string
+          program_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progression_cycles_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "workout_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_logs: {
         Row: {
           completed_at: string
           duration_minutes: number | null
+          feedback: string | null
           id: string
           notes: string | null
           user_id: string
@@ -391,6 +436,7 @@ export type Database = {
         Insert: {
           completed_at?: string
           duration_minutes?: number | null
+          feedback?: string | null
           id?: string
           notes?: string | null
           user_id: string
@@ -399,6 +445,7 @@ export type Database = {
         Update: {
           completed_at?: string
           duration_minutes?: number | null
+          feedback?: string | null
           id?: string
           notes?: string | null
           user_id?: string

@@ -3,8 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles } from "lucide-react";
+import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles, RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+
+interface ProgressionCycle {
+  id: string;
+  current_week: number;
+  cycle_number: number;
+  phase: string;
+  program_id: string;
+  last_regenerated_at: string | null;
+}
 
 interface WorkoutProgram {
   id: string;
@@ -32,6 +41,8 @@ const AppDashboard = () => {
   const [totalCompleted, setTotalCompleted] = useState(0);
   const [profileName, setProfileName] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [progressing, setProgressing] = useState(false);
+  const [cycle, setCycle] = useState<ProgressionCycle | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -67,6 +78,15 @@ const AppDashboard = () => {
         .eq("program_id", progs[0].id)
         .order("sort_order");
       if (wks) setWorkouts(wks);
+
+      // Fetch progression cycle
+      const { data: cycleData } = await supabase
+        .from("progression_cycles")
+        .select("*")
+        .eq("user_id", user!.id)
+        .eq("program_id", progs[0].id)
+        .single();
+      if (cycleData) setCycle(cycleData as unknown as ProgressionCycle);
     }
 
     // Fetch completed logs
@@ -141,6 +161,34 @@ const AppDashboard = () => {
       toast.error(err.message || "Erro ao gerar treino. Tente novamente.");
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleProgressWorkout = async () => {
+    if (!user || !programs[0]) return;
+    setProgressing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("progress-workout", {
+        body: { user_id: user.id, program_id: programs[0].id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const phaseNames: Record<string, string> = {
+        adaptation: "Adaptação",
+        building: "Construção",
+        intensify: "Intensificação",
+        peak: "Pico",
+        deload: "Deload",
+      };
+
+      toast.success(`Semana ${data.week} — ${phaseNames[data.phase] || data.phase} 🔄`);
+      fetchData();
+    } catch (err: any) {
+      console.error("Progress error:", err);
+      toast.error(err.message || "Erro ao progredir treino.");
+    } finally {
+      setProgressing(false);
     }
   };
 
@@ -253,6 +301,68 @@ const AppDashboard = () => {
           )}
         </div>
       </section>
+
+      {/* Progression */}
+      {workouts.length > 0 && programs[0] && (
+        <section className="px-4 pb-6">
+          <div className="max-w-lg mx-auto">
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <h3 className="font-display text-sm font-bold text-foreground">Progressão</h3>
+                </div>
+                {cycle && (
+                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                    Semana {cycle.current_week} • Ciclo {cycle.cycle_number}
+                  </span>
+                )}
+              </div>
+
+              {cycle ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>Fase: {
+                          { adaptation: "🌱 Adaptação", building: "🏗️ Construção", intensify: "🔥 Intensificação", peak: "⚡ Pico", deload: "🧘 Deload" }[cycle.phase] || cycle.phase
+                        }</span>
+                        <span>{((cycle.current_week % 8 || 8) / 8 * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${(cycle.current_week % 8 || 8) / 8 * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleProgressWorkout}
+                    variant="outline"
+                    size="sm"
+                    disabled={progressing}
+                    className="w-full rounded-xl text-sm"
+                  >
+                    {progressing ? (
+                      <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Gerando nova semana...</>
+                    ) : (
+                      <><RefreshCw className="w-4 h-4 mr-1" /> Avançar pra próxima semana</>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Complete seu primeiro treino para ativar a progressão semanal automática.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">

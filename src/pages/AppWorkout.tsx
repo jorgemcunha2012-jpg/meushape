@@ -185,8 +185,9 @@ const AppWorkout = () => {
         user_id: user.id,
         workout_id: workoutId,
         duration_minutes: durationMin,
-        notes: feedback,
-      })
+        notes: feedback ? `Feedback: ${feedback}` : null,
+        feedback: feedback,
+      } as any)
       .select()
       .single();
 
