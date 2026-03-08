@@ -164,7 +164,34 @@ const AppDashboard = () => {
     }
   };
 
-  if (loading) {
+  const handleProgressWorkout = async () => {
+    if (!user || !programs[0]) return;
+    setProgressing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("progress-workout", {
+        body: { user_id: user.id, program_id: programs[0].id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const phaseNames: Record<string, string> = {
+        adaptation: "Adaptação",
+        building: "Construção",
+        intensify: "Intensificação",
+        peak: "Pico",
+        deload: "Deload",
+      };
+
+      toast.success(`Semana ${data.week} — ${phaseNames[data.phase] || data.phase} 🔄`);
+      fetchData();
+    } catch (err: any) {
+      console.error("Progress error:", err);
+      toast.error(err.message || "Erro ao progredir treino.");
+    } finally {
+      setProgressing(false);
+    }
+  };
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Carregando...</div>
