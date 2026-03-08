@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings } from "lucide-react";
+import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 interface WorkoutProgram {
   id: string;
