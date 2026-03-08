@@ -76,6 +76,99 @@ export type Database = {
         }
         Relationships: []
       }
+      curated_exercises: {
+        Row: {
+          active: boolean
+          body_part: string
+          common_mistakes_pt: string | null
+          contraindications: string[] | null
+          created_at: string
+          default_reps_advanced: string
+          default_reps_beginner: string
+          default_reps_intermediate: string
+          default_rest_advanced: number
+          default_rest_beginner: number
+          default_rest_intermediate: number
+          default_sets_advanced: number
+          default_sets_beginner: number
+          default_sets_intermediate: number
+          difficulty_level: number
+          equipment: string
+          exercisedb_id: string | null
+          focus_category: string
+          gif_url: string | null
+          id: string
+          is_female_friendly: boolean
+          location: string[]
+          name_en: string | null
+          name_pt: string
+          priority: number
+          secondary_muscles: string[] | null
+          simple_instruction_pt: string | null
+          target: string
+        }
+        Insert: {
+          active?: boolean
+          body_part: string
+          common_mistakes_pt?: string | null
+          contraindications?: string[] | null
+          created_at?: string
+          default_reps_advanced?: string
+          default_reps_beginner?: string
+          default_reps_intermediate?: string
+          default_rest_advanced?: number
+          default_rest_beginner?: number
+          default_rest_intermediate?: number
+          default_sets_advanced?: number
+          default_sets_beginner?: number
+          default_sets_intermediate?: number
+          difficulty_level?: number
+          equipment: string
+          exercisedb_id?: string | null
+          focus_category: string
+          gif_url?: string | null
+          id?: string
+          is_female_friendly?: boolean
+          location?: string[]
+          name_en?: string | null
+          name_pt: string
+          priority?: number
+          secondary_muscles?: string[] | null
+          simple_instruction_pt?: string | null
+          target: string
+        }
+        Update: {
+          active?: boolean
+          body_part?: string
+          common_mistakes_pt?: string | null
+          contraindications?: string[] | null
+          created_at?: string
+          default_reps_advanced?: string
+          default_reps_beginner?: string
+          default_reps_intermediate?: string
+          default_rest_advanced?: number
+          default_rest_beginner?: number
+          default_rest_intermediate?: number
+          default_sets_advanced?: number
+          default_sets_beginner?: number
+          default_sets_intermediate?: number
+          difficulty_level?: number
+          equipment?: string
+          exercisedb_id?: string | null
+          focus_category?: string
+          gif_url?: string | null
+          id?: string
+          is_female_friendly?: boolean
+          location?: string[]
+          name_en?: string | null
+          name_pt?: string
+          priority?: number
+          secondary_muscles?: string[] | null
+          simple_instruction_pt?: string | null
+          target?: string
+        }
+        Relationships: []
+      }
       exercise_logs: {
         Row: {
           completed: boolean
