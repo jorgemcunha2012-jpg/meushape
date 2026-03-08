@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles, RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import SubscriptionGate from "@/components/SubscriptionGate";
+import ModuleCards from "@/components/ModuleCards";
 
 interface ProgressionCycle {
   id: string;
