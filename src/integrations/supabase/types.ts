@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      cardio_protocols: {
+        Row: {
+          active: boolean
+          created_at: string
+          difficulty_level: number
+          equipment: string
+          estimated_calories: number | null
+          id: string
+          min_score_experience: number
+          name_pt: string
+          phases: Json
+          protocol_type: string
+          recommended_for: string[]
+          total_duration_min: number
+          weekly_progression: Json | null
+          when_to_use: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          difficulty_level?: number
+          equipment?: string
+          estimated_calories?: number | null
+          id?: string
+          min_score_experience?: number
+          name_pt: string
+          phases?: Json
+          protocol_type?: string
+          recommended_for?: string[]
+          total_duration_min?: number
+          weekly_progression?: Json | null
+          when_to_use?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          difficulty_level?: number
+          equipment?: string
+          estimated_calories?: number | null
+          id?: string
+          min_score_experience?: number
+          name_pt?: string
+          phases?: Json
+          protocol_type?: string
+          recommended_for?: string[]
+          total_duration_min?: number
+          weekly_progression?: Json | null
+          when_to_use?: string
+        }
+        Relationships: []
+      }
       checkout_events: {
         Row: {
           created_at: string
@@ -282,6 +333,57 @@ export type Database = {
         }
         Relationships: []
       }
+      home_workout_templates: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          difficulty_level: number
+          duration_min: number
+          equipment: string
+          exercises: Json
+          format_description: string | null
+          id: string
+          name_pt: string
+          rest_between_rounds: number
+          rest_seconds: number
+          rounds: number
+          work_seconds: number
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          difficulty_level?: number
+          duration_min?: number
+          equipment?: string
+          exercises?: Json
+          format_description?: string | null
+          id?: string
+          name_pt: string
+          rest_between_rounds?: number
+          rest_seconds?: number
+          rounds?: number
+          work_seconds?: number
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          difficulty_level?: number
+          duration_min?: number
+          equipment?: string
+          exercises?: Json
+          format_description?: string | null
+          id?: string
+          name_pt?: string
+          rest_between_rounds?: number
+          rest_seconds?: number
+          rounds?: number
+          work_seconds?: number
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
@@ -423,6 +525,57 @@ export type Database = {
           },
         ]
       }
+      stretches: {
+        Row: {
+          active: boolean
+          after_splits: string[]
+          before_splits: string[]
+          created_at: string
+          duration_seconds: number
+          gif_url: string | null
+          id: string
+          instruction_pt: string | null
+          name_pt: string
+          per_side: boolean
+          reps: number | null
+          sort_order: number
+          target_muscles: string[]
+          type: string
+        }
+        Insert: {
+          active?: boolean
+          after_splits?: string[]
+          before_splits?: string[]
+          created_at?: string
+          duration_seconds?: number
+          gif_url?: string | null
+          id?: string
+          instruction_pt?: string | null
+          name_pt: string
+          per_side?: boolean
+          reps?: number | null
+          sort_order?: number
+          target_muscles?: string[]
+          type?: string
+        }
+        Update: {
+          active?: boolean
+          after_splits?: string[]
+          before_splits?: string[]
+          created_at?: string
+          duration_seconds?: number
+          gif_url?: string | null
+          id?: string
+          instruction_pt?: string | null
+          name_pt?: string
+          per_side?: boolean
+          reps?: number | null
+          sort_order?: number
+          target_muscles?: string[]
+          type?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_type: string
@@ -468,6 +621,36 @@ export type Database = {
           last_workout_date?: string | null
           longest_streak?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      warmup_routines: {
+        Row: {
+          active: boolean
+          created_at: string
+          exercises: Json
+          id: string
+          name_pt: string
+          split_type: string
+          total_duration_min: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          exercises?: Json
+          id?: string
+          name_pt: string
+          split_type: string
+          total_duration_min?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          exercises?: Json
+          id?: string
+          name_pt?: string
+          split_type?: string
+          total_duration_min?: number
         }
         Relationships: []
       }

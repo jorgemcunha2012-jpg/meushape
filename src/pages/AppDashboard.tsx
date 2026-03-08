@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles, RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import SubscriptionGate from "@/components/SubscriptionGate";
+import ModuleCards from "@/components/ModuleCards";
 
 interface ProgressionCycle {
   id: string;
@@ -384,6 +385,14 @@ const AppDashboard = () => {
           </div>
         </section>
       )}
+
+      {/* Modules */}
+      <section className="px-4 pb-6">
+        <div className="max-w-lg mx-auto">
+          <h2 className="font-display text-lg font-bold text-foreground mb-3">Módulos</h2>
+          <ModuleCards />
+        </div>
+      </section>
 
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
