@@ -204,12 +204,17 @@ const AppDashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || subscriptionLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Carregando...</div>
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
+  }
+
+  if (!subscribed) {
+    import SubscriptionGate from "@/components/SubscriptionGate";
+    return <SubscriptionGate />;
   }
 
   const firstName = profileName?.split(" ")[0] || user?.email?.split("@")[0] || "linda";
