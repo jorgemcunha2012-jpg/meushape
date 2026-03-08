@@ -31,8 +31,8 @@ const AppCommunity = () => {
       navigate("/app/login");
       return;
     }
-    if (user) fetchPosts();
-  }, [user, loading]);
+    if (user && subscribed) fetchPosts();
+  }, [user, loading, subscribed]);
 
   const fetchPosts = async () => {
     const { data } = await supabase
