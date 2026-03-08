@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings } from "lucide-react";
+import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 interface WorkoutProgram {
   id: string;
@@ -30,6 +31,7 @@ const AppDashboard = () => {
   const [completedToday, setCompletedToday] = useState(0);
   const [totalCompleted, setTotalCompleted] = useState(0);
   const [profileName, setProfileName] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -81,6 +83,65 @@ const AppDashboard = () => {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user!.id);
     setTotalCompleted(count || 0);
+  };
+
+  const handleGenerateWorkout = async () => {
+    if (!user) return;
+    setGenerating(true);
+    try {
+      // Get profile to check for quiz data
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("lead_id, profile_scores")
+        .eq("id", user.id)
+        .single();
+
+      // Get quiz answers from lead if available
+      let quizAnswers: Record<string, any> = {};
+      let scores = profileData?.profile_scores || {};
+
+      if (profileData?.lead_id) {
+        const { data: lead } = await supabase
+          .from("leads")
+          .select("quiz_answers, profile_scores")
+          .eq("id", profileData.lead_id)
+          .single();
+        if (lead) {
+          quizAnswers = (lead.quiz_answers as Record<string, any>) || {};
+          scores = (lead.profile_scores as Record<string, any>) || scores;
+        }
+      }
+
+      // If no quiz data, use sensible defaults
+      if (Object.keys(quizAnswers).length === 0) {
+        quizAnswers = {
+          t01: "t01c", // lose_and_tone
+          t02: "t02b", // average
+          t03: "t03b", // toned
+          t04: "t04b", // stopped
+          t09: "t09b", // 3 days
+          t10: "t10c", // 45 min
+          t11: "t11a", // gym
+          t13: ["t13b", "t13a"], // legs + abs
+          t14: ["t14a"], // no pain
+        };
+      }
+
+      const { data, error } = await supabase.functions.invoke("generate-workout", {
+        body: { quiz_answers: quizAnswers, user_id: user.id, scores },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Seu plano de treino foi gerado! 🎉");
+      fetchData();
+    } catch (err: any) {
+      console.error("Generate error:", err);
+      toast.error(err.message || "Erro ao gerar treino. Tente novamente.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   if (loading) {
@@ -144,11 +205,27 @@ const AppDashboard = () => {
           <h2 className="font-display text-lg font-bold text-foreground mb-3">Seu Plano</h2>
           {workouts.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
-              <Dumbbell className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-foreground font-medium mb-1">Seu plano está sendo preparado</p>
-              <p className="text-sm text-muted-foreground">
-                Em breve seus treinos personalizados estarão disponíveis aqui.
-              </p>
+              {generating ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
+                  <p className="text-foreground font-medium mb-1">Montando seu plano com IA...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Selecionando exercícios personalizados pro seu perfil. Pode levar alguns segundos.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <p className="text-foreground font-medium mb-1">Gerar seu plano de treino</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Nossa IA vai montar treinos personalizados baseados no seu perfil.
+                  </p>
+                  <Button onClick={handleGenerateWorkout} className="rounded-full">
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Gerar meu plano com IA
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
