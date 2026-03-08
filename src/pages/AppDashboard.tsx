@@ -146,11 +146,27 @@ const AppDashboard = () => {
           <h2 className="font-display text-lg font-bold text-foreground mb-3">Seu Plano</h2>
           {workouts.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
-              <Dumbbell className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-foreground font-medium mb-1">Seu plano está sendo preparado</p>
-              <p className="text-sm text-muted-foreground">
-                Em breve seus treinos personalizados estarão disponíveis aqui.
-              </p>
+              {generating ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
+                  <p className="text-foreground font-medium mb-1">Montando seu plano com IA...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Selecionando exercícios personalizados pro seu perfil. Pode levar alguns segundos.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <p className="text-foreground font-medium mb-1">Gerar seu plano de treino</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Nossa IA vai montar treinos personalizados baseados no seu perfil.
+                  </p>
+                  <Button onClick={handleGenerateWorkout} className="rounded-full">
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Gerar meu plano com IA
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
