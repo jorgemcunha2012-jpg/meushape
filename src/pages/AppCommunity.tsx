@@ -4,8 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dumbbell, Calendar, Users, Heart, Send, MessageCircle } from "lucide-react";
+import { Dumbbell, Calendar, Users, Heart, Send, MessageCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 interface Post {
   id: string;
