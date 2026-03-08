@@ -302,6 +302,68 @@ const AppDashboard = () => {
         </div>
       </section>
 
+      {/* Progression */}
+      {workouts.length > 0 && programs[0] && (
+        <section className="px-4 pb-6">
+          <div className="max-w-lg mx-auto">
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <h3 className="font-display text-sm font-bold text-foreground">Progressão</h3>
+                </div>
+                {cycle && (
+                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                    Semana {cycle.current_week} • Ciclo {cycle.cycle_number}
+                  </span>
+                )}
+              </div>
+
+              {cycle ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>Fase: {
+                          { adaptation: "🌱 Adaptação", building: "🏗️ Construção", intensify: "🔥 Intensificação", peak: "⚡ Pico", deload: "🧘 Deload" }[cycle.phase] || cycle.phase
+                        }</span>
+                        <span>{((cycle.current_week % 8 || 8) / 8 * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${(cycle.current_week % 8 || 8) / 8 * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleProgressWorkout}
+                    variant="outline"
+                    size="sm"
+                    disabled={progressing}
+                    className="w-full rounded-xl text-sm"
+                  >
+                    {progressing ? (
+                      <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Gerando nova semana...</>
+                    ) : (
+                      <><RefreshCw className="w-4 h-4 mr-1" /> Avançar pra próxima semana</>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Complete seu primeiro treino para ativar a progressão semanal automática.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
         <div className="max-w-lg mx-auto flex items-center justify-around py-3">
