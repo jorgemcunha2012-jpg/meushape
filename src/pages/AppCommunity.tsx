@@ -19,7 +19,7 @@ interface Post {
 }
 
 const AppCommunity = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
