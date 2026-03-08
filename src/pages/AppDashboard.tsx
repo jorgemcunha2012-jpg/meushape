@@ -214,7 +214,6 @@ const AppDashboard = () => {
   }
 
   if (!subscribed) {
-    import SubscriptionGate from "@/components/SubscriptionGate";
     return <SubscriptionGate />;
   }
 
