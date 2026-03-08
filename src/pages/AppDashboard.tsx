@@ -85,7 +85,65 @@ const AppDashboard = () => {
     setTotalCompleted(count || 0);
   };
 
-  if (loading) {
+  const handleGenerateWorkout = async () => {
+    if (!user) return;
+    setGenerating(true);
+    try {
+      // Get profile to check for quiz data
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("lead_id, profile_scores")
+        .eq("id", user.id)
+        .single();
+
+      // Get quiz answers from lead if available
+      let quizAnswers: Record<string, any> = {};
+      let scores = profileData?.profile_scores || {};
+
+      if (profileData?.lead_id) {
+        const { data: lead } = await supabase
+          .from("leads")
+          .select("quiz_answers, profile_scores")
+          .eq("id", profileData.lead_id)
+          .single();
+        if (lead) {
+          quizAnswers = (lead.quiz_answers as Record<string, any>) || {};
+          scores = (lead.profile_scores as Record<string, any>) || scores;
+        }
+      }
+
+      // If no quiz data, use sensible defaults
+      if (Object.keys(quizAnswers).length === 0) {
+        quizAnswers = {
+          t01: "t01c", // lose_and_tone
+          t02: "t02b", // average
+          t03: "t03b", // toned
+          t04: "t04b", // stopped
+          t09: "t09b", // 3 days
+          t10: "t10c", // 45 min
+          t11: "t11a", // gym
+          t13: ["t13b", "t13a"], // legs + abs
+          t14: ["t14a"], // no pain
+        };
+      }
+
+      const { data, error } = await supabase.functions.invoke("generate-workout", {
+        body: { quiz_answers: quizAnswers, user_id: user.id, scores },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Seu plano de treino foi gerado! 🎉");
+      fetchData();
+    } catch (err: any) {
+      console.error("Generate error:", err);
+      toast.error(err.message || "Erro ao gerar treino. Tente novamente.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Carregando...</div>
