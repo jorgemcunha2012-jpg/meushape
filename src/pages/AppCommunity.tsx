@@ -4,8 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dumbbell, Calendar, Users, Heart, Send, MessageCircle } from "lucide-react";
+import { Dumbbell, Calendar, Users, Heart, Send, MessageCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 interface Post {
   id: string;
@@ -18,7 +19,7 @@ interface Post {
 }
 
 const AppCommunity = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
@@ -30,8 +31,8 @@ const AppCommunity = () => {
       navigate("/app/login");
       return;
     }
-    if (user) fetchPosts();
-  }, [user, loading]);
+    if (user && subscribed) fetchPosts();
+  }, [user, loading, subscribed]);
 
   const fetchPosts = async () => {
     const { data } = await supabase
@@ -113,6 +114,9 @@ const AppCommunity = () => {
     const days = Math.floor(hours / 24);
     return `${days}d`;
   };
+
+  if (loading || subscriptionLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  if (!subscribed) return <SubscriptionGate />;
 
   return (
     <div className="min-h-screen bg-background pb-24">

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles, RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 interface ProgressionCycle {
   id: string;
@@ -33,7 +34,7 @@ interface Workout {
 }
 
 const AppDashboard = () => {
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -43,16 +44,21 @@ const AppDashboard = () => {
   const [generating, setGenerating] = useState(false);
   const [progressing, setProgressing] = useState(false);
   const [cycle, setCycle] = useState<ProgressionCycle | null>(null);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/app/login");
       return;
     }
-    if (user) {
+    if (!subscriptionLoading && !subscribed && user) {
+      navigate("/app/subscription"); // will handle via router or conditional render
+      return;
+    }
+    if (user && subscribed) {
       fetchData();
     }
-  }, [user, loading]);
+  }, [user, loading, subscribed, subscriptionLoading, navigate]);
 
   const fetchData = async () => {
     // Fetch profile
@@ -103,6 +109,13 @@ const AppDashboard = () => {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user!.id);
     setTotalCompleted(count || 0);
+
+    const { data: streakData } = await supabase
+      .from("user_streaks")
+      .select("current_streak")
+      .eq("user_id", user!.id)
+      .single();
+    if (streakData) setStreak(streakData.current_streak);
   };
 
   const handleGenerateWorkout = async () => {
@@ -192,12 +205,16 @@ const AppDashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || subscriptionLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Carregando...</div>
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
+  }
+
+  if (!subscribed) {
+    return <SubscriptionGate />;
   }
 
   const firstName = profileName?.split(" ")[0] || user?.email?.split("@")[0] || "linda";
@@ -215,7 +232,11 @@ const AppDashboard = () => {
               Olá, {firstName}! 💪
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-orange-500/10 text-orange-500 px-3 py-1.5 rounded-full">
+              <Flame className="w-4 h-4 fill-current" />
+              <span className="font-bold text-sm">{streak}</span>
+            </div>
             <button onClick={() => navigate("/app/manage")} className="text-muted-foreground hover:text-foreground p-2">
               <Settings className="w-5 h-5" />
             </button>

@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { calculateAxisScores, diagnosisTexts, generateSummary, type AxisScores } from "@/lib/quizData";
-import { ArrowRight, CheckCircle2, Shield, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, Star, Lock, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const QuizResult = () => {
   const location = useLocation();
@@ -12,9 +16,49 @@ const QuizResult = () => {
   const firstName = name?.split(" ")[0] || "linda";
   const summary = generateSummary(scores);
 
-  const handleCheckout = () => {
-    // TODO: Stripe checkout
-    alert("Checkout com Stripe será integrado aqui!");
+  const [password, setPassword] = useState("");
+  const [checkingOut, setCheckingOut] = useState(false);
+
+  const handleCheckout = async () => {
+    if (!email || !password || password.length < 6) {
+      toast.error("Crie uma senha com pelo menos 6 caracteres.");
+      return;
+    }
+
+    setCheckingOut(true);
+    try {
+      // 1. Sign up
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+          emailRedirectTo: window.location.origin + "/app",
+        },
+      });
+
+      // If user already exists, try sign in
+      if (signUpError?.message?.includes("already registered")) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+      } else if (signUpError) {
+        throw signUpError;
+      }
+
+      // 2. Create checkout session
+      const { data, error } = await supabase.functions.invoke("create-checkout");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      toast.error(err.message || "Erro ao processar. Tente novamente.");
+    } finally {
+      setCheckingOut(false);
+    }
   };
 
   return (
@@ -47,7 +91,6 @@ const QuizResult = () => {
                       </span>
                       <span className="text-sm font-bold text-primary">{score}/10</span>
                     </div>
-                    {/* Bar */}
                     <div className="h-3 bg-secondary rounded-full overflow-hidden mb-2">
                       <div
                         className="h-full rounded-full transition-all duration-700"
@@ -69,7 +112,6 @@ const QuizResult = () => {
               })}
             </div>
 
-            {/* Summary */}
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-foreground font-medium text-sm leading-relaxed">
                 💡 {summary}
@@ -103,7 +145,7 @@ const QuizResult = () => {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing + Signup */}
       <section className="px-4 pb-8">
         <div className="max-w-lg mx-auto">
           <div className="bg-card border-2 border-primary rounded-2xl p-6 text-center">
@@ -114,16 +156,36 @@ const QuizResult = () => {
               7 dias grátis
             </h3>
             <p className="text-muted-foreground text-sm mb-6">
-              Depois, apenas R$ XX,XX/mês. Cancele quando quiser.
+              Depois, apenas R$ 19,90/mês. Cancele quando quiser.
             </p>
+
+            {/* Password field */}
+            <div className="mb-4 text-left">
+              <label className="text-xs text-muted-foreground mb-1 block">Crie uma senha para acessar o app</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 h-12 rounded-xl"
+                  minLength={6}
+                />
+              </div>
+            </div>
 
             <Button
               size="lg"
               onClick={handleCheckout}
+              disabled={checkingOut || password.length < 6}
               className="w-full rounded-full py-6 text-base font-semibold shadow-lg"
             >
-              Começar meus 7 dias grátis
-              <ArrowRight className="w-5 h-5 ml-1" />
+              {checkingOut ? (
+                <><Loader2 className="w-5 h-5 mr-1 animate-spin" /> Processando...</>
+              ) : (
+                <>Começar meus 7 dias grátis <ArrowRight className="w-5 h-5 ml-1" /></>
+              )}
             </Button>
 
             <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
