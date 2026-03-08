@@ -108,6 +108,13 @@ const AppDashboard = () => {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user!.id);
     setTotalCompleted(count || 0);
+
+    const { data: streakData } = await supabase
+      .from("user_streaks")
+      .select("current_streak")
+      .eq("user_id", user!.id)
+      .single();
+    if (streakData) setStreak(streakData.current_streak);
   };
 
   const handleGenerateWorkout = async () => {
