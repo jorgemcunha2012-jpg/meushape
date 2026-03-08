@@ -33,7 +33,11 @@ type Phase = "overview" | "warmup" | "exercise" | "rest" | "cooldown" | "complet
 const AppWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscribed, subscriptionLoading } = useAuth();
+  
+  if (!subscriptionLoading && !subscribed && user) {
+    navigate("/app/login");
+  }
 
   const [workout, setWorkout] = useState<WorkoutInfo | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
