@@ -115,6 +115,9 @@ const AppCommunity = () => {
     return `${days}d`;
   };
 
+  if (loading || subscriptionLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  if (!subscribed) return <SubscriptionGate />;
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="px-4 pt-8 pb-4">

@@ -205,6 +205,27 @@ const AppWorkout = () => {
         sets_completed: setsCompleted[ex.id] || 0,
       }));
       await supabase.from("exercise_logs").insert(exerciseLogs);
+      
+      // Update streak and badges
+      const newStreak = await updateStreak(user.id);
+      
+      // Get total completed workouts count
+      const { count } = await supabase
+        .from("workout_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+        
+      const awarded = await checkAndAwardBadges(user.id, count || 1, newStreak);
+      if (awarded.length > 0) {
+        toast.success(`Você ganhou ${awarded.length} nova(s) conquista(s)! 🏆`);
+      }
+
+      // Auto-post to community
+      const summary = `Concluí um treino de ${durationMin} minutos com ${exercises.length} exercícios e ${Object.values(setsCompleted).reduce((a, b) => a + b, 0)} séries! 💪🔥`;
+      await supabase.from("community_posts").insert({
+        user_id: user.id,
+        content: summary
+      });
     }
 
     setPhase("complete");
