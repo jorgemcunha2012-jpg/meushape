@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const QuizResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { name, email, answers } = (location.state as any) || {};
+  const { name, email, answers, bodyAnalysis } = (location.state as any) || {};
 
   const scores = calculateAxisScores(answers || {});
   const firstName = name?.split(" ")[0] || "linda";
