@@ -106,9 +106,14 @@ const AppDashboard = () => {
               Olá, {firstName}! 💪
             </h1>
           </div>
-          <button onClick={signOut} className="text-muted-foreground hover:text-foreground p-2">
-            <LogOut className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/app/manage")} className="text-muted-foreground hover:text-foreground p-2">
+              <Settings className="w-5 h-5" />
+            </button>
+            <button onClick={signOut} className="text-muted-foreground hover:text-foreground p-2">
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
