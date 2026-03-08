@@ -33,7 +33,7 @@ interface Workout {
 }
 
 const AppDashboard = () => {
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -43,16 +43,21 @@ const AppDashboard = () => {
   const [generating, setGenerating] = useState(false);
   const [progressing, setProgressing] = useState(false);
   const [cycle, setCycle] = useState<ProgressionCycle | null>(null);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/app/login");
       return;
     }
-    if (user) {
+    if (!subscriptionLoading && !subscribed && user) {
+      navigate("/app/subscription"); // will handle via router or conditional render
+      return;
+    }
+    if (user && subscribed) {
       fetchData();
     }
-  }, [user, loading]);
+  }, [user, loading, subscribed, subscriptionLoading, navigate]);
 
   const fetchData = async () => {
     // Fetch profile
