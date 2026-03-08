@@ -41,6 +41,8 @@ const AppDashboard = () => {
   const [totalCompleted, setTotalCompleted] = useState(0);
   const [profileName, setProfileName] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [progressing, setProgressing] = useState(false);
+  const [cycle, setCycle] = useState<ProgressionCycle | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
