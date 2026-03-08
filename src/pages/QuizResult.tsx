@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const QuizResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { name, email, answers } = (location.state as any) || {};
+  const { name, email, answers, bodyAnalysis } = (location.state as any) || {};
 
   const scores = calculateAxisScores(answers || {});
   const firstName = name?.split(" ")[0] || "linda";
@@ -75,6 +75,52 @@ const QuizResult = () => {
           </p>
         </div>
       </section>
+
+      {/* Body Analysis Section */}
+      {bodyAnalysis && bodyAnalysis.body_type !== "indefinido" && (
+        <section className="px-4 pb-8">
+          <div className="max-w-lg mx-auto">
+            <div className="bg-card border border-primary/20 rounded-2xl p-6">
+              <h3 className="font-display text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                📸 Sua Análise Corporal
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Biotipo estimado</span>
+                  <span className="text-sm font-semibold text-foreground capitalize">{bodyAnalysis.body_type}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">% Gordura estimado</span>
+                  <span className="text-sm font-semibold text-foreground">{bodyAnalysis.estimated_bf_range}</span>
+                </div>
+                {bodyAnalysis.strengths && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block mb-1">💪 Pontos fortes</span>
+                    <p className="text-sm text-foreground">{bodyAnalysis.strengths}</p>
+                  </div>
+                )}
+                {bodyAnalysis.focus_areas && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block mb-1">🎯 Foco sugerido</span>
+                    <p className="text-sm text-foreground">{bodyAnalysis.focus_areas}</p>
+                  </div>
+                )}
+                {bodyAnalysis.posture_notes && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block mb-1">🧘 Postura</span>
+                    <p className="text-sm text-foreground">{bodyAnalysis.posture_notes}</p>
+                  </div>
+                )}
+                {bodyAnalysis.recommendation && (
+                  <div className="mt-2 pt-3 border-t border-border">
+                    <p className="text-sm text-primary font-medium">✨ {bodyAnalysis.recommendation}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Radar / Bar Chart */}
       <section className="px-4 pb-8">

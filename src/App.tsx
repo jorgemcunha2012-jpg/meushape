@@ -9,6 +9,7 @@ import Quiz from "./pages/Quiz";
 import QuizLoading from "./pages/QuizLoading";
 import QuizEmail from "./pages/QuizEmail";
 import QuizResult from "./pages/QuizResult";
+import QuizBodyAnalysis from "./pages/QuizBodyAnalysis";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AppLogin from "./pages/AppLogin";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/quiz/loading" element={<QuizLoading />} />
             <Route path="/quiz/email" element={<QuizEmail />} />
+            <Route path="/quiz/analise-corporal" element={<QuizBodyAnalysis />} />
             <Route path="/quiz/resultado" element={<QuizResult />} />
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />

@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      body_analyses: {
+        Row: {
+          analysis_result: Json | null
+          created_at: string
+          email: string
+          id: string
+          image_path: string | null
+          lead_id: string | null
+          model_used: string | null
+        }
+        Insert: {
+          analysis_result?: Json | null
+          created_at?: string
+          email: string
+          id?: string
+          image_path?: string | null
+          lead_id?: string | null
+          model_used?: string | null
+        }
+        Update: {
+          analysis_result?: Json | null
+          created_at?: string
+          email?: string
+          id?: string
+          image_path?: string | null
+          lead_id?: string | null
+          model_used?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "body_analyses_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cardio_protocols: {
         Row: {
           active: boolean

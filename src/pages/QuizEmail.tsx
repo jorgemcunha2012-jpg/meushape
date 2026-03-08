@@ -36,7 +36,7 @@ const QuizEmail = () => {
     setError("");
     try {
       // TODO: Save to database
-      navigate("/quiz/resultado", {
+      navigate("/quiz/analise-corporal", {
         state: { name, email, answers, optedIn },
       });
     } catch {
