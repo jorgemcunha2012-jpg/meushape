@@ -9,6 +9,7 @@ import Quiz from "./pages/Quiz";
 import QuizLoading from "./pages/QuizLoading";
 import QuizEmail from "./pages/QuizEmail";
 import QuizResult from "./pages/QuizResult";
+import QuizBodyAnalysis from "./pages/QuizBodyAnalysis";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AppLogin from "./pages/AppLogin";
