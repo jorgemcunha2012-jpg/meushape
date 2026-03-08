@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dumbbell, Calendar, Trophy, Users, LogOut, ChevronRight, Flame, Settings, Loader2, Sparkles, RefreshCw, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 interface ProgressionCycle {
   id: string;
