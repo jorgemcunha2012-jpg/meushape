@@ -16,6 +16,7 @@ import AppDashboard from "./pages/AppDashboard";
 import AppWorkout from "./pages/AppWorkout";
 import AppHistory from "./pages/AppHistory";
 import AppCommunity from "./pages/AppCommunity";
+import AppManageWorkouts from "./pages/AppManageWorkouts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
