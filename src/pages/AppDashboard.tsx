@@ -78,6 +78,15 @@ const AppDashboard = () => {
         .eq("program_id", progs[0].id)
         .order("sort_order");
       if (wks) setWorkouts(wks);
+
+      // Fetch progression cycle
+      const { data: cycleData } = await supabase
+        .from("progression_cycles")
+        .select("*")
+        .eq("user_id", user!.id)
+        .eq("program_id", progs[0].id)
+        .single();
+      if (cycleData) setCycle(cycleData as unknown as ProgressionCycle);
     }
 
     // Fetch completed logs
