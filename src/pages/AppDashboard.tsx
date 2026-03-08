@@ -386,6 +386,14 @@ const AppDashboard = () => {
         </section>
       )}
 
+      {/* Modules */}
+      <section className="px-4 pb-6">
+        <div className="max-w-lg mx-auto">
+          <h2 className="font-display text-lg font-bold text-foreground mb-3">Módulos</h2>
+          <ModuleCards />
+        </div>
+      </section>
+
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
         <div className="max-w-lg mx-auto flex items-center justify-around py-3">
