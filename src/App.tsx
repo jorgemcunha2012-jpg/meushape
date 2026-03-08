@@ -16,6 +16,7 @@ import AppDashboard from "./pages/AppDashboard";
 import AppWorkout from "./pages/AppWorkout";
 import AppHistory from "./pages/AppHistory";
 import AppCommunity from "./pages/AppCommunity";
+import AppManageWorkouts from "./pages/AppManageWorkouts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/app/workout/:workoutId" element={<AppWorkout />} />
             <Route path="/app/history" element={<AppHistory />} />
             <Route path="/app/community" element={<AppCommunity />} />
+            <Route path="/app/manage" element={<AppManageWorkouts />} />
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
