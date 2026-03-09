@@ -488,7 +488,7 @@ const AppDashboard = () => {
             <span className="text-lg opacity-50 grayscale">📊</span>
             <span className="text-[10px] text-muted-foreground">Progresso</span>
           </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
+          <button onClick={() => navigate("/app/profile")} className="flex flex-col items-center gap-1 py-1 px-3">
             <span className="text-lg opacity-50 grayscale">👤</span>
             <span className="text-[10px] text-muted-foreground">Perfil</span>
           </button>

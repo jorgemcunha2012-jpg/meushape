@@ -25,6 +25,7 @@ import AppStretching from "./pages/AppStretching";
 import AppCardio from "./pages/AppCardio";
 import AppWarmup from "./pages/AppWarmup";
 import AppHomeWorkout from "./pages/AppHomeWorkout";
+import AppProfile from "./pages/AppProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/app/warmup" element={<AppWarmup />} />
             <Route path="/app/home-workout" element={<AppHomeWorkout />} />
             <Route path="/app/home-workout/:templateId" element={<AppHomeWorkout />} />
+            <Route path="/app/profile" element={<AppProfile />} />
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
