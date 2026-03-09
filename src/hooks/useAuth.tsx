@@ -110,3 +110,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
+// Helper function to check admin session (can be used independently)
+export const isAdminSession = () => {
+  return !!localStorage.getItem("admin_session");
+};
