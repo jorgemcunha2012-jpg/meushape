@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Camera, LogOut, ChevronRight,
   Flame, Dumbbell, Clock, Trophy, Medal, Target,
-  Bell, Moon, HelpCircle, Shield, Mail
+  Bell, HelpCircle, Shield, Mail
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 interface ProfileData {
