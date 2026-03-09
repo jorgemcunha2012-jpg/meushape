@@ -90,12 +90,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Periodic check every 60s
   useEffect(() => {
-    if (!user) return;
+    if (!user && !isAdminSession()) return;
     const interval = setInterval(checkSubscription, 60000);
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
   const signOut = async () => {
+    // Clear admin session
+    localStorage.removeItem("admin_session");
+    setIsAdmin(false);
     await supabase.auth.signOut();
   };
 
