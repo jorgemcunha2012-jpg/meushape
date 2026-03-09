@@ -203,13 +203,7 @@ const AppDashboard = () => {
     { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", gradient: "linear-gradient(135deg, #FFF7ED, #FED7AA)", iconColor: S.terracotta },
   ];
 
-  const navItems = [
-    { icon: Home, label: "Início", route: "/app", active: true },
-    { icon: Dumbbell, label: "Treino", route: "/app/workouts", active: false },
-    { icon: Users, label: "Feed", route: "/app/community", active: false },
-    { icon: TrendingUp, label: "Evolução", route: "/app/history", active: false },
-    { icon: User, label: "Perfil", route: "/app/profile", active: false },
-  ];
+  // navItems removed — using shared SolarBottomNav
 
   /* ─── Muscle legend helper ─── */
   const muscleLabels: Record<string, string> = {
