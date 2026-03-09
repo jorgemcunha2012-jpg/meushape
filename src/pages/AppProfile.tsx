@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Camera, LogOut, ChevronRight,
   Flame, Dumbbell, Clock, Trophy, Medal, Target,
-  Bell, Moon, HelpCircle, Shield, Mail
+  Bell, HelpCircle, Shield, Mail
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 interface ProfileData {
@@ -235,7 +236,6 @@ const AppProfile = () => {
             {[
               { icon: Bell, label: "Notificações", sub: "Lembretes de treino", action: () => toast.info("Em breve!") },
               { icon: Target, label: "Metas", sub: "Objetivos semanais", action: () => toast.info("Em breve!") },
-              { icon: Moon, label: "Aparência", sub: "Tema escuro ativado", action: () => toast.info("Em breve!") },
               { icon: Shield, label: "Privacidade", sub: "Dados e permissões", action: () => toast.info("Em breve!") },
               { icon: HelpCircle, label: "Suporte", sub: "Dúvidas e feedback", action: () => toast.info("Em breve!") },
             ].map((item, i) => (
@@ -254,6 +254,7 @@ const AppProfile = () => {
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </button>
             ))}
+            <ThemeToggle />
           </div>
         </div>
       </section>
