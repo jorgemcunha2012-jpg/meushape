@@ -59,6 +59,7 @@ function muscleStatusColor(status: MuscleStatus): string {
 /* S is now imported from SolarLayout */
 
 const AppDashboard = () => {
+  const S = useSolar();
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
 
