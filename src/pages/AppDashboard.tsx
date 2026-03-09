@@ -411,7 +411,7 @@ const AppDashboard = () => {
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
         <div className="max-w-lg mx-auto flex items-center justify-around py-3">
-          <button onClick={() => navigate("/app")} className="flex flex-col items-center gap-1 text-primary">
+          <button onClick={() => navigate("/app/workouts")} className="flex flex-col items-center gap-1 text-primary">
             <Dumbbell className="w-5 h-5" />
             <span className="text-xs font-medium">Treinos</span>
           </button>
