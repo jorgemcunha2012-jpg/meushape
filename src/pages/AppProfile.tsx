@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
-import { SolarPage, S } from "@/components/SolarLayout";
+import { SolarPage, useSolar } from "@/components/SolarLayout";
 
 interface ProfileData {
   name: string;
@@ -28,6 +28,7 @@ interface StatsData {
 }
 
 const AppProfile = () => {
+  const S = useSolar();
   const navigate = useNavigate();
   const { user, subscribed, subscriptionLoading, signOut } = useAuth();
 

@@ -8,7 +8,7 @@ import {
   Target, Calendar, Zap, Dumbbell, TrendingUp, Users
 } from "lucide-react";
 import { BodyMap } from "@/components/BodyMap";
-import { SolarBottomNav, S } from "@/components/SolarLayout";
+import { SolarBottomNav, useSolar } from "@/components/SolarLayout";
 
 /* ─── Types ─── */
 interface WeekDay {
@@ -59,6 +59,7 @@ function muscleStatusColor(status: MuscleStatus): string {
 /* S is now imported from SolarLayout */
 
 const AppDashboard = () => {
+  const S = useSolar();
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
 
