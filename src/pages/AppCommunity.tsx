@@ -82,7 +82,13 @@ const AppCommunity = () => {
   };
 
   const toggleLike = async (postId: string) => {
-    if (!user) return;
+    if (!user && !isAdmin) return;
+    
+    // Admin mode - skip liking to avoid errors
+    if (isAdmin) {
+      toast.error("Admins não podem curtir posts");
+      return;
+    }
     const liked = myLikes.has(postId);
 
     if (liked) {

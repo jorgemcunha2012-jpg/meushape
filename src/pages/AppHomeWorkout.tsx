@@ -53,7 +53,7 @@ const equipmentLabels: Record<string, string> = {
 };
 
 const AppHomeWorkout = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { templateId } = useParams();
 
@@ -71,9 +71,9 @@ const AppHomeWorkout = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) navigate("/app/login");
-    if (user) fetchTemplates();
-  }, [user, loading]);
+    if (!loading && !user && !isAdmin) navigate("/app/login");
+    if (user || isAdmin) fetchTemplates();
+  }, [user, loading, isAdmin]);
 
   const fetchTemplates = async () => {
     const { data } = await supabase

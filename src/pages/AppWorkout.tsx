@@ -181,7 +181,13 @@ const AppWorkout = () => {
   };
 
   const submitFeedback = async () => {
-    if (!user || !workoutId) return;
+    if ((!user && !isAdmin) || !workoutId) return;
+    
+    // Admin mode - skip logging to avoid errors
+    if (isAdmin) {
+      setPhase("complete");
+      return;
+    }
 
     const durationMin = Math.round(workoutDuration / 60);
     const { data: log, error } = await supabase

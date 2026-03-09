@@ -26,7 +26,7 @@ const phaseColors: Record<string, string> = {
 };
 
 const AppWarmup = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const split = searchParams.get("split") || "legs";
@@ -40,9 +40,9 @@ const AppWarmup = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) navigate("/app/login");
-    if (user) fetchRoutine();
-  }, [user, loading]);
+    if (!loading && !user && !isAdmin) navigate("/app/login");
+    if (user || isAdmin) fetchRoutine();
+  }, [user, loading, isAdmin]);
 
   const fetchRoutine = async () => {
     const { data } = await supabase

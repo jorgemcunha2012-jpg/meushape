@@ -18,7 +18,7 @@ interface Stretch {
 }
 
 const AppStretching = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "mobility"; // dynamic, static, mobility
@@ -33,9 +33,9 @@ const AppStretching = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) navigate("/app/login");
-    if (user) fetchStretches();
-  }, [user, loading]);
+    if (!loading && !user && !isAdmin) navigate("/app/login");
+    if (user || isAdmin) fetchStretches();
+  }, [user, loading, isAdmin]);
 
   const fetchStretches = async () => {
     let query = supabase

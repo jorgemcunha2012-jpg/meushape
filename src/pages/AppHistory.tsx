@@ -26,6 +26,12 @@ const AppHistory = () => {
   }, [user, loading, isAdmin]);
 
   const fetchLogs = async () => {
+    // Admin mode - return empty logs to avoid errors
+    if (isAdmin) {
+      setLogs([]);
+      return;
+    }
+    
     const { data } = await supabase
       .from("workout_logs")
       .select("id, completed_at, duration_minutes, workout_id, workouts(title)")

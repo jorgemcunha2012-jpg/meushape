@@ -30,7 +30,7 @@ interface CardioProtocol {
 }
 
 const AppCardio = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { protocolId } = useParams();
 
@@ -43,9 +43,9 @@ const AppCardio = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) navigate("/app/login");
-    if (user) fetchProtocols();
-  }, [user, loading]);
+    if (!loading && !user && !isAdmin) navigate("/app/login");
+    if (user || isAdmin) fetchProtocols();
+  }, [user, loading, isAdmin]);
 
   const fetchProtocols = async () => {
     const { data } = await supabase
