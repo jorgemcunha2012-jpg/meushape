@@ -2,366 +2,351 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  ArrowLeft, Calendar, Dumbbell, Clock, ChevronRight, 
-  Trophy, Flame, TrendingUp, Play
-} from "lucide-react";
-
-interface WorkoutProgram {
-  id: string;
-  title: string;
-  description: string | null;
-  level: string;
-  days_per_week: number;
-}
+import { motion } from "framer-motion";
+import { ArrowLeft, Clock, Dumbbell, Flame, ChevronRight } from "lucide-react";
 
 interface Workout {
   id: string;
   title: string;
   description: string | null;
   sort_order: number;
+  day_of_week: number | null;
 }
 
-interface ProgressionCycle {
+interface CardioProtocol {
   id: string;
-  current_week: number;
-  cycle_number: number;
-  phase: string;
-  program_id: string;
+  name_pt: string;
+  protocol_type: string;
+  total_duration_min: number;
+  difficulty_level: number;
+  estimated_calories: number | null;
+  equipment: string;
 }
 
-interface LastWorkout {
+interface HomeTemplate {
   id: string;
-  title: string;
-  completed_at: string;
-  duration_minutes: number | null;
+  name_pt: string;
+  category: string;
+  duration_min: number;
+  difficulty_level: number;
+  equipment: string;
 }
+
+interface StretchSession {
+  id: string;
+  name_pt: string;
+  type: string;
+  duration_seconds: number;
+  target_muscles: string[];
+}
+
+type TabId = "plano" | "cardio" | "casa" | "along";
+
+const TABS: { id: TabId; label: string; icon: string }[] = [
+  { id: "plano", label: "Meu Plano", icon: "📋" },
+  { id: "cardio", label: "Cardio", icon: "🏃‍♀️" },
+  { id: "casa", label: "Em Casa", icon: "🏠" },
+  { id: "along", label: "Alongamento", icon: "🧘‍♀️" },
+];
+
+const levelLabel = (level: number) => {
+  if (level <= 1) return "Iniciante";
+  if (level <= 2) return "Intermediário";
+  return "Avançado";
+};
+
+const levelColor = (level: number) => {
+  if (level <= 1) return "text-success bg-success/10";
+  if (level <= 2) return "text-warning bg-warning/10";
+  return "text-primary bg-primary/10";
+};
 
 const AppWorkoutDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
   
-  const [program, setProgram] = useState<WorkoutProgram | null>(null);
+  const [tab, setTab] = useState<TabId>("plano");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [cycle, setCycle] = useState<ProgressionCycle | null>(null);
-  const [lastWorkout, setLastWorkout] = useState<LastWorkout | null>(null);
-  const [todayWorkout, setTodayWorkout] = useState<Workout | null>(null);
-  const [completedToday, setCompletedToday] = useState(false);
-  const [streak, setStreak] = useState(0);
-  
+  const [cardioProtocols, setCardioProtocols] = useState<CardioProtocol[]>([]);
+  const [homeTemplates, setHomeTemplates] = useState<HomeTemplate[]>([]);
+  const [stretches, setStretches] = useState<StretchSession[]>([]);
+  const [programLevel, setProgramLevel] = useState("");
+  const [cyclePhase, setCyclePhase] = useState("");
+  const [cycleWeek, setCycleWeek] = useState(0);
+
   useEffect(() => {
     if (!subscriptionLoading && !subscribed && user) {
       navigate("/app/login");
       return;
     }
     if (user && subscribed) {
-      fetchData();
+      fetchAllData();
     }
   }, [user, subscribed, subscriptionLoading, navigate]);
 
-  const fetchData = async () => {
-    if (!user) return;
+  const fetchAllData = async () => {
+    // Fetch all data in parallel
+    const [programRes, cardioRes, homeRes, stretchRes] = await Promise.all([
+      supabase.from("workout_programs").select("*").eq("is_active", true).limit(1),
+      supabase.from("cardio_protocols").select("*").eq("active", true),
+      supabase.from("home_workout_templates").select("*").eq("active", true),
+      supabase.from("stretches").select("*").eq("active", true).order("sort_order").limit(10),
+    ]);
 
-    // Get active program
-    const { data: programs } = await supabase
-      .from("workout_programs")
-      .select("*")
-      .eq("is_active", true)
-      .limit(1);
+    if (programRes.data && programRes.data.length > 0) {
+      const prog = programRes.data[0];
+      setProgramLevel(prog.level);
 
-    if (!programs || programs.length === 0) {
-      navigate("/app");
-      return;
+      const [workoutRes, cycleRes] = await Promise.all([
+        supabase.from("workouts").select("*").eq("program_id", prog.id).order("sort_order"),
+        supabase.from("progression_cycles").select("phase, current_week").eq("user_id", user!.id).eq("program_id", prog.id).single(),
+      ]);
+
+      if (workoutRes.data) setWorkouts(workoutRes.data);
+      if (cycleRes.data) {
+        setCyclePhase(cycleRes.data.phase);
+        setCycleWeek(cycleRes.data.current_week);
+      }
     }
 
-    const activeProgram = programs[0];
-    setProgram(activeProgram);
-
-    // Get workouts for this program
-    const { data: workoutData } = await supabase
-      .from("workouts")
-      .select("*")
-      .eq("program_id", activeProgram.id)
-      .order("sort_order");
-    
-    if (workoutData) setWorkouts(workoutData);
-
-    // Get progression cycle
-    const { data: cycleData } = await supabase
-      .from("progression_cycles")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("program_id", activeProgram.id)
-      .single();
-    
-    if (cycleData) setCycle(cycleData as unknown as ProgressionCycle);
-
-    // Get last workout
-    const { data: lastWorkoutData } = await supabase
-      .from("workout_logs")
-      .select(`
-        id,
-        completed_at,
-        duration_minutes,
-        workouts!workout_logs_workout_id_fkey(
-          id,
-          title
-        )
-      `)
-      .eq("user_id", user.id)
-      .order("completed_at", { ascending: false })
-      .limit(1);
-
-    if (lastWorkoutData && lastWorkoutData.length > 0) {
-      const log = lastWorkoutData[0];
-      setLastWorkout({
-        id: log.id,
-        title: (log.workouts as any)?.title || "Treino",
-        completed_at: log.completed_at,
-        duration_minutes: log.duration_minutes
-      });
-    }
-
-    // Check if completed workout today
-    const today = new Date().toISOString().split("T")[0];
-    const { data: todayLogs } = await supabase
-      .from("workout_logs")
-      .select("id")
-      .eq("user_id", user.id)
-      .gte("completed_at", today);
-    
-    setCompletedToday((todayLogs?.length || 0) > 0);
-
-    // Get current streak
-    const { data: streakData } = await supabase
-      .from("user_streaks")
-      .select("current_streak")
-      .eq("user_id", user.id)
-      .single();
-    
-    if (streakData) setStreak(streakData.current_streak);
-
-    // Determine today's workout (simple rotation based on day of week)
-    if (workoutData && workoutData.length > 0) {
-      const dayOfWeek = new Date().getDay(); // 0 = Sunday
-      const workoutIndex = dayOfWeek % workoutData.length;
-      setTodayWorkout(workoutData[workoutIndex]);
-    }
+    if (cardioRes.data) setCardioProtocols(cardioRes.data);
+    if (homeRes.data) setHomeTemplates(homeRes.data);
+    if (stretchRes.data) setStretches(stretchRes.data);
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(date);
-  };
-
-  const formatLastWorkoutDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (date.toDateString() === today.toDateString()) {
-      return "Hoje";
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Ontem";
-    } else {
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: 'numeric',
-        month: 'short'
-      }).format(date);
-    }
-  };
-
-  const today = new Date();
+  const todayIndex = new Date().getDay();
   const phaseNames: Record<string, string> = {
-    adaptation: "🌱 Adaptação",
-    building: "🏗️ Construção", 
-    intensify: "🔥 Intensificação",
-    peak: "⚡ Pico",
-    deload: "🧘 Deload"
+    adaptation: "Adaptação", building: "Construção",
+    intensify: "Intensificação", peak: "Pico", deload: "Deload"
   };
 
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="px-4 pt-8 pb-6">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <button onClick={() => navigate("/app")} className="text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="font-display text-xl font-bold text-foreground">Treinos</h1>
-          </div>
-          
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm">{formatDate(today)}</span>
-          </div>
+      <header className="px-5 pt-10 pb-2">
+        <div className="max-w-lg mx-auto flex items-center gap-3">
+          <button onClick={() => navigate("/app")} className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-2xl font-bold">Treinos</h1>
         </div>
       </header>
 
-      {/* Today's Workout */}
-      <section className="px-4 pb-6">
+      {/* Tab bar */}
+      <section className="px-5 py-4">
         <div className="max-w-lg mx-auto">
-          <h2 className="font-display text-lg font-bold text-foreground mb-3">Treino de Hoje</h2>
-          
-          {todayWorkout ? (
-            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-base font-semibold text-foreground">
-                      {todayWorkout.title}
-                    </CardTitle>
-                    {todayWorkout.description && (
-                      <CardDescription className="text-sm mt-1">
-                        {todayWorkout.description}
-                      </CardDescription>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full">
-                    <Flame className="w-3 h-3 fill-current" />
-                    <span className="text-xs font-bold">{streak}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Dumbbell className="w-3 h-3" />
-                      {program?.level || "Nível"}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      ~45 min
-                    </span>
-                  </div>
-                  
-                  {completedToday ? (
-                    <div className="flex items-center gap-1 text-primary text-xs font-medium">
-                      <Trophy className="w-3 h-3" />
-                      Concluído
-                    </div>
-                  ) : (
-                    <Button 
-                      onClick={() => navigate(`/app/workout/${todayWorkout.id}`)}
-                      size="sm"
-                      className="rounded-full h-8 px-4"
-                    >
-                      <Play className="w-3 h-3 mr-1" />
-                      Iniciar
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="text-center py-8">
-              <CardContent>
-                <Dumbbell className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">Nenhum treino programado para hoje</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </section>
-
-      {/* Last Workout Info */}
-      {lastWorkout && (
-        <section className="px-4 pb-6">
-          <div className="max-w-lg mx-auto">
-            <h3 className="font-display text-sm font-bold text-foreground mb-3">Último Treino</h3>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{lastWorkout.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatLastWorkoutDate(lastWorkout.completed_at)}
-                      {lastWorkout.duration_minutes && ` • ${lastWorkout.duration_minutes} min`}
-                    </p>
-                  </div>
-                  <Trophy className="w-4 h-4 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-      )}
-
-      {/* Progression */}
-      {cycle && (
-        <section className="px-4 pb-6">
-          <div className="max-w-lg mx-auto">
-            <h3 className="font-display text-sm font-bold text-foreground mb-3">Progressão</h3>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium text-foreground">
-                      {phaseNames[cycle.phase] || cycle.phase}
-                    </span>
-                  </div>
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-                    Semana {cycle.current_week} • Ciclo {cycle.cycle_number}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>Progresso da fase</span>
-                  <span>{((cycle.current_week % 8 || 8) / 8 * 100).toFixed(0)}%</span>
-                </div>
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all"
-                    style={{ width: `${(cycle.current_week % 8 || 8) / 8 * 100}%` }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-      )}
-
-      {/* All Workouts */}
-      <section className="px-4 pb-6">
-        <div className="max-w-lg mx-auto">
-          <h3 className="font-display text-sm font-bold text-foreground mb-3">Todos os Treinos</h3>
-          
-          <div className="space-y-2">
-            {workouts.map((workout, index) => (
-              <button
-                key={workout.id}
-                onClick={() => navigate(`/app/workout-detail/${workout.id}`)}
-                className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 hover:border-primary/30 transition-colors text-left"
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {TABS.map(t => (
+              <motion.button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                  tab === t.id 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                    : "bg-card border border-border text-muted-foreground"
+                }`}
+                whileTap={{ scale: 0.95 }}
               >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-primary font-bold text-sm">
-                    {String.fromCharCode(65 + index)}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground text-sm">{workout.title}</p>
-                  {workout.description && (
-                    <p className="text-xs text-muted-foreground truncate">{workout.description}</p>
-                  )}
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-              </button>
+                <span className="text-sm">{t.icon}</span>
+                {t.label}
+              </motion.button>
             ))}
           </div>
         </div>
       </section>
+
+      {/* TAB: Meu Plano */}
+      {tab === "plano" && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            {cyclePhase && (
+              <p className="text-xs text-muted-foreground mb-4">
+                Semana {cycleWeek} — {phaseNames[cyclePhase] || cyclePhase}
+              </p>
+            )}
+            <div className="space-y-2">
+              {workouts.map((workout, i) => {
+                const isToday = (workout.day_of_week ?? workout.sort_order) === todayIndex;
+                return (
+                  <motion.button
+                    key={workout.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => navigate(`/app/workout-detail/${workout.id}`)}
+                    className="w-full flex items-center gap-3 py-3.5 border-b border-border text-left"
+                  >
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
+                      isToday 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-card border border-border text-muted-foreground"
+                    }`}>
+                      {String.fromCharCode(65 + i)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm mb-0.5">{workout.title}</p>
+                      {workout.description && (
+                        <p className="text-xs text-muted-foreground truncate">{workout.description}</p>
+                      )}
+                    </div>
+                    {isToday && (
+                      <span className="text-xs font-semibold bg-primary text-primary-foreground px-2.5 py-1 rounded-lg">
+                        HOJE
+                      </span>
+                    )}
+                    {!isToday && <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* TAB: Cardio */}
+      {tab === "cardio" && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            <p className="text-xs text-muted-foreground mb-4">Protocolos de cardio guiado com velocidade e inclinação em tempo real</p>
+            <div className="space-y-3">
+              {cardioProtocols.map((protocol, i) => (
+                <motion.button
+                  key={protocol.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/app/cardio/${protocol.id}`)}
+                  className="w-full bg-card border border-border rounded-2xl p-4 text-left hover:border-primary/30 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-2xl">
+                      {protocol.protocol_type === 'hiit' ? '🔥' : protocol.protocol_type === 'liss' ? '🚶‍♀️' : '🏃‍♀️'}
+                    </span>
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-md ${levelColor(protocol.difficulty_level)}`}>
+                      {levelLabel(protocol.difficulty_level)}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-0.5">{protocol.name_pt}</h3>
+                  <p className="text-xs text-muted-foreground mb-2">{protocol.equipment}</p>
+                  <div className="flex gap-3 text-xs text-muted-foreground">
+                    <span>⏱️ {protocol.total_duration_min} min</span>
+                    {protocol.estimated_calories && <span>🔥 {protocol.estimated_calories} kcal</span>}
+                  </div>
+                </motion.button>
+              ))}
+              {cardioProtocols.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <span className="text-3xl mb-3 block">🏃‍♀️</span>
+                  <p className="text-sm">Nenhum protocolo de cardio disponível</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* TAB: Em Casa */}
+      {tab === "casa" && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            <p className="text-xs text-muted-foreground mb-4">Treinos completos sem precisar de academia</p>
+            <div className="space-y-3">
+              {homeTemplates.map((template, i) => (
+                <motion.button
+                  key={template.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/app/home-workout/${template.id}`)}
+                  className="w-full bg-card border border-border rounded-2xl p-4 text-left hover:border-primary/30 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-2xl">💪</span>
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-md ${levelColor(template.difficulty_level)}`}>
+                      {levelLabel(template.difficulty_level)}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-0.5">{template.name_pt}</h3>
+                  <p className="text-xs text-muted-foreground mb-2">{template.category}</p>
+                  <div className="flex gap-3 text-xs text-muted-foreground">
+                    <span>⏱️ {template.duration_min} min</span>
+                    <span>🎯 {template.equipment}</span>
+                  </div>
+                </motion.button>
+              ))}
+              {homeTemplates.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <span className="text-3xl mb-3 block">🏠</span>
+                  <p className="text-sm">Nenhum treino em casa disponível</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* TAB: Alongamento */}
+      {tab === "along" && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            <p className="text-xs text-muted-foreground mb-4">Alongamento e mobilidade — gerado baseado no seu treino</p>
+            <div className="space-y-3">
+              {stretches.map((stretch, i) => (
+                <motion.div
+                  key={stretch.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="bg-card border border-border rounded-2xl p-4"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-2xl">🧘‍♀️</span>
+                    <span className="text-[10px] font-semibold px-2 py-1 rounded-md text-info bg-info/10">
+                      {stretch.type}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-0.5">{stretch.name_pt}</h3>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {stretch.target_muscles.join(", ")}
+                  </p>
+                  <div className="flex gap-3 text-xs text-muted-foreground">
+                    <span>⏱️ {stretch.duration_seconds}s</span>
+                  </div>
+                </motion.div>
+              ))}
+              {stretches.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <span className="text-3xl mb-3 block">🧘‍♀️</span>
+                  <p className="text-sm">Nenhum alongamento disponível</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Bottom Nav */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-border z-20">
+        <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-6">
+          <button onClick={() => navigate("/app")} className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg opacity-50 grayscale">🏠</span>
+            <span className="text-[10px] text-muted-foreground">Home</span>
+          </button>
+          <button className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg">🏋️‍♀️</span>
+            <span className="text-[10px] font-semibold text-primary">Treinos</span>
+            <div className="w-1 h-1 rounded-full bg-primary" />
+          </button>
+          <button onClick={() => navigate("/app/history")} className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg opacity-50 grayscale">📊</span>
+            <span className="text-[10px] text-muted-foreground">Progresso</span>
+          </button>
+          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg opacity-50 grayscale">👥</span>
+            <span className="text-[10px] text-muted-foreground">Social</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };
