@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { BodyMap } from "@/components/BodyMap";
 
 interface WeekDay {
   day: string;
