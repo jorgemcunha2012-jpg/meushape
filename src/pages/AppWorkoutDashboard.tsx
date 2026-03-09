@@ -69,6 +69,7 @@ const cardioIcon = (type: string) => {
 };
 
 const AppWorkoutDashboard = () => {
+  const S = useSolar();
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
 

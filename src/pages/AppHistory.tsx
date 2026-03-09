@@ -15,6 +15,7 @@ interface WorkoutLog {
 }
 
 const AppHistory = () => {
+  const S = useSolar();
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [logs, setLogs] = useState<WorkoutLog[]>([]);

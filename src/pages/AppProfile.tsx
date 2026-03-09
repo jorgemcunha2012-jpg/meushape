@@ -28,6 +28,7 @@ interface StatsData {
 }
 
 const AppProfile = () => {
+  const S = useSolar();
   const navigate = useNavigate();
   const { user, subscribed, subscriptionLoading, signOut } = useAuth();
 
