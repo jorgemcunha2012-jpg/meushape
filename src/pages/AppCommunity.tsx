@@ -58,7 +58,13 @@ const AppCommunity = () => {
   };
 
   const handlePost = async () => {
-    if (!newPost.trim() || !user) return;
+    if (!newPost.trim() || (!user && !isAdmin)) return;
+    
+    // Admin mode - skip posting to avoid errors
+    if (isAdmin) {
+      toast.error("Admins não podem postar na comunidade");
+      return;
+    }
     setPosting(true);
 
     const { error } = await supabase
