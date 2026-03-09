@@ -19,7 +19,7 @@ interface Post {
 }
 
 const AppCommunity = () => {
-  const { user, loading, subscribed, subscriptionLoading } = useAuth();
+  const { user, loading, subscribed, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
@@ -27,12 +27,12 @@ const AppCommunity = () => {
   const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isAdmin) {
       navigate("/app/login");
       return;
     }
-    if (user && subscribed) fetchPosts();
-  }, [user, loading, subscribed]);
+    if ((user && subscribed) || isAdmin) fetchPosts();
+  }, [user, loading, subscribed, isAdmin]);
 
   const fetchPosts = async () => {
     const { data } = await supabase
