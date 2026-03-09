@@ -58,8 +58,8 @@ const levelLabel = (level: number) => {
 
 const levelColor = (level: number) => {
   if (level <= 1) return { text: "#16a34a", bg: "rgba(22,163,74,0.1)" };
-  if (level <= 2) return { text: S.amber, bg: "rgba(245,158,11,0.1)" };
-  return { text: S.coral, bg: "rgba(248,113,113,0.1)" };
+  if (level <= 2) return { text: "#F59E0B", bg: "rgba(245,158,11,0.1)" };
+  return { text: "#F87171", bg: "rgba(248,113,113,0.1)" };
 };
 
 const cardioIcon = (type: string) => {
