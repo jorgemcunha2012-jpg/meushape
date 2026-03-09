@@ -80,7 +80,7 @@ const AppWorkoutDashboard = () => {
   const [cycleWeek, setCycleWeek] = useState(0);
 
   useEffect(() => {
-    if (!subscriptionLoading && !subscribed && user) {
+    if (!subscriptionLoading && !user) {
       navigate("/app/login");
       return;
     }

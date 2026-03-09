@@ -40,7 +40,7 @@ const AppWorkoutDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!subscriptionLoading && !subscribed && user) {
+    if (!subscriptionLoading && !user) {
       navigate("/app/login");
       return;
     }
