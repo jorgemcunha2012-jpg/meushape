@@ -428,7 +428,8 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
     if (!aiResponse.ok) {
       const status = aiResponse.status;
       const errText = await aiResponse.text();
-      console.error("AI error:", status, errText);
+      console.error("AI error:", status, "error code:", errText);
+      
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Tente novamente em alguns segundos." }), {
           status: 429,
@@ -436,12 +437,19 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
         });
       }
       if (status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes." }), {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes para gerar o treino. Contate o suporte." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`AI gateway error: ${status}`);
+      if (status === 503) {
+        return new Response(JSON.stringify({ error: "O serviço de IA está temporariamente indisponível. Tente novamente em alguns minutos." }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      throw new Error(`AI gateway error: ${status} - ${errText}`);
     }
 
     const aiData = await aiResponse.json();
