@@ -13,242 +13,247 @@ interface BodyMapProps {
 
 /**
  * Premium anatomical female body map — front + back views
- * with smooth bezier curves and realistic feminine proportions.
- * Each region maps to a muscle key in MuscleData.
+ * Solar-inspired palette with warm glow, feminine proportions,
+ * subtle depth via gradients & soft strokes.
  */
 export const BodyMap: React.FC<BodyMapProps> = ({ muscleMap, statusColor }) => {
   const c = (key: string) => statusColor(muscleMap[key] ?? "none");
-  const outline = "hsl(var(--muted-foreground) / 0.5)";
-  const baseFill = "hsl(var(--muted) / 0.3)";
-  const sw = 0.7; // stroke width
+  const outline = "hsl(var(--muted-foreground) / 0.25)";
+  const skinBase = "hsl(var(--muted) / 0.15)";
+  const sw = 0.5;
+
+  const glowFilter = (id: string, color: string) => (
+    <filter id={id} x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+      <feFlood floodColor={color} floodOpacity="0.35" result="color" />
+      <feComposite in="color" in2="blur" operator="in" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  );
+
+  /** Wraps muscle path with subtle glow when active */
+  const MuscleZone: React.FC<{
+    d: string;
+    muscle: string;
+    opacity?: number;
+    strokeW?: number;
+  }> = ({ d, muscle, opacity = 0.88, strokeW = sw }) => {
+    const status = muscleMap[muscle] ?? "none";
+    const fill = c(muscle);
+    const isActive = status !== "none";
+    return (
+      <path
+        d={d}
+        fill={fill}
+        stroke={outline}
+        strokeWidth={strokeW}
+        opacity={opacity}
+        strokeLinejoin="round"
+        style={{
+          filter: isActive ? `drop-shadow(0 0 4px ${fill})` : undefined,
+          transition: "fill 0.4s ease, filter 0.4s ease",
+        }}
+      />
+    );
+  };
+
+  const SilhouetteView: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+    <div className="flex flex-col items-center">
+      <span className="text-[8px] text-muted-foreground mb-1 font-sans tracking-[0.15em] uppercase opacity-60">
+        {label}
+      </span>
+      <svg viewBox="0 0 200 440" className="w-[72px] h-[155px]" fill="none">
+        {children}
+      </svg>
+    </div>
+  );
+
+  /* ── Shared head + neck ── */
+  const HeadNeck = () => (
+    <>
+      {/* Hair hint */}
+      <ellipse cx="100" cy="24" rx="24" ry="28" fill={skinBase} stroke={outline} strokeWidth={0.3} opacity={0.5} />
+      {/* Head */}
+      <ellipse cx="100" cy="28" rx="18" ry="22" fill={skinBase} stroke={outline} strokeWidth={sw} />
+      {/* Neck */}
+      <path d="M92 49 Q92 56 90 62 L110 62 Q108 56 108 49" fill={skinBase} stroke={outline} strokeWidth={sw * 0.6} />
+    </>
+  );
+
+  /* ── Hands ── */
+  const Hands = ({ side }: { side: "left" | "right" }) => {
+    const x = side === "left" ? 28 : 172;
+    return <ellipse cx={x} cy="206" rx="5" ry="7" fill={skinBase} stroke={outline} strokeWidth={0.3} opacity={0.5} />;
+  };
+
+  /* ── Feet ── */
+  const Feet = () => (
+    <>
+      <path d="M68 388 C64 392 62 396 66 400 L86 400 C90 396 88 392 84 388" fill={skinBase} stroke={outline} strokeWidth={0.3} />
+      <path d="M116 388 C112 392 110 396 114 400 L134 400 C138 396 136 392 132 388" fill={skinBase} stroke={outline} strokeWidth={0.3} />
+    </>
+  );
 
   return (
-    <div className="flex items-end justify-center gap-4">
+    <div className="flex items-end justify-center gap-3">
       {/* ─── FRONT VIEW ─── */}
-      <div className="flex flex-col items-center">
-        <span className="text-[9px] text-muted-foreground mb-1 font-sans tracking-wider uppercase">
-          Frente
-        </span>
-        <svg viewBox="0 0 200 420" className="w-[62px] h-[130px]" fill="none">
-          {/* Head */}
-          <ellipse cx="100" cy="30" rx="20" ry="24" fill={baseFill} stroke={outline} strokeWidth={sw} />
-          {/* Neck */}
-          <path d="M90 53 Q90 60 88 65 L112 65 Q110 60 110 53" fill={baseFill} stroke={outline} strokeWidth={sw * 0.8} />
+      <SilhouetteView label="Frente">
+        <HeadNeck />
 
-          {/* ── Shoulders / Deltoids ── */}
-          <path
-            d="M68 75 C58 70 42 72 36 82 C33 88 34 94 38 97 L58 93 C62 88 66 82 68 75Z"
-            fill={c("shoulders")} stroke={outline} strokeWidth={sw} opacity={0.9}
-          />
-          <path
-            d="M132 75 C142 70 158 72 164 82 C167 88 166 94 162 97 L142 93 C138 88 134 82 132 75Z"
-            fill={c("shoulders")} stroke={outline} strokeWidth={sw} opacity={0.9}
-          />
+        {/* Shoulders */}
+        <MuscleZone muscle="shoulders" d="M70 72 C60 68 44 70 37 80 C34 86 35 93 39 97 L60 92 C64 86 68 80 70 72Z" />
+        <MuscleZone muscle="shoulders" d="M130 72 C140 68 156 70 163 80 C166 86 165 93 161 97 L140 92 C136 86 132 80 130 72Z" />
 
-          {/* ── Chest / Pectorals ── */}
-          <path
-            d="M68 75 C72 72 90 68 100 68 C110 68 128 72 132 75
-               C136 80 138 90 134 96 L126 102
-               C116 108 100 110 100 110
-               C100 110 84 108 74 102 L66 96
-               C62 90 64 80 68 75Z"
-            fill={c("chest")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
+        {/* Chest — softer feminine shape */}
+        <MuscleZone muscle="chest" d="
+          M70 72 C76 68 88 65 100 65 C112 65 124 68 130 72
+          C135 78 137 88 133 95 L124 102
+          C114 108 100 112 100 112
+          C100 112 86 108 76 102 L67 95
+          C63 88 65 78 70 72Z
+        " opacity={0.82} />
 
-          {/* ── Biceps (front arms) ── */}
-          <path
-            d="M38 97 C34 104 30 116 28 130 C26 144 28 156 30 162
-               L38 162 C40 156 42 144 42 130 C42 116 40 104 38 97Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          <path
-            d="M162 97 C166 104 170 116 172 130 C174 144 172 156 170 162
-               L162 162 C160 156 158 144 158 130 C158 116 160 104 162 97Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
+        {/* Biceps */}
+        <MuscleZone muscle="arms" d="M39 97 C35 105 31 118 29 133 C27 148 29 160 31 166 L39 166 C41 160 43 148 43 133 C43 118 41 105 39 97Z" />
+        <MuscleZone muscle="arms" d="M161 97 C165 105 169 118 171 133 C173 148 171 160 169 166 L161 166 C159 160 157 148 157 133 C157 118 159 105 161 97Z" />
 
-          {/* ── Forearms ── */}
-          <path
-            d="M30 162 C28 174 26 188 26 198 L34 200 C36 190 38 176 38 162Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw * 0.7} opacity={0.7}
-          />
-          <path
-            d="M170 162 C172 174 174 188 174 198 L166 200 C164 190 162 176 162 162Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw * 0.7} opacity={0.7}
-          />
+        {/* Forearms */}
+        <MuscleZone muscle="arms" d="M31 166 C29 178 27 192 27 202 L35 204 C37 194 39 180 39 166Z" opacity={0.7} strokeW={sw * 0.6} />
+        <MuscleZone muscle="arms" d="M169 166 C171 178 173 192 173 202 L165 204 C163 194 161 180 161 166Z" opacity={0.7} strokeW={sw * 0.6} />
 
-          {/* ── Abs / Core ── */}
-          <path
-            d="M74 110 C80 108 90 106 100 106 C110 106 120 108 126 110
-               L130 118 C132 130 132 145 130 160
-               L126 168 C118 172 110 174 100 174
-               C90 174 82 172 74 168 L70 160
-               C68 145 68 130 70 118Z"
-            fill={c("abs")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          {/* Ab definition lines */}
-          <line x1="100" y1="112" x2="100" y2="168" stroke={outline} strokeWidth={0.4} opacity={0.3} />
-          <path d="M78 124 Q100 120 122 124" fill="none" stroke={outline} strokeWidth={0.3} opacity={0.25} />
-          <path d="M76 136 Q100 132 124 136" fill="none" stroke={outline} strokeWidth={0.3} opacity={0.25} />
-          <path d="M76 148 Q100 144 124 148" fill="none" stroke={outline} strokeWidth={0.3} opacity={0.25} />
-          <path d="M78 160 Q100 156 122 160" fill="none" stroke={outline} strokeWidth={0.3} opacity={0.25} />
+        {/* Abs — with definition lines */}
+        <MuscleZone muscle="abs" d="
+          M76 110 C82 107 90 104 100 104 C110 104 118 107 124 110
+          L128 118 C130 132 130 148 128 164
+          L124 172 C116 176 108 178 100 178
+          C92 178 84 176 76 172 L72 164
+          C70 148 70 132 72 118Z
+        " />
+        {/* Ab lines */}
+        <line x1="100" y1="110" x2="100" y2="172" stroke={outline} strokeWidth={0.3} opacity={0.2} />
+        <path d="M80 122 Q100 118 120 122" fill="none" stroke={outline} strokeWidth={0.25} opacity={0.15} />
+        <path d="M78 136 Q100 132 122 136" fill="none" stroke={outline} strokeWidth={0.25} opacity={0.15} />
+        <path d="M78 150 Q100 146 122 150" fill="none" stroke={outline} strokeWidth={0.25} opacity={0.15} />
+        <path d="M80 163 Q100 159 120 163" fill="none" stroke={outline} strokeWidth={0.25} opacity={0.15} />
 
-          {/* ── Hip / Glute area (front) ── */}
-          <path
-            d="M74 174 C82 172 90 170 100 170 C110 170 118 172 126 174
-               C132 180 136 190 132 200
-               L68 200 C64 190 68 180 74 174Z"
-            fill={c("glutes")} stroke={outline} strokeWidth={sw} opacity={0.7}
-          />
+        {/* Hip / Glute front */}
+        <MuscleZone muscle="glutes" d="
+          M76 178 C84 175 92 173 100 173 C108 173 116 175 124 178
+          C130 184 134 194 130 206
+          L70 206 C66 194 70 184 76 178Z
+        " opacity={0.65} />
 
-          {/* ── Quadriceps ── */}
-          <path
-            d="M68 200 C66 220 62 248 60 272 C58 284 60 290 64 292
-               L88 292 C92 290 94 284 92 272
-               C90 248 86 220 84 200Z"
-            fill={c("legs")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          <path
-            d="M132 200 C134 220 138 248 140 272 C142 284 140 290 136 292
-               L112 292 C108 290 106 284 108 272
-               C110 248 114 220 116 200Z"
-            fill={c("legs")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
+        {/* Quads — tapered feminine shape */}
+        <MuscleZone muscle="legs" d="
+          M70 206 C68 228 64 258 62 284 C60 298 62 304 66 306
+          L88 306 C92 304 94 298 92 284
+          C90 258 86 228 84 206Z
+        " />
+        <MuscleZone muscle="legs" d="
+          M130 206 C132 228 136 258 138 284 C140 298 138 304 134 306
+          L112 306 C108 304 106 298 108 284
+          C110 258 114 228 116 206Z
+        " />
 
-          {/* ── Calves ── */}
-          <path
-            d="M64 292 C62 310 60 330 60 346 C60 356 64 360 70 360
-               L84 360 C90 360 92 356 92 346
-               C92 330 90 310 88 292Z"
-            fill={c("calves")} stroke={outline} strokeWidth={sw * 0.8} opacity={0.8}
-          />
-          <path
-            d="M136 292 C138 310 140 330 140 346 C140 356 136 360 130 360
-               L116 360 C110 360 108 356 108 346
-               C108 330 110 310 112 292Z"
-            fill={c("calves")} stroke={outline} strokeWidth={sw * 0.8} opacity={0.8}
-          />
+        {/* Calves — elegant taper */}
+        <MuscleZone muscle="calves" d="
+          M66 306 C63 322 61 342 62 358 C62 370 66 378 72 382
+          L84 382 C90 378 92 370 92 358
+          C93 342 91 322 88 306Z
+        " opacity={0.78} strokeW={sw * 0.7} />
+        <MuscleZone muscle="calves" d="
+          M134 306 C137 322 139 342 138 358 C138 370 134 378 128 382
+          L116 382 C110 378 108 370 108 358
+          C107 342 109 322 112 306Z
+        " opacity={0.78} strokeW={sw * 0.7} />
 
-          {/* Feet */}
-          <ellipse cx="77" cy="365" rx="14" ry="5" fill={baseFill} stroke={outline} strokeWidth={0.4} />
-          <ellipse cx="123" cy="365" rx="14" ry="5" fill={baseFill} stroke={outline} strokeWidth={0.4} />
-        </svg>
-      </div>
+        <Hands side="left" />
+        <Hands side="right" />
+        <Feet />
+      </SilhouetteView>
 
       {/* ─── BACK VIEW ─── */}
-      <div className="flex flex-col items-center">
-        <span className="text-[9px] text-muted-foreground mb-1 font-sans tracking-wider uppercase">
-          Costas
-        </span>
-        <svg viewBox="0 0 200 420" className="w-[62px] h-[130px]" fill="none">
-          {/* Head */}
-          <ellipse cx="100" cy="30" rx="20" ry="24" fill={baseFill} stroke={outline} strokeWidth={sw} />
-          {/* Neck */}
-          <path d="M90 53 Q90 60 88 65 L112 65 Q110 60 110 53" fill={baseFill} stroke={outline} strokeWidth={sw * 0.8} />
+      <SilhouetteView label="Costas">
+        <HeadNeck />
 
-          {/* ── Shoulders / Rear Delts ── */}
-          <path
-            d="M68 75 C58 70 42 72 36 82 C33 88 34 94 38 97 L58 93 C62 88 66 82 68 75Z"
-            fill={c("shoulders")} stroke={outline} strokeWidth={sw} opacity={0.9}
-          />
-          <path
-            d="M132 75 C142 70 158 72 164 82 C167 88 166 94 162 97 L142 93 C138 88 134 82 132 75Z"
-            fill={c("shoulders")} stroke={outline} strokeWidth={sw} opacity={0.9}
-          />
+        {/* Rear Delts */}
+        <MuscleZone muscle="shoulders" d="M70 72 C60 68 44 70 37 80 C34 86 35 93 39 97 L60 92 C64 86 68 80 70 72Z" />
+        <MuscleZone muscle="shoulders" d="M130 72 C140 68 156 70 163 80 C166 86 165 93 161 97 L140 92 C136 86 132 80 130 72Z" />
 
-          {/* ── Upper Back / Traps ── */}
-          <path
-            d="M68 75 C78 72 90 70 100 70 C110 70 122 72 132 75
-               C134 80 134 86 132 90 L68 90 C66 86 66 80 68 75Z"
-            fill={c("back")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
+        {/* Upper Back / Traps */}
+        <MuscleZone muscle="back" d="
+          M70 72 C80 68 90 66 100 66 C110 66 120 68 130 72
+          C132 78 132 86 130 90 L70 90 C68 86 68 78 70 72Z
+        " />
 
-          {/* ── Mid & Lower Back / Lats ── */}
-          <path
-            d="M68 90 L132 90
-               C138 100 142 116 140 132
-               L132 142 C120 150 110 154 100 154
-               C90 154 80 150 68 142 L60 132
-               C58 116 62 100 68 90Z"
-            fill={c("back")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          {/* Spine */}
-          <line x1="100" y1="72" x2="100" y2="170" stroke={outline} strokeWidth={0.5} opacity={0.35} />
-          {/* Lat separation lines */}
-          <path d="M80 95 Q100 92 120 95" fill="none" stroke={outline} strokeWidth={0.3} opacity={0.2} />
-          <path d="M74 115 Q100 110 126 115" fill="none" stroke={outline} strokeWidth={0.3} opacity={0.2} />
+        {/* Lats */}
+        <MuscleZone muscle="back" d="
+          M70 90 L130 90
+          C136 100 140 118 138 136
+          L130 146 C118 154 108 158 100 158
+          C92 158 82 154 70 146 L62 136
+          C60 118 64 100 70 90Z
+        " />
 
-          {/* ── Triceps (back arms) ── */}
-          <path
-            d="M38 97 C34 104 30 116 28 130 C26 144 28 156 30 162
-               L38 162 C40 156 42 144 42 130 C42 116 40 104 38 97Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          <path
-            d="M162 97 C166 104 170 116 172 130 C174 144 172 156 170 162
-               L162 162 C160 156 158 144 158 130 C158 116 160 104 162 97Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          {/* Forearms */}
-          <path
-            d="M30 162 C28 174 26 188 26 198 L34 200 C36 190 38 176 38 162Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw * 0.7} opacity={0.7}
-          />
-          <path
-            d="M170 162 C172 174 174 188 174 198 L166 200 C164 190 162 176 162 162Z"
-            fill={c("arms")} stroke={outline} strokeWidth={sw * 0.7} opacity={0.7}
-          />
+        {/* Spine line */}
+        <line x1="100" y1="68" x2="100" y2="174" stroke={outline} strokeWidth={0.35} opacity={0.2} />
+        {/* Lat lines */}
+        <path d="M82 96 Q100 92 118 96" fill="none" stroke={outline} strokeWidth={0.2} opacity={0.12} />
+        <path d="M76 118 Q100 112 124 118" fill="none" stroke={outline} strokeWidth={0.2} opacity={0.12} />
 
-          {/* ── Lower Back ── */}
-          <path
-            d="M68 154 C80 150 90 148 100 148 C110 148 120 150 132 154
-               L134 164 C132 170 128 174 126 176
-               L74 176 C72 174 68 170 66 164Z"
-            fill={c("back")} stroke={outline} strokeWidth={sw * 0.8} opacity={0.75}
-          />
+        {/* Triceps */}
+        <MuscleZone muscle="arms" d="M39 97 C35 105 31 118 29 133 C27 148 29 160 31 166 L39 166 C41 160 43 148 43 133 C43 118 41 105 39 97Z" />
+        <MuscleZone muscle="arms" d="M161 97 C165 105 169 118 171 133 C173 148 171 160 169 166 L161 166 C159 160 157 148 157 133 C157 118 159 105 161 97Z" />
 
-          {/* ── Glutes ── */}
-          <path
-            d="M74 176 C68 182 64 192 66 204
-               L134 204 C136 192 132 182 126 176Z"
-            fill={c("glutes")} stroke={outline} strokeWidth={sw} opacity={0.9}
-          />
-          {/* Glute split */}
-          <line x1="100" y1="176" x2="100" y2="204" stroke={outline} strokeWidth={0.4} opacity={0.3} />
+        {/* Forearms */}
+        <MuscleZone muscle="arms" d="M31 166 C29 178 27 192 27 202 L35 204 C37 194 39 180 39 166Z" opacity={0.7} strokeW={sw * 0.6} />
+        <MuscleZone muscle="arms" d="M169 166 C171 178 173 192 173 202 L165 204 C163 194 161 180 161 166Z" opacity={0.7} strokeW={sw * 0.6} />
 
-          {/* ── Hamstrings ── */}
-          <path
-            d="M66 204 C64 224 60 252 58 276 C56 288 58 294 62 296
-               L86 296 C90 294 92 288 90 276
-               C88 252 84 224 82 204Z"
-            fill={c("legs")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
-          <path
-            d="M134 204 C136 224 140 252 142 276 C144 288 142 294 138 296
-               L114 296 C110 294 108 288 110 276
-               C112 252 116 224 118 204Z"
-            fill={c("legs")} stroke={outline} strokeWidth={sw} opacity={0.85}
-          />
+        {/* Lower Back */}
+        <MuscleZone muscle="back" d="
+          M70 158 C82 154 92 152 100 152 C108 152 118 154 130 158
+          L132 168 C130 174 126 178 124 180
+          L76 180 C74 178 70 174 68 168Z
+        " opacity={0.72} strokeW={sw * 0.7} />
 
-          {/* ── Calves ── */}
-          <path
-            d="M62 296 C60 314 58 334 58 348 C58 358 62 362 68 362
-               L82 362 C88 362 90 358 90 348
-               C90 334 88 314 86 296Z"
-            fill={c("calves")} stroke={outline} strokeWidth={sw * 0.8} opacity={0.8}
-          />
-          <path
-            d="M138 296 C140 314 142 334 142 348 C142 358 138 362 132 362
-               L118 362 C112 362 110 358 110 348
-               C110 334 112 314 114 296Z"
-            fill={c("calves")} stroke={outline} strokeWidth={sw * 0.8} opacity={0.8}
-          />
+        {/* Glutes — rounded feminine */}
+        <MuscleZone muscle="glutes" d="
+          M76 180 C70 186 66 198 68 210
+          L132 210 C134 198 130 186 124 180Z
+        " />
+        <line x1="100" y1="180" x2="100" y2="210" stroke={outline} strokeWidth={0.3} opacity={0.18} />
 
-          {/* Feet */}
-          <ellipse cx="75" cy="367" rx="14" ry="5" fill={baseFill} stroke={outline} strokeWidth={0.4} />
-          <ellipse cx="125" cy="367" rx="14" ry="5" fill={baseFill} stroke={outline} strokeWidth={0.4} />
-        </svg>
-      </div>
+        {/* Hamstrings */}
+        <MuscleZone muscle="legs" d="
+          M68 210 C66 230 62 260 60 286 C58 300 60 306 64 308
+          L86 308 C90 306 92 300 90 286
+          C88 260 84 230 82 210Z
+        " />
+        <MuscleZone muscle="legs" d="
+          M132 210 C134 230 138 260 140 286 C142 300 140 306 136 308
+          L114 308 C110 306 108 300 110 286
+          C112 260 116 230 118 210Z
+        " />
+
+        {/* Calves */}
+        <MuscleZone muscle="calves" d="
+          M64 308 C61 324 59 344 60 360 C60 372 64 380 70 384
+          L82 384 C88 380 90 372 90 360
+          C91 344 89 324 86 308Z
+        " opacity={0.78} strokeW={sw * 0.7} />
+        <MuscleZone muscle="calves" d="
+          M136 308 C139 324 141 344 140 360 C140 372 136 380 130 384
+          L118 384 C112 380 110 372 110 360
+          C109 344 111 324 114 308Z
+        " opacity={0.78} strokeW={sw * 0.7} />
+
+        <Hands side="left" />
+        <Hands side="right" />
+        <Feet />
+      </SilhouetteView>
     </div>
   );
 };
