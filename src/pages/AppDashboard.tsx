@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   Home, Dumbbell, Users, TrendingUp, User,
   Bell, Sparkles, ChevronRight, Trophy, Flame,
-  Target, Calendar
+  Target, Calendar, Zap
 } from "lucide-react";
 import { BodyMap } from "@/components/BodyMap";
 
@@ -49,25 +49,25 @@ function getMuscleStatus(daysSinceTraining: number): MuscleStatus {
 
 function muscleStatusColor(status: MuscleStatus): string {
   switch (status) {
-    case "today": return "#F97316";      // orange-500
-    case "recent": return "#FBBF24";     // amber-400
-    case "recovering": return "#D97706"; // amber-600
-    default: return "#E7E5E4";           // stone-200
+    case "today": return "#F97316";
+    case "recent": return "#FBBF24";
+    case "recovering": return "#D97706";
+    default: return "#E7E5E4";
   }
 }
 
-/* ─── Solar palette constants ─── */
-const SOLAR = {
-  bg: "#F8F5F2",
+/* ─── Solar palette ─── */
+const S = {
+  bg: "#FDFCFB",
   card: "#FFFFFF",
   cardBorder: "#F0EBE5",
-  orange: "#EA580C",    // orange-600
-  amber: "#F59E0B",     // amber-500
-  coral: "#F87171",     // red-400
-  terracotta: "#C2410C",// orange-700
-  text: "#18181B",      // zinc-900
-  textMuted: "#A1A1AA",  // zinc-400
-  textSub: "#71717A",   // zinc-500
+  orange: "#EA580C",
+  amber: "#F59E0B",
+  coral: "#F87171",
+  terracotta: "#C2410C",
+  text: "#18181B",
+  textMuted: "#A1A1AA",
+  textSub: "#71717A",
   glow: "rgba(234,88,12,0.15)",
   glowStrong: "rgba(234,88,12,0.25)",
 };
@@ -181,7 +181,6 @@ const AppDashboard = () => {
       setLastWorkoutDate(streakData.last_workout_date || "");
     }
 
-    // Calculate weekly progress from logs
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     const { data: weekLogs } = await supabase
@@ -209,71 +208,98 @@ const AppDashboard = () => {
     });
   };
 
-  const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Rainha";
+  const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Jorge";
 
-  /* ─── Menu Grid Items ─── */
   const menuItems = [
-    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", emoji: "💪" },
-    { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", emoji: "📈" },
-    { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirada", route: "/app/community", emoji: "🤝" },
-    { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", emoji: "🏆" },
+    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", gradient: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", iconColor: S.orange },
+    { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", gradient: "linear-gradient(135deg, #FEF3C7, #FDE68A)", iconColor: S.amber },
+    { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirado", route: "/app/community", gradient: "linear-gradient(135deg, #FFF1F2, #FECDD3)", iconColor: S.coral },
+    { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", gradient: "linear-gradient(135deg, #FFF7ED, #FED7AA)", iconColor: S.terracotta },
   ];
 
-  /* ─── Bottom Nav Items ─── */
   const navItems = [
     { icon: Home, label: "Início", route: "/app", active: true },
-    { icon: Dumbbell, label: "Treinos", route: "/app/workouts", active: false },
+    { icon: Dumbbell, label: "Treino", route: "/app/workouts", active: false },
     { icon: Users, label: "Feed", route: "/app/community", active: false },
     { icon: TrendingUp, label: "Evolução", route: "/app/history", active: false },
     { icon: User, label: "Perfil", route: "/app/profile", active: false },
   ];
 
+  /* ─── Muscle legend helper ─── */
+  const muscleLabels: Record<string, string> = {
+    chest: "Peito", shoulders: "Ombros", arms: "Braços",
+    back: "Costas", abs: "Abdome", glutes: "Glúteos",
+    legs: "Pernas", calves: "Panturrilha",
+  };
+  const statusGroups: Record<MuscleStatus, string[]> = { today: [], recent: [], recovering: [], none: [] };
+  Object.entries(muscleMap).forEach(([m, s]) => statusGroups[s].push(muscleLabels[m] || m));
+
+  const legendItems = [
+    { status: "today" as MuscleStatus, label: "Treinado hoje", color: "#F97316" },
+    { status: "recent" as MuscleStatus, label: "Últimos 2 dias", color: "#FBBF24" },
+    { status: "recovering" as MuscleStatus, label: "Recuperando", color: "#D97706" },
+    { status: "none" as MuscleStatus, label: "Não treinado", color: "#D6D3D1" },
+  ].filter(item => statusGroups[item.status].length > 0);
+
   return (
     <div
       className="min-h-screen pb-28 overflow-x-hidden"
-      style={{ backgroundColor: SOLAR.bg, fontFamily: "'Inter', -apple-system, sans-serif" }}
+      style={{ backgroundColor: S.bg, fontFamily: "'Inter', sans-serif" }}
     >
-      {/* ═══ HEADER ═══ */}
-      <header className="px-5 pt-4 pb-2">
+      {/* ═══ HEADER — Sticky Glassmorphism ═══ */}
+      <header
+        className="sticky top-0 z-20 px-5 pt-4 pb-3"
+        style={{
+          backgroundColor: "rgba(253,252,251,0.8)",
+          backdropFilter: "blur(20px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
+        }}
+      >
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
+          {/* Logo — Montserrat Black Italic */}
+          <div className="flex items-center gap-1.5">
             <span
-              className="text-xl tracking-tight"
-              style={{ fontWeight: 900, color: SOLAR.text, letterSpacing: "-0.5px" }}
+              className="font-display text-[22px]"
+              style={{
+                fontWeight: 900,
+                fontStyle: "italic",
+                color: S.text,
+                letterSpacing: "-0.05em",
+              }}
             >
-              MEU SHAPE
+              MEUSHAPE
             </span>
-            <Sparkles size={16} style={{ color: SOLAR.orange }} strokeWidth={2.5} />
+            <Sparkles size={14} style={{ color: S.orange }} strokeWidth={2.5} />
           </div>
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               className="relative w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95"
               style={{
-                backgroundColor: SOLAR.card,
-                border: `1px solid ${SOLAR.cardBorder}`,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                backgroundColor: S.card,
+                border: `1px solid ${S.cardBorder}`,
+                boxShadow: `0 2px 8px rgba(234,88,12,0.06)`,
               }}
             >
-              <Bell size={18} style={{ color: SOLAR.textSub }} />
+              <Bell size={18} style={{ color: S.textSub }} />
               <div
-                className="absolute top-2 right-2 w-2 h-2 rounded-full"
-                style={{ backgroundColor: SOLAR.coral }}
+                className="absolute top-2 right-2.5 w-2 h-2 rounded-full"
+                style={{ backgroundColor: S.coral }}
               />
             </button>
             <button
               className="w-10 h-10 rounded-2xl overflow-hidden transition-all active:scale-95"
               onClick={() => navigate("/app/profile")}
               style={{
-                border: `2px solid ${SOLAR.orange}`,
-                boxShadow: `0 0 0 3px ${SOLAR.glow}`,
+                border: `2px solid ${S.orange}`,
+                boxShadow: `0 0 0 3px ${S.glow}`,
               }}
             >
               <div
-                className="w-full h-full flex items-center justify-center text-sm font-bold"
+                className="w-full h-full flex items-center justify-center font-display text-sm"
                 style={{
-                  background: `linear-gradient(135deg, ${SOLAR.orange}, ${SOLAR.amber})`,
+                  fontWeight: 800,
+                  background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
                   color: "#fff",
                 }}
               >
@@ -284,19 +310,29 @@ const AppDashboard = () => {
         </div>
       </header>
 
-      {/* ═══ GREETING ═══ */}
-      <section className="px-5 pt-2 pb-4">
+      {/* ═══ HERO GREETING ═══ */}
+      <section className="px-5 pt-4 pb-3">
         <div className="max-w-lg mx-auto">
           <motion.h1
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="text-2xl mb-1"
-            style={{ fontWeight: 900, color: SOLAR.text, letterSpacing: "-0.3px" }}
+            transition={{ duration: 0.5 }}
+            className="font-display text-[26px] mb-1"
+            style={{
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+              background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
           >
             Bora pra cima, {userName}! 🚀
           </motion.h1>
-          <p className="text-sm" style={{ color: SOLAR.textMuted, fontWeight: 400 }}>
+          <p
+            className="text-[13px]"
+            style={{ color: S.textMuted, fontWeight: 400, letterSpacing: "0.02em" }}
+          >
             {todayWorkout
               ? `Hoje é dia de ${todayWorkout.name.toLowerCase().includes("cardio") ? "cardio pesado" : "moer os inferiores"}!`
               : "Seu corpo agradece cada treino 💛"}
@@ -316,33 +352,32 @@ const AppDashboard = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.04 }}
-                className="flex-1 text-center py-2.5 rounded-2xl transition-all"
+                className="flex-1 text-center py-2.5 transition-all"
                 style={{
-                  backgroundColor: isToday
-                    ? SOLAR.orange
-                    : isDone
-                    ? "#FFF7ED"
-                    : SOLAR.card,
-                  border: `1px solid ${isToday ? SOLAR.orange : isDone ? "#FDBA74" : SOLAR.cardBorder}`,
-                  boxShadow: isToday ? `0 4px 16px ${SOLAR.glowStrong}` : "0 1px 3px rgba(0,0,0,0.03)",
+                  borderRadius: "1rem",
+                  backgroundColor: isToday ? S.orange : isDone ? "#FFF7ED" : S.card,
+                  border: `1px solid ${isToday ? S.orange : isDone ? "#FDBA74" : S.cardBorder}`,
+                  boxShadow: isToday
+                    ? `0 4px 20px ${S.glowStrong}`
+                    : `0 1px 4px rgba(234,88,12,0.04)`,
                 }}
               >
                 <div
                   className="text-[9px] font-bold uppercase tracking-wider mb-0.5"
-                  style={{ color: isToday ? "#fff" : SOLAR.textMuted }}
+                  style={{ color: isToday ? "#fff" : S.textMuted, fontFamily: "'Inter', sans-serif" }}
                 >
                   {d.day}
                 </div>
                 {d.rest ? (
                   <span className="text-xs">😴</span>
                 ) : isDone ? (
-                  <span className="text-xs" style={{ color: SOLAR.orange }}>✓</span>
+                  <span className="text-xs" style={{ color: S.orange }}>✓</span>
                 ) : isToday ? (
                   <Flame size={14} className="mx-auto" style={{ color: "#fff" }} />
                 ) : (
                   <div
                     className="w-1.5 h-1.5 rounded-full mx-auto"
-                    style={{ backgroundColor: SOLAR.cardBorder }}
+                    style={{ backgroundColor: S.cardBorder }}
                   />
                 )}
               </motion.div>
@@ -355,42 +390,44 @@ const AppDashboard = () => {
       <section className="px-5 mb-5">
         <div className="max-w-lg mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="relative overflow-hidden rounded-[2rem] p-5"
+            className="relative overflow-hidden p-5"
             style={{
-              background: `linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 40%, #FED7AA 100%)`,
-              border: `1px solid rgba(251,191,36,0.3)`,
-              boxShadow: `0 8px 32px ${SOLAR.glow}, inset 0 1px 0 rgba(255,255,255,0.6)`,
+              borderRadius: "3rem",
+              background: "linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 40%, #FED7AA 100%)",
+              border: "1px solid rgba(251,191,36,0.25)",
+              boxShadow: `0 8px 40px ${S.glow}, inset 0 1px 0 rgba(255,255,255,0.7)`,
             }}
           >
-            {/* Decorative glow orb */}
+            {/* Decorative blur orb */}
             <div
-              className="absolute -top-8 -right-8 w-32 h-32 rounded-full"
+              className="absolute -top-10 -right-10 w-40 h-40 rounded-full"
               style={{
-                background: `radial-gradient(circle, ${SOLAR.glowStrong} 0%, transparent 70%)`,
-                filter: "blur(20px)",
+                background: `radial-gradient(circle, ${S.glowStrong} 0%, transparent 70%)`,
+                filter: "blur(30px)",
               }}
             />
 
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div>
                 <h3
-                  className="text-base mb-0.5"
-                  style={{ fontWeight: 800, color: SOLAR.text, letterSpacing: "-0.2px" }}
+                  className="font-display text-base mb-0.5"
+                  style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}
                 >
                   Mapa Muscular
                 </h3>
-                <p className="text-xs" style={{ color: SOLAR.textSub }}>
+                <p className="text-[11px]" style={{ color: S.textSub }}>
                   Últimos 7 dias de atividade
                 </p>
               </div>
               <div
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold"
                 style={{
+                  borderRadius: "0.75rem",
                   backgroundColor: "rgba(234,88,12,0.12)",
-                  color: SOLAR.orange,
+                  color: S.orange,
                 }}
               >
                 <Target size={12} />
@@ -399,74 +436,50 @@ const AppDashboard = () => {
             </div>
 
             <div className="flex items-center gap-5 relative z-10">
-              {/* Body map */}
               <div className="flex-shrink-0">
                 <BodyMap muscleMap={muscleMap} statusColor={muscleStatusColor} />
               </div>
 
-              {/* Legend + Progress */}
               <div className="flex-1 space-y-2.5">
-                {(() => {
-                  const statusGroups: Record<MuscleStatus, string[]> = { today: [], recent: [], recovering: [], none: [] };
-                  const muscleLabels: Record<string, string> = {
-                    chest: "Peito", shoulders: "Ombros", arms: "Braços",
-                    back: "Costas", abs: "Abdome", glutes: "Glúteos",
-                    legs: "Pernas", calves: "Panturrilha",
-                  };
-                  Object.entries(muscleMap).forEach(([m, s]) => statusGroups[s].push(muscleLabels[m] || m));
-
-                  const items = [
-                    { status: "today" as MuscleStatus, label: "Treinado hoje", color: "#F97316" },
-                    { status: "recent" as MuscleStatus, label: "Últimos 2 dias", color: "#FBBF24" },
-                    { status: "recovering" as MuscleStatus, label: "Recuperando", color: "#D97706" },
-                    { status: "none" as MuscleStatus, label: "Não treinado", color: "#D6D3D1" },
-                  ];
-
-                  return items
-                    .filter(item => statusGroups[item.status].length > 0)
-                    .map((item, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div
-                          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                          style={{
-                            backgroundColor: item.color,
-                            boxShadow: item.status !== "none" ? `0 0 6px ${item.color}50` : "none",
-                          }}
-                        />
-                        <div>
-                          <div className="text-[11px] font-semibold" style={{ color: SOLAR.text }}>
-                            {item.label}
-                          </div>
-                          <div className="text-[10px]" style={{ color: SOLAR.textMuted }}>
-                            {statusGroups[item.status].join(", ")}
-                          </div>
-                        </div>
+                {legendItems.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor: item.color,
+                        boxShadow: item.status !== "none" ? `0 0 8px ${item.color}60` : "none",
+                      }}
+                    />
+                    <div>
+                      <div className="text-[11px] font-semibold" style={{ color: S.text }}>
+                        {item.label}
                       </div>
-                    ));
-                })()}
+                      <div className="text-[10px]" style={{ color: S.textMuted }}>
+                        {statusGroups[item.status].join(", ")}
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
-                {/* Weekly Goal Progress Bar */}
+                {/* Weekly Goal Progress */}
                 <div className="pt-2">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: SOLAR.textSub }}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: S.textSub }}>
                       Meta Semanal
                     </span>
-                    <span className="text-[10px] font-bold" style={{ color: SOLAR.orange }}>
+                    <span className="text-[10px] font-bold" style={{ color: S.orange }}>
                       {weeklyProgress}%
                     </span>
                   </div>
-                  <div
-                    className="h-2 rounded-full overflow-hidden"
-                    style={{ backgroundColor: "rgba(234,88,12,0.1)" }}
-                  >
+                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(234,88,12,0.1)" }}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${weeklyProgress}%` }}
-                      transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                      transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
                       className="h-full rounded-full"
                       style={{
-                        background: `linear-gradient(90deg, ${SOLAR.amber}, ${SOLAR.orange})`,
-                        boxShadow: `0 0 8px ${SOLAR.glowStrong}`,
+                        background: `linear-gradient(90deg, ${S.amber}, ${S.orange})`,
+                        boxShadow: `0 0 10px ${S.glowStrong}`,
                       }}
                     />
                   </div>
@@ -491,35 +504,40 @@ const AppDashboard = () => {
                   ? navigate(`/app/workout-detail/${todayWorkout.workoutId}`)
                   : navigate("/app/workouts")
               }
-              className="w-full relative overflow-hidden rounded-[2rem] p-5 text-left transition-all"
+              className="w-full relative overflow-hidden p-5 text-left transition-all"
               style={{
-                background: `linear-gradient(135deg, ${SOLAR.orange} 0%, ${SOLAR.terracotta} 100%)`,
-                boxShadow: `0 8px 32px ${SOLAR.glowStrong}`,
+                borderRadius: "3rem",
+                background: `linear-gradient(135deg, ${S.orange} 0%, ${S.terracotta} 100%)`,
+                boxShadow: `0 12px 40px ${S.glowStrong}`,
               }}
             >
               <div
-                className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full opacity-30"
+                className="absolute -bottom-6 -right-6 w-28 h-28 rounded-full opacity-30"
                 style={{ background: "radial-gradient(circle, rgba(255,255,255,0.4), transparent)" }}
               />
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-2">
                   <Flame size={14} style={{ color: "#FDE68A" }} />
                   <span
-                    className="text-[10px] uppercase tracking-widest font-bold"
+                    className="text-[10px] uppercase tracking-[0.15em] font-bold"
                     style={{ color: "#FDE68A" }}
                   >
                     Treino de Hoje
                   </span>
                 </div>
-                <h3 className="text-xl font-black text-white mb-1 tracking-tight">
+                <h3
+                  className="font-display text-xl text-white mb-1"
+                  style={{ fontWeight: 800, letterSpacing: "-0.02em" }}
+                >
                   {todayWorkout.name}
                 </h3>
                 <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.75)" }}>
                   {todayWorkout.duration} min · {todayWorkout.exercises} exercícios · ~320 kcal
                 </p>
                 <div
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold transition-all"
                   style={{
+                    borderRadius: "1.5rem",
                     backgroundColor: "rgba(255,255,255,0.2)",
                     backdropFilter: "blur(8px)",
                     color: "#fff",
@@ -541,52 +559,36 @@ const AppDashboard = () => {
           {menuItems.map((item, i) => (
             <motion.button
               key={i}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + i * 0.06 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(item.route)}
-              className="relative p-4 rounded-[1.5rem] text-left transition-all group"
+              className="relative p-4 text-left transition-all group"
               style={{
-                backgroundColor: SOLAR.card,
-                border: `1px solid ${SOLAR.cardBorder}`,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                borderRadius: "1.5rem",
+                backgroundColor: S.card,
+                border: `1px solid ${S.cardBorder}`,
+                boxShadow: `0 2px 12px rgba(234,88,12,0.05)`,
               }}
             >
               <div className="flex items-center justify-between mb-3">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{
-                    background: i === 0
-                      ? `linear-gradient(135deg, #FFF7ED, #FFEDD5)`
-                      : i === 1
-                      ? "linear-gradient(135deg, #FEF3C7, #FDE68A)"
-                      : i === 2
-                      ? "linear-gradient(135deg, #FFF1F2, #FECDD3)"
-                      : "linear-gradient(135deg, #FFF7ED, #FED7AA)",
-                  }}
+                  style={{ background: item.gradient }}
                 >
-                  <item.icon
-                    size={18}
-                    style={{
-                      color: i === 0 ? SOLAR.orange
-                        : i === 1 ? SOLAR.amber
-                        : i === 2 ? SOLAR.coral
-                        : SOLAR.terracotta,
-                    }}
-                    strokeWidth={2.5}
-                  />
+                  <item.icon size={18} style={{ color: item.iconColor }} strokeWidth={2.5} />
                 </div>
                 <ChevronRight
                   size={14}
-                  style={{ color: SOLAR.cardBorder }}
+                  style={{ color: S.cardBorder }}
                   className="group-hover:translate-x-0.5 transition-transform"
                 />
               </div>
-              <p className="text-sm mb-0.5" style={{ fontWeight: 700, color: SOLAR.text }}>
+              <p className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
                 {item.title}
               </p>
-              <p className="text-[11px]" style={{ color: SOLAR.textMuted }}>
+              <p className="text-[11px]" style={{ color: S.textMuted }}>
                 {item.sub}
               </p>
             </motion.button>
@@ -594,17 +596,93 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ HIGHLIGHT BANNER — PROJETO VERÃO ═══ */}
+      {/* ═══ PREMIUM CTA — LEG DAY INTENSO ═══ */}
       <section className="px-5 mb-6">
         <div className="max-w-lg mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.55 }}
-            className="relative overflow-hidden rounded-[2rem] p-5"
+            className="relative overflow-hidden p-6"
             style={{
-              background: `linear-gradient(135deg, ${SOLAR.terracotta} 0%, ${SOLAR.orange} 50%, ${SOLAR.amber} 100%)`,
-              boxShadow: `0 6px 24px ${SOLAR.glowStrong}`,
+              borderRadius: "3rem",
+              background: "linear-gradient(135deg, #18181B 0%, #27272A 60%, #3F3F46 100%)",
+              boxShadow: `0 8px 32px rgba(0,0,0,0.25), 0 0 60px ${S.glow}`,
+            }}
+          >
+            {/* Subtle gradient overlay */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `radial-gradient(ellipse at 80% 20%, rgba(234,88,12,0.12) 0%, transparent 60%)`,
+                pointerEvents: "none",
+              }}
+            />
+            {/* Inner border glow */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                borderRadius: "3rem",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+                    boxShadow: `0 0 20px ${S.glowStrong}`,
+                  }}
+                >
+                  <Zap size={16} style={{ color: "#fff" }} strokeWidth={2.5} />
+                </div>
+                <span
+                  className="text-[10px] uppercase font-bold tracking-[0.15em]"
+                  style={{ color: S.amber }}
+                >
+                  Desafio Especial
+                </span>
+              </div>
+              <h3
+                className="font-display text-xl text-white mb-1.5"
+                style={{ fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.04em" }}
+              >
+                LEG DAY INTENSO
+              </h3>
+              <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Protocolo avançado de glúteos & posterior. 45 min de pura intensidade.
+              </p>
+              <button
+                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 transition-all active:scale-95"
+                style={{
+                  borderRadius: "1.25rem",
+                  background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+                  color: "#fff",
+                  boxShadow: `0 4px 20px ${S.glowStrong}`,
+                }}
+              >
+                Aceitar Desafio
+                <Sparkles size={12} />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ HIGHLIGHT — PROJETO VERÃO ═══ */}
+      <section className="px-5 mb-6">
+        <div className="max-w-lg mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.65 }}
+            className="relative overflow-hidden p-5"
+            style={{
+              borderRadius: "3rem",
+              background: `linear-gradient(135deg, ${S.terracotta} 0%, ${S.orange} 50%, ${S.amber} 100%)`,
+              boxShadow: `0 6px 28px ${S.glowStrong}`,
             }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
@@ -616,25 +694,23 @@ const AppDashboard = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar size={14} style={{ color: "#FDE68A" }} />
-                <span
-                  className="text-[10px] uppercase tracking-widest font-bold"
-                  style={{ color: "#FDE68A" }}
-                >
-                  Desafio Especial
+                <span className="text-[10px] uppercase tracking-[0.15em] font-bold" style={{ color: "#FDE68A" }}>
+                  Programa Completo
                 </span>
               </div>
               <h3
-                className="text-lg text-white mb-1"
-                style={{ fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.5px" }}
+                className="font-display text-lg text-white mb-1"
+                style={{ fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.04em" }}
               >
                 PROJETO VERÃO 2026
               </h3>
               <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.7)" }}>
-                12 semanas para transformar seu shape. Programa completo com treinos, nutrição e comunidade.
+                12 semanas para transformar seu shape. Treinos, nutrição e comunidade.
               </p>
               <div
-                className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl"
+                className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2"
                 style={{
+                  borderRadius: "1rem",
                   backgroundColor: "rgba(255,255,255,0.2)",
                   color: "#fff",
                   backdropFilter: "blur(4px)",
@@ -649,14 +725,14 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ BOTTOM TAB BAR — Glassmorphism ═══ */}
+      {/* ═══ BOTTOM TAB BAR — Floating Glassmorphism ═══ */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-30"
         style={{
-          backgroundColor: "rgba(248,245,242,0.85)",
-          backdropFilter: "blur(24px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.8)",
-          borderTop: `1px solid ${SOLAR.cardBorder}`,
+          backgroundColor: "rgba(253,252,251,0.82)",
+          backdropFilter: "blur(32px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(32px) saturate(1.8)",
+          borderTop: `1px solid ${S.cardBorder}`,
         }}
       >
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-7">
@@ -667,19 +743,28 @@ const AppDashboard = () => {
               className="flex flex-col items-center gap-0.5 py-1 px-3 transition-all active:scale-95"
             >
               <div className="relative">
+                {item.active && (
+                  <div
+                    className="absolute inset-0 -m-1.5 rounded-lg"
+                    style={{
+                      backgroundColor: "rgba(234,88,12,0.08)",
+                    }}
+                  />
+                )}
                 <item.icon
                   size={20}
                   style={{
-                    color: item.active ? SOLAR.orange : SOLAR.textMuted,
+                    color: item.active ? S.orange : S.textMuted,
                     strokeWidth: item.active ? 2.5 : 1.8,
+                    position: "relative",
                   }}
                 />
                 {item.active && (
                   <div
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
                     style={{
-                      backgroundColor: SOLAR.orange,
-                      boxShadow: `0 0 6px ${SOLAR.orange}`,
+                      backgroundColor: S.orange,
+                      boxShadow: `0 0 8px ${S.orange}`,
                     }}
                   />
                 )}
@@ -687,7 +772,7 @@ const AppDashboard = () => {
               <span
                 className="text-[10px]"
                 style={{
-                  color: item.active ? SOLAR.orange : SOLAR.textMuted,
+                  color: item.active ? S.orange : S.textMuted,
                   fontWeight: item.active ? 700 : 500,
                 }}
               >
