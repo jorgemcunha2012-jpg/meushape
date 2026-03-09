@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { BodyMap } from "@/components/BodyMap";
 
 interface WeekDay {
   day: string;
@@ -358,23 +359,9 @@ const AppDashboard = () => {
               <span className="text-xs text-muted-foreground">Últimos 7 dias</span>
             </div>
             <div className="flex items-center gap-4">
-              {/* SVG Silhouette */}
-              <div className="relative w-20 h-32 flex-shrink-0">
-                <svg viewBox="0 0 100 160" className="w-full h-full">
-                  <ellipse cx="50" cy="14" rx="11" ry="13" fill="hsl(var(--muted))" />
-                  <rect x="46" y="26" width="8" height="6" rx="2" fill="hsl(var(--muted))" />
-                  <ellipse cx="50" cy="42" rx="22" ry="14" fill={muscleStatusColor(muscleMap.chest)} opacity="0.85" />
-                  <ellipse cx="26" cy="48" rx="5" ry="16" fill={muscleStatusColor(muscleMap.arms)} opacity="0.85" transform="rotate(-8, 26, 48)" />
-                  <ellipse cx="74" cy="48" rx="5" ry="16" fill={muscleStatusColor(muscleMap.arms)} opacity="0.85" transform="rotate(8, 74, 48)" />
-                  <ellipse cx="38" cy="34" rx="8" ry="6" fill={muscleStatusColor(muscleMap.shoulders)} opacity="0.85" />
-                  <ellipse cx="62" cy="34" rx="8" ry="6" fill={muscleStatusColor(muscleMap.shoulders)} opacity="0.85" />
-                  <ellipse cx="50" cy="62" rx="16" ry="10" fill={muscleStatusColor(muscleMap.abs)} opacity="0.85" />
-                  <ellipse cx="50" cy="78" rx="20" ry="10" fill={muscleStatusColor(muscleMap.glutes)} opacity="0.85" />
-                  <ellipse cx="40" cy="105" rx="9" ry="24" fill={muscleStatusColor(muscleMap.legs)} opacity="0.85" />
-                  <ellipse cx="60" cy="105" rx="9" ry="24" fill={muscleStatusColor(muscleMap.legs)} opacity="0.85" />
-                  <ellipse cx="40" cy="137" rx="6" ry="14" fill={muscleStatusColor(muscleMap.calves)} opacity="0.85" />
-                  <ellipse cx="60" cy="137" rx="6" ry="14" fill={muscleStatusColor(muscleMap.calves)} opacity="0.85" />
-                </svg>
+              {/* Anatomical Body Map – Front + Back */}
+              <div className="flex-shrink-0">
+                <BodyMap muscleMap={muscleMap} statusColor={muscleStatusColor} />
               </div>
               {/* Legend */}
               <div className="flex-1 space-y-2">
