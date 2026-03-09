@@ -44,6 +44,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSubscriptionLoading(false);
       return;
     }
+
+    // Don't call if no authenticated session exists
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (!currentSession?.access_token) {
+      setSubscribed(false);
+      setSubscriptionLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
