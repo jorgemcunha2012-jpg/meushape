@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const checkSubscription = useCallback(async () => {
     try {
