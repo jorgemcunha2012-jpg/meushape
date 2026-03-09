@@ -6,97 +6,111 @@
 
 @layer base {
   :root {
-    --background: 225 15% 7%;
-    --foreground: 0 0% 100%;
+    /* Meu Shape Color Scheme */
+    --background: 220 25% 5%; /* #0D0D12 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
 
-    --card: 225 15% 9%;
+    --card: 220 20% 8%; /* #16161F */
     --card-foreground: 0 0% 100%;
 
-    --popover: 225 15% 9%;
+    --popover: 220 20% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 350 85% 60%;
+    --primary: 350 85% 60%; /* #E94560 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 15% 15%;
+    --secondary: 220 15% 15%; /* #1E1E2A */
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 225 12% 18%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 220 15% 16%; /* #2A2A3A */
+    --muted-foreground: 220 15% 55%; /* #8B8B9E */
 
-    --accent: 350 85% 60%;
+    --accent: 350 85% 60%; /* #E94560 */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 225 15% 16%;
-    --input: 225 15% 16%;
+    --border: 220 15% 16%; /* #2A2A3A */
+    --input: 220 15% 16%;
     --ring: 350 85% 60%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 225 15% 7%;
+    --sidebar-background: 220 25% 5%;
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 350 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 15% 15%;
+    --sidebar-accent: 220 15% 15%;
     --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 225 15% 16%;
+    --sidebar-border: 220 15% 16%;
     --sidebar-ring: 350 85% 60%;
 
-    --success: 158 64% 52%;
+    /* Custom Meu Shape colors */
+    --success: 172 76% 42%; /* #16C79A */
     --success-foreground: 0 0% 100%;
-    --warning: 43 96% 56%;
+    --warning: 43 96% 56%; /* #F5A623 */
     --warning-foreground: 0 0% 100%;
-    --info: 220 91% 61%;
+    --info: 220 91% 61%; /* #3B82F6 */
     --info-foreground: 0 0% 100%;
+    --orange: 14 100% 59%; /* #FF6B35 */
+    --purple: 245 91% 69%; /* #6C63FF */
+    
+    /* Text variations */
+    --text-muted: 220 15% 55%; /* #8B8B9E */
+    --text-dim: 220 15% 43%; /* #5A5A6E */
+    
+    /* Glow effects */
+    --accent-glow: 350 85% 60% / 0.3;
+    --success-glow: 172 76% 42% / 0.15;
   }
 
   .dark {
-    --background: 225 15% 7%;
+    --background: 220 25% 5%; /* #0D0D12 */
     --foreground: 0 0% 100%;
 
-    --card: 225 15% 9%;
+    --card: 220 20% 8%; /* #16161F */
     --card-foreground: 0 0% 100%;
 
-    --popover: 225 15% 9%;
+    --popover: 220 20% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 350 85% 60%;
+    --primary: 350 85% 60%; /* #E94560 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 15% 15%;
+    --secondary: 220 15% 15%; /* #1E1E2A */
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 225 12% 18%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 220 15% 16%; /* #2A2A3A */
+    --muted-foreground: 220 15% 55%; /* #8B8B9E */
 
-    --accent: 350 85% 60%;
+    --accent: 350 85% 60%; /* #E94560 */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 225 15% 16%;
-    --input: 225 15% 16%;
+    --border: 220 15% 16%; /* #2A2A3A */
+    --input: 220 15% 16%;
     --ring: 350 85% 60%;
 
-    --sidebar-background: 225 15% 7%;
+    --sidebar-background: 220 25% 5%;
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 350 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 15% 15%;
+    --sidebar-accent: 220 15% 15%;
     --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 225 15% 16%;
+    --sidebar-border: 220 15% 16%;
     --sidebar-ring: 350 85% 60%;
 
-    --success: 158 64% 52%;
+    --success: 172 76% 42%; /* #16C79A */
     --success-foreground: 0 0% 100%;
-    --warning: 43 96% 56%;
+    --warning: 43 96% 56%; /* #F5A623 */
     --warning-foreground: 0 0% 100%;
-    --info: 220 91% 61%;
+    --info: 220 91% 61%; /* #3B82F6 */
     --info-foreground: 0 0% 100%;
+    --orange: 14 100% 59%; /* #FF6B35 */
+    --purple: 245 91% 69%; /* #6C63FF */
   }
 }
 

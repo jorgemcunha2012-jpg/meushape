@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Dumbbell, Flame, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 
 interface Workout {
   id: string;
@@ -56,21 +56,26 @@ const levelLabel = (level: number) => {
 };
 
 const levelColor = (level: number) => {
-  if (level <= 1) return "text-success bg-success/10";
-  if (level <= 2) return "text-warning bg-warning/10";
-  return "text-primary bg-primary/10";
+  if (level <= 1) return { text: "#16C79A", bg: "rgba(22,199,154,0.13)" };
+  if (level <= 2) return { text: "#F5A623", bg: "rgba(245,166,35,0.13)" };
+  return { text: "#E94560", bg: "rgba(233,69,96,0.13)" };
+};
+
+const cardioIcon = (type: string) => {
+  if (type === "hiit") return "🔥";
+  if (type === "liss") return "🚶‍♀️";
+  return "🏃‍♀️";
 };
 
 const AppWorkoutDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   const [tab, setTab] = useState<TabId>("plano");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [cardioProtocols, setCardioProtocols] = useState<CardioProtocol[]>([]);
   const [homeTemplates, setHomeTemplates] = useState<HomeTemplate[]>([]);
   const [stretches, setStretches] = useState<StretchSession[]>([]);
-  const [programLevel, setProgramLevel] = useState("");
   const [cyclePhase, setCyclePhase] = useState("");
   const [cycleWeek, setCycleWeek] = useState(0);
 
@@ -85,7 +90,6 @@ const AppWorkoutDashboard = () => {
   }, [user, subscribed, subscriptionLoading, navigate]);
 
   const fetchAllData = async () => {
-    // Fetch all data in parallel
     const [programRes, cardioRes, homeRes, stretchRes] = await Promise.all([
       supabase.from("workout_programs").select("*").eq("is_active", true).limit(1),
       supabase.from("cardio_protocols").select("*").eq("active", true),
@@ -95,13 +99,10 @@ const AppWorkoutDashboard = () => {
 
     if (programRes.data && programRes.data.length > 0) {
       const prog = programRes.data[0];
-      setProgramLevel(prog.level);
-
       const [workoutRes, cycleRes] = await Promise.all([
         supabase.from("workouts").select("*").eq("program_id", prog.id).order("sort_order"),
         supabase.from("progression_cycles").select("phase, current_week").eq("user_id", user!.id).eq("program_id", prog.id).single(),
       ]);
-
       if (workoutRes.data) setWorkouts(workoutRes.data);
       if (cycleRes.data) {
         setCyclePhase(cycleRes.data.phase);
@@ -117,7 +118,7 @@ const AppWorkoutDashboard = () => {
   const todayIndex = new Date().getDay();
   const phaseNames: Record<string, string> = {
     adaptation: "Adaptação", building: "Construção",
-    intensify: "Intensificação", peak: "Pico", deload: "Deload"
+    intensify: "Intensificação", peak: "Pico", deload: "Deload",
   };
 
   return (
@@ -132,7 +133,7 @@ const AppWorkoutDashboard = () => {
         </div>
       </header>
 
-      {/* Tab bar */}
+      {/* Tab Bar — Meu Shape style */}
       <section className="px-5 py-4">
         <div className="max-w-lg mx-auto">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
@@ -140,12 +141,14 @@ const AppWorkoutDashboard = () => {
               <motion.button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
-                  tab === t.id 
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-                    : "bg-card border border-border text-muted-foreground"
-                }`}
                 whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all"
+                style={{
+                  background: tab === t.id ? "hsl(var(--primary))" : "hsl(var(--card))",
+                  color: tab === t.id ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                  border: tab === t.id ? "none" : "1px solid hsl(var(--border))",
+                  boxShadow: tab === t.id ? "0 4px 16px hsla(350 85% 60% / 0.25)" : "none",
+                }}
               >
                 <span className="text-sm">{t.icon}</span>
                 {t.label}
@@ -176,11 +179,15 @@ const AppWorkoutDashboard = () => {
                     onClick={() => navigate(`/app/workout-detail/${workout.id}`)}
                     className="w-full flex items-center gap-3 py-3.5 border-b border-border text-left"
                   >
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
-                      isToday 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-card border border-border text-muted-foreground"
-                    }`}>
+                    <div 
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold shrink-0"
+                      style={{
+                        background: isToday ? "hsl(var(--primary))" : "hsl(var(--card))",
+                        color: isToday ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                        border: isToday ? "none" : "1px solid hsl(var(--border))",
+                        boxShadow: isToday ? "0 4px 12px hsla(350 85% 60% / 0.3)" : "none",
+                      }}
+                    >
                       {String.fromCharCode(65 + i)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -189,15 +196,25 @@ const AppWorkoutDashboard = () => {
                         <p className="text-xs text-muted-foreground truncate">{workout.description}</p>
                       )}
                     </div>
-                    {isToday && (
-                      <span className="text-xs font-semibold bg-primary text-primary-foreground px-2.5 py-1 rounded-lg">
+                    {isToday ? (
+                      <span 
+                        className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                        style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                      >
                         HOJE
                       </span>
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                     )}
-                    {!isToday && <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
                   </motion.button>
                 );
               })}
+              {workouts.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <span className="text-3xl mb-3 block">📋</span>
+                  <p className="text-sm">Nenhum plano de treino disponível</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -209,31 +226,40 @@ const AppWorkoutDashboard = () => {
           <div className="max-w-lg mx-auto">
             <p className="text-xs text-muted-foreground mb-4">Protocolos de cardio guiado com velocidade e inclinação em tempo real</p>
             <div className="space-y-3">
-              {cardioProtocols.map((protocol, i) => (
-                <motion.button
-                  key={protocol.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  onClick={() => navigate(`/app/cardio/${protocol.id}`)}
-                  className="w-full bg-card border border-border rounded-2xl p-4 text-left hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-2xl">
-                      {protocol.protocol_type === 'hiit' ? '🔥' : protocol.protocol_type === 'liss' ? '🚶‍♀️' : '🏃‍♀️'}
-                    </span>
-                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-md ${levelColor(protocol.difficulty_level)}`}>
-                      {levelLabel(protocol.difficulty_level)}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-sm mb-0.5">{protocol.name_pt}</h3>
-                  <p className="text-xs text-muted-foreground mb-2">{protocol.equipment}</p>
-                  <div className="flex gap-3 text-xs text-muted-foreground">
-                    <span>⏱️ {protocol.total_duration_min} min</span>
-                    {protocol.estimated_calories && <span>🔥 {protocol.estimated_calories} kcal</span>}
-                  </div>
-                </motion.button>
-              ))}
+              {cardioProtocols.map((protocol, i) => {
+                const lc = levelColor(protocol.difficulty_level);
+                return (
+                  <motion.button
+                    key={protocol.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => navigate(`/app/cardio/${protocol.id}`)}
+                    className="w-full rounded-2xl p-4 text-left transition-all"
+                    style={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-2xl">{cardioIcon(protocol.protocol_type)}</span>
+                      <span 
+                        className="text-[10px] font-semibold px-2 py-1 rounded-md"
+                        style={{ color: lc.text, background: lc.bg }}
+                      >
+                        {levelLabel(protocol.difficulty_level)}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm mb-0.5 text-foreground">{protocol.name_pt}</h3>
+                    <p className="text-xs text-muted-foreground mb-2">{protocol.equipment}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground">
+                      <span>⏱️ {protocol.total_duration_min} min</span>
+                      {protocol.estimated_calories && <span>🔥 {protocol.estimated_calories} kcal</span>}
+                    </div>
+                  </motion.button>
+                );
+              })}
               {cardioProtocols.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   <span className="text-3xl mb-3 block">🏃‍♀️</span>
@@ -251,29 +277,37 @@ const AppWorkoutDashboard = () => {
           <div className="max-w-lg mx-auto">
             <p className="text-xs text-muted-foreground mb-4">Treinos completos sem precisar de academia</p>
             <div className="space-y-3">
-              {homeTemplates.map((template, i) => (
-                <motion.button
-                  key={template.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  onClick={() => navigate(`/app/home-workout/${template.id}`)}
-                  className="w-full bg-card border border-border rounded-2xl p-4 text-left hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-2xl">💪</span>
-                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-md ${levelColor(template.difficulty_level)}`}>
-                      {levelLabel(template.difficulty_level)}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-sm mb-0.5">{template.name_pt}</h3>
-                  <p className="text-xs text-muted-foreground mb-2">{template.category}</p>
-                  <div className="flex gap-3 text-xs text-muted-foreground">
-                    <span>⏱️ {template.duration_min} min</span>
-                    <span>🎯 {template.equipment}</span>
-                  </div>
-                </motion.button>
-              ))}
+              {homeTemplates.map((template, i) => {
+                const lc = levelColor(template.difficulty_level);
+                return (
+                  <motion.button
+                    key={template.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => navigate(`/app/home-workout/${template.id}`)}
+                    className="w-full rounded-2xl p-4 text-left"
+                    style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-2xl">💪</span>
+                      <span 
+                        className="text-[10px] font-semibold px-2 py-1 rounded-md"
+                        style={{ color: lc.text, background: lc.bg }}
+                      >
+                        {levelLabel(template.difficulty_level)}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm mb-0.5 text-foreground">{template.name_pt}</h3>
+                    <p className="text-xs text-muted-foreground mb-2">{template.category}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground">
+                      <span>⏱️ {template.duration_min} min</span>
+                      <span>🎯 {template.equipment}</span>
+                    </div>
+                  </motion.button>
+                );
+              })}
               {homeTemplates.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   <span className="text-3xl mb-3 block">🏠</span>
@@ -289,7 +323,7 @@ const AppWorkoutDashboard = () => {
       {tab === "along" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            <p className="text-xs text-muted-foreground mb-4">Alongamento e mobilidade — gerado baseado no seu treino</p>
+            <p className="text-xs text-muted-foreground mb-4">Alongamento e mobilidade — baseado no seu treino</p>
             <div className="space-y-3">
               {stretches.map((stretch, i) => (
                 <motion.div
@@ -297,15 +331,19 @@ const AppWorkoutDashboard = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-card border border-border rounded-2xl p-4"
+                  className="rounded-2xl p-4"
+                  style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-2xl">🧘‍♀️</span>
-                    <span className="text-[10px] font-semibold px-2 py-1 rounded-md text-info bg-info/10">
+                    <span 
+                      className="text-[10px] font-semibold px-2 py-1 rounded-md"
+                      style={{ color: "#6C63FF", background: "rgba(108,99,255,0.13)" }}
+                    >
                       {stretch.type}
                     </span>
                   </div>
-                  <h3 className="font-bold text-sm mb-0.5">{stretch.name_pt}</h3>
+                  <h3 className="font-bold text-sm mb-0.5 text-foreground">{stretch.name_pt}</h3>
                   <p className="text-xs text-muted-foreground mb-2">
                     {stretch.target_muscles.join(", ")}
                   </p>
@@ -337,13 +375,17 @@ const AppWorkoutDashboard = () => {
             <span className="text-[10px] font-semibold text-primary">Treinos</span>
             <div className="w-1 h-1 rounded-full bg-primary" />
           </button>
+          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg opacity-50 grayscale">👥</span>
+            <span className="text-[10px] text-muted-foreground">Social</span>
+          </button>
           <button onClick={() => navigate("/app/history")} className="flex flex-col items-center gap-1 py-1 px-3">
             <span className="text-lg opacity-50 grayscale">📊</span>
             <span className="text-[10px] text-muted-foreground">Progresso</span>
           </button>
-          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👥</span>
-            <span className="text-[10px] text-muted-foreground">Social</span>
+          <button className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg opacity-50 grayscale">👤</span>
+            <span className="text-[10px] text-muted-foreground">Perfil</span>
           </button>
         </div>
       </nav>
