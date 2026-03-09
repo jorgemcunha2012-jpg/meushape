@@ -482,6 +482,26 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
       curatedMap[ex.id] = ex;
     }
 
+    // Helper: fetch GIF from ExerciseDB API as fallback
+    async function fetchGifFallback(namePt: string): Promise<string | null> {
+      try {
+        // Normalize portuguese name to ASCII for better matching
+        const normalized = namePt
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[^a-z0-9 ]/g, "")
+          .trim();
+        const url = `https://www.exercisedb.dev/api/v1/exercises/search?q=${encodeURIComponent(normalized)}&limit=1`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json?.data?.[0]?.gifUrl || null;
+      } catch {
+        return null;
+      }
+    }
+
     // Create workouts and exercises
     for (const wk of plan.workouts) {
       const { data: workout, error: wkErr } = await supabase
@@ -497,19 +517,26 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
 
       if (wkErr) throw wkErr;
 
-      const exerciseInserts = (wk.exercises || []).map((ex: any) => {
-        const curated = curatedMap[ex.curated_exercise_id];
-        return {
-          workout_id: workout.id,
-          name: ex.name,
-          sets: ex.sets,
-          reps: ex.reps,
-          rest_seconds: ex.rest_seconds,
-          sort_order: ex.sort_order,
-          image_url: curated?.gif_url || null,
-          description: curated?.simple_instruction_pt || null,
-        };
-      });
+      // Resolve GIFs in parallel (with fallback to ExerciseDB API)
+      const exerciseInserts = await Promise.all(
+        (wk.exercises || []).map(async (ex: any) => {
+          const curated = curatedMap[ex.curated_exercise_id];
+          let gif_url = curated?.gif_url || null;
+          if (!gif_url) {
+            gif_url = await fetchGifFallback(ex.name);
+          }
+          return {
+            workout_id: workout.id,
+            name: ex.name,
+            sets: ex.sets,
+            reps: ex.reps,
+            rest_seconds: ex.rest_seconds,
+            sort_order: ex.sort_order,
+            image_url: gif_url,
+            description: curated?.simple_instruction_pt || null,
+          };
+        })
+      );
 
       if (exerciseInserts.length > 0) {
         const { error: exInsErr } = await supabase
