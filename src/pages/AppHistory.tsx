@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Dumbbell, Clock, Flame } from "lucide-react";
+import { SolarPage, S } from "@/components/SolarLayout";
 
 interface WorkoutLog {
   id: string;
@@ -21,19 +22,12 @@ const AppHistory = () => {
   const [totalMinutes, setTotalMinutes] = useState(0);
 
   useEffect(() => {
-    if (!loading && !user && !isAdmin) {
-      navigate("/app/login");
-      return;
-    }
+    if (!loading && !user && !isAdmin) { navigate("/app/login"); return; }
     if (user || isAdmin) fetchLogs();
   }, [user, loading, isAdmin]);
 
   const fetchLogs = async () => {
-    if (isAdmin) {
-      setLogs([]);
-      return;
-    }
-    
+    if (isAdmin) { setLogs([]); return; }
     const { data } = await supabase
       .from("workout_logs")
       .select("id, completed_at, duration_minutes, workout_id, workouts(title)")
@@ -47,16 +41,6 @@ const AppHistory = () => {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-  };
-
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  };
-
   const daysAgo = (dateStr: string) => {
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
     if (diff === 0) return "Hoje";
@@ -64,79 +48,127 @@ const AppHistory = () => {
     return `${diff} dias atrás`;
   };
 
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+
+  const cardStyle = {
+    backgroundColor: S.card,
+    border: `1px solid ${S.cardBorder}`,
+    borderRadius: "1.5rem",
+    boxShadow: `0 2px 12px rgba(234,88,12,0.04)`,
+  };
+
+  const stats = [
+    { icon: Dumbbell, label: "Treinos", value: totalWorkouts, gradient: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", iconColor: S.orange },
+    { icon: Clock, label: "Total", value: `${Math.round(totalMinutes / 60)}h`, gradient: "linear-gradient(135deg, #EFF6FF, #DBEAFE)", iconColor: "#3B82F6" },
+    { icon: Flame, label: "Sequência", value: "🔥", gradient: "linear-gradient(135deg, #FEF3C7, #FDE68A)", iconColor: S.amber },
+  ];
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <SolarPage>
       {/* Header */}
-      <header className="px-5 pt-10 pb-2">
+      <header
+        className="sticky top-0 z-20 px-5 pt-4 pb-3"
+        style={{
+          backgroundColor: "rgba(253,252,251,0.8)",
+          backdropFilter: "blur(20px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
+        }}
+      >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={() => navigate("/app")} className="text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
+          <button
+            onClick={() => navigate("/app")}
+            className="w-9 h-9 flex items-center justify-center transition-all active:scale-95"
+            style={{
+              borderRadius: "0.75rem",
+              backgroundColor: S.card,
+              border: `1px solid ${S.cardBorder}`,
+              boxShadow: `0 2px 8px rgba(234,88,12,0.06)`,
+            }}
+          >
+            <ArrowLeft size={16} style={{ color: S.textSub }} />
           </button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Progresso</h1>
-          </div>
+          <h1 className="font-display text-xl" style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}>
+            Progresso
+          </h1>
         </div>
       </header>
 
-      {/* Stats bar */}
+      {/* Stats */}
       <section className="px-5 py-4">
-        <div className="max-w-lg mx-auto grid grid-cols-3 gap-3">
-          <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-            <div className="text-xl font-bold text-foreground">{totalWorkouts}</div>
-            <div className="text-xs text-muted-foreground">Treinos</div>
-          </div>
-          <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-            <div className="text-xl font-bold text-foreground">{Math.round(totalMinutes / 60)}h</div>
-            <div className="text-xs text-muted-foreground">Total</div>
-          </div>
-          <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-            <div className="text-xl font-bold" style={{ color: "#E94560" }}>🔥</div>
-            <div className="text-xs text-muted-foreground">Sequência</div>
-          </div>
+        <div className="max-w-lg mx-auto grid grid-cols-3 gap-2.5">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="p-3.5 text-center"
+              style={cardStyle}
+            >
+              <div
+                className="w-9 h-9 flex items-center justify-center mx-auto mb-2"
+                style={{ borderRadius: "0.75rem", background: stat.gradient }}
+              >
+                <stat.icon size={16} style={{ color: stat.iconColor }} strokeWidth={2.5} />
+              </div>
+              <div className="font-display text-lg" style={{ fontWeight: 800, color: S.text }}>{stat.value}</div>
+              <div className="text-[11px]" style={{ color: S.textMuted }}>{stat.label}</div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* Logs */}
       <section className="px-5">
         <div className="max-w-lg mx-auto">
-          <p className="text-xs text-muted-foreground mb-4 font-semibold uppercase tracking-wide">Histórico de Treinos</p>
+          <p
+            className="text-[10px] font-bold uppercase tracking-[0.12em] mb-4"
+            style={{ color: S.textSub }}
+          >
+            Histórico de Treinos
+          </p>
           {logs.length === 0 ? (
             <div className="text-center py-16">
               <span className="text-4xl mb-3 block">🏆</span>
-              <p className="text-foreground font-semibold mb-1">Nenhum treino ainda</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-display text-sm mb-1" style={{ fontWeight: 700, color: S.text }}>
+                Nenhum treino ainda
+              </p>
+              <p className="text-[12px]" style={{ color: S.textMuted }}>
                 Complete seu primeiro treino e ele aparecerá aqui!
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {logs.map((log, i) => (
                 <motion.div
                   key={log.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  className="flex items-center gap-4 rounded-2xl p-4"
-                  style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+                  className="flex items-center gap-4 p-4"
+                  style={cardStyle}
                 >
-                  <div 
-                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-lg"
-                    style={{ background: "rgba(233,69,96,0.1)" }}
+                  <div
+                    className="w-11 h-11 flex items-center justify-center shrink-0 text-lg"
+                    style={{ borderRadius: "0.75rem", background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)" }}
                   >
                     🏋️‍♀️
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-sm">
+                    <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>
                       {(log.workouts as any)?.title || "Treino"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[11px]" style={{ color: S.textMuted }}>
                       {daysAgo(log.completed_at)} · {formatDate(log.completed_at)}
                     </p>
                   </div>
                   {log.duration_minutes && (
                     <div className="text-right">
-                      <span className="text-sm font-semibold text-foreground">{log.duration_minutes}</span>
-                      <span className="text-xs text-muted-foreground">min</span>
+                      <span className="font-display text-sm" style={{ fontWeight: 800, color: S.text }}>
+                        {log.duration_minutes}
+                      </span>
+                      <span className="text-[11px] ml-0.5" style={{ color: S.textMuted }}>min</span>
                     </div>
                   )}
                 </motion.div>
@@ -145,34 +177,7 @@ const AppHistory = () => {
           )}
         </div>
       </section>
-
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-border z-20">
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-6">
-          <button onClick={() => navigate("/app")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">🏠</span>
-            <span className="text-[10px] text-muted-foreground">Home</span>
-          </button>
-          <button onClick={() => navigate("/app/workouts")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">🏋️‍♀️</span>
-            <span className="text-[10px] text-muted-foreground">Treinos</span>
-          </button>
-          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👥</span>
-            <span className="text-[10px] text-muted-foreground">Social</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg">📊</span>
-            <span className="text-[10px] font-semibold text-primary">Progresso</span>
-            <div className="w-1 h-1 rounded-full bg-primary" />
-          </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👤</span>
-            <span className="text-[10px] text-muted-foreground">Perfil</span>
-          </button>
-        </div>
-      </nav>
-    </div>
+    </SolarPage>
   );
 };
 

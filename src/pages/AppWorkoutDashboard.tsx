@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import { SolarPage, S } from "@/components/SolarLayout";
 
 interface Workout {
   id: string;
@@ -56,9 +57,9 @@ const levelLabel = (level: number) => {
 };
 
 const levelColor = (level: number) => {
-  if (level <= 1) return { text: "#16C79A", bg: "rgba(22,199,154,0.13)" };
-  if (level <= 2) return { text: "#F5A623", bg: "rgba(245,166,35,0.13)" };
-  return { text: "#E94560", bg: "rgba(233,69,96,0.13)" };
+  if (level <= 1) return { text: "#16a34a", bg: "rgba(22,163,74,0.1)" };
+  if (level <= 2) return { text: S.amber, bg: "rgba(245,158,11,0.1)" };
+  return { text: S.coral, bg: "rgba(248,113,113,0.1)" };
 };
 
 const cardioIcon = (type: string) => {
@@ -80,13 +81,8 @@ const AppWorkoutDashboard = () => {
   const [cycleWeek, setCycleWeek] = useState(0);
 
   useEffect(() => {
-    if (!subscriptionLoading && !user) {
-      navigate("/app/login");
-      return;
-    }
-    if (user && subscribed) {
-      fetchAllData();
-    }
+    if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
+    if (user && subscribed) fetchAllData();
   }, [user, subscribed, subscriptionLoading, navigate]);
 
   const fetchAllData = async () => {
@@ -104,10 +100,7 @@ const AppWorkoutDashboard = () => {
         supabase.from("progression_cycles").select("phase, current_week").eq("user_id", user!.id).eq("program_id", prog.id).single(),
       ]);
       if (workoutRes.data) setWorkouts(workoutRes.data);
-      if (cycleRes.data) {
-        setCyclePhase(cycleRes.data.phase);
-        setCycleWeek(cycleRes.data.current_week);
-      }
+      if (cycleRes.data) { setCyclePhase(cycleRes.data.phase); setCycleWeek(cycleRes.data.current_week); }
     }
 
     if (cardioRes.data) setCardioProtocols(cardioRes.data);
@@ -121,20 +114,46 @@ const AppWorkoutDashboard = () => {
     intensify: "Intensificação", peak: "Pico", deload: "Deload",
   };
 
+  /* ─── Shared card style ─── */
+  const cardStyle = {
+    backgroundColor: S.card,
+    border: `1px solid ${S.cardBorder}`,
+    borderRadius: "1.5rem",
+    boxShadow: `0 2px 12px rgba(234,88,12,0.04)`,
+  };
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <SolarPage>
       {/* Header */}
-      <header className="px-5 pt-10 pb-2">
+      <header
+        className="sticky top-0 z-20 px-5 pt-4 pb-3"
+        style={{
+          backgroundColor: "rgba(253,252,251,0.8)",
+          backdropFilter: "blur(20px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
+        }}
+      >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={() => navigate("/app")} className="text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
+          <button
+            onClick={() => navigate("/app")}
+            className="w-9 h-9 flex items-center justify-center transition-all active:scale-95"
+            style={{
+              borderRadius: "0.75rem",
+              backgroundColor: S.card,
+              border: `1px solid ${S.cardBorder}`,
+              boxShadow: `0 2px 8px rgba(234,88,12,0.06)`,
+            }}
+          >
+            <ArrowLeft size={16} style={{ color: S.textSub }} />
           </button>
-          <h1 className="text-2xl font-bold">Treinos</h1>
+          <h1 className="font-display text-xl" style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}>
+            Treinos
+          </h1>
         </div>
       </header>
 
-      {/* Tab Bar — Meu Shape style */}
-      <section className="px-5 py-4">
+      {/* Tab Bar */}
+      <section className="px-5 py-3">
         <div className="max-w-lg mx-auto">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
             {TABS.map(t => (
@@ -142,12 +161,15 @@ const AppWorkoutDashboard = () => {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all"
+                className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all"
                 style={{
-                  background: tab === t.id ? "hsl(var(--primary))" : "hsl(var(--card))",
-                  color: tab === t.id ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
-                  border: tab === t.id ? "none" : "1px solid hsl(var(--border))",
-                  boxShadow: tab === t.id ? "0 4px 16px hsla(350 85% 60% / 0.25)" : "none",
+                  borderRadius: "1.25rem",
+                  background: tab === t.id
+                    ? `linear-gradient(135deg, ${S.orange}, ${S.amber})`
+                    : S.card,
+                  color: tab === t.id ? "#fff" : S.textMuted,
+                  border: tab === t.id ? "none" : `1px solid ${S.cardBorder}`,
+                  boxShadow: tab === t.id ? `0 4px 16px ${S.glowStrong}` : `0 1px 4px rgba(234,88,12,0.04)`,
                 }}
               >
                 <span className="text-sm">{t.icon}</span>
@@ -163,11 +185,11 @@ const AppWorkoutDashboard = () => {
         <section className="px-5">
           <div className="max-w-lg mx-auto">
             {cyclePhase && (
-              <p className="text-xs text-muted-foreground mb-4">
+              <p className="text-xs mb-4" style={{ color: S.textMuted }}>
                 Semana {cycleWeek} — {phaseNames[cyclePhase] || cyclePhase}
               </p>
             )}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {workouts.map((workout, i) => {
                 const isToday = (workout.day_of_week ?? workout.sort_order) === todayIndex;
                 return (
@@ -176,41 +198,51 @@ const AppWorkoutDashboard = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => navigate(`/app/workout-detail/${workout.id}`)}
-                    className="w-full flex items-center gap-3 py-3.5 border-b border-border text-left"
+                    className="w-full flex items-center gap-3 p-4 text-left transition-all"
+                    style={cardStyle}
                   >
-                    <div 
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold shrink-0"
+                    <div
+                      className="w-11 h-11 flex items-center justify-center text-xs shrink-0 font-display"
                       style={{
-                        background: isToday ? "hsl(var(--primary))" : "hsl(var(--card))",
-                        color: isToday ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
-                        border: isToday ? "none" : "1px solid hsl(var(--border))",
-                        boxShadow: isToday ? "0 4px 12px hsla(350 85% 60% / 0.3)" : "none",
+                        borderRadius: "0.75rem",
+                        fontWeight: 800,
+                        background: isToday ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : "#FFF7ED",
+                        color: isToday ? "#fff" : S.orange,
+                        boxShadow: isToday ? `0 4px 16px ${S.glowStrong}` : "none",
                       }}
                     >
                       {String.fromCharCode(65 + i)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm mb-0.5">{workout.title}</p>
+                      <p className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
+                        {workout.title}
+                      </p>
                       {workout.description && (
-                        <p className="text-xs text-muted-foreground truncate">{workout.description}</p>
+                        <p className="text-[11px] truncate" style={{ color: S.textMuted }}>{workout.description}</p>
                       )}
                     </div>
                     {isToday ? (
-                      <span 
-                        className="text-xs font-bold px-2.5 py-1 rounded-lg"
-                        style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                      <span
+                        className="text-[10px] font-bold px-3 py-1"
+                        style={{
+                          borderRadius: "0.75rem",
+                          background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+                          color: "#fff",
+                          boxShadow: `0 2px 8px ${S.glow}`,
+                        }}
                       >
                         HOJE
                       </span>
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <ChevronRight size={16} style={{ color: S.cardBorder }} />
                     )}
                   </motion.button>
                 );
               })}
               {workouts.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12" style={{ color: S.textMuted }}>
                   <span className="text-3xl mb-3 block">📋</span>
                   <p className="text-sm">Nenhum plano de treino disponível</p>
                 </div>
@@ -224,7 +256,9 @@ const AppWorkoutDashboard = () => {
       {tab === "cardio" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            <p className="text-xs text-muted-foreground mb-4">Protocolos de cardio guiado com velocidade e inclinação em tempo real</p>
+            <p className="text-xs mb-4" style={{ color: S.textMuted }}>
+              Protocolos de cardio guiado com velocidade e inclinação em tempo real
+            </p>
             <div className="space-y-3">
               {cardioProtocols.map((protocol, i) => {
                 const lc = levelColor(protocol.difficulty_level);
@@ -235,25 +269,24 @@ const AppWorkoutDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/app/cardio/${protocol.id}`)}
-                    className="w-full rounded-2xl p-4 text-left transition-all"
-                    style={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                    }}
-                    whileTap={{ scale: 0.98 }}
+                    className="w-full p-4 text-left transition-all"
+                    style={cardStyle}
+                    whileTap={{ scale: 0.97 }}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-2xl">{cardioIcon(protocol.protocol_type)}</span>
-                      <span 
-                        className="text-[10px] font-semibold px-2 py-1 rounded-md"
-                        style={{ color: lc.text, background: lc.bg }}
+                      <span
+                        className="text-[10px] font-semibold px-2.5 py-1"
+                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}
                       >
                         {levelLabel(protocol.difficulty_level)}
                       </span>
                     </div>
-                    <h3 className="font-bold text-sm mb-0.5 text-foreground">{protocol.name_pt}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">{protocol.equipment}</p>
-                    <div className="flex gap-3 text-xs text-muted-foreground">
+                    <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
+                      {protocol.name_pt}
+                    </h3>
+                    <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{protocol.equipment}</p>
+                    <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
                       <span>⏱️ {protocol.total_duration_min} min</span>
                       {protocol.estimated_calories && <span>🔥 {protocol.estimated_calories} kcal</span>}
                     </div>
@@ -261,7 +294,7 @@ const AppWorkoutDashboard = () => {
                 );
               })}
               {cardioProtocols.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12" style={{ color: S.textMuted }}>
                   <span className="text-3xl mb-3 block">🏃‍♀️</span>
                   <p className="text-sm">Nenhum protocolo de cardio disponível</p>
                 </div>
@@ -275,7 +308,7 @@ const AppWorkoutDashboard = () => {
       {tab === "casa" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            <p className="text-xs text-muted-foreground mb-4">Treinos completos sem precisar de academia</p>
+            <p className="text-xs mb-4" style={{ color: S.textMuted }}>Treinos completos sem precisar de academia</p>
             <div className="space-y-3">
               {homeTemplates.map((template, i) => {
                 const lc = levelColor(template.difficulty_level);
@@ -286,22 +319,24 @@ const AppWorkoutDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/app/home-workout/${template.id}`)}
-                    className="w-full rounded-2xl p-4 text-left"
-                    style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
-                    whileTap={{ scale: 0.98 }}
+                    className="w-full p-4 text-left"
+                    style={cardStyle}
+                    whileTap={{ scale: 0.97 }}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-2xl">💪</span>
-                      <span 
-                        className="text-[10px] font-semibold px-2 py-1 rounded-md"
-                        style={{ color: lc.text, background: lc.bg }}
+                      <span
+                        className="text-[10px] font-semibold px-2.5 py-1"
+                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}
                       >
                         {levelLabel(template.difficulty_level)}
                       </span>
                     </div>
-                    <h3 className="font-bold text-sm mb-0.5 text-foreground">{template.name_pt}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">{template.category}</p>
-                    <div className="flex gap-3 text-xs text-muted-foreground">
+                    <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
+                      {template.name_pt}
+                    </h3>
+                    <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{template.category}</p>
+                    <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
                       <span>⏱️ {template.duration_min} min</span>
                       <span>🎯 {template.equipment}</span>
                     </div>
@@ -309,7 +344,7 @@ const AppWorkoutDashboard = () => {
                 );
               })}
               {homeTemplates.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12" style={{ color: S.textMuted }}>
                   <span className="text-3xl mb-3 block">🏠</span>
                   <p className="text-sm">Nenhum treino em casa disponível</p>
                 </div>
@@ -323,7 +358,7 @@ const AppWorkoutDashboard = () => {
       {tab === "along" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            <p className="text-xs text-muted-foreground mb-4">Alongamento e mobilidade — baseado no seu treino</p>
+            <p className="text-xs mb-4" style={{ color: S.textMuted }}>Alongamento e mobilidade — baseado no seu treino</p>
             <div className="space-y-3">
               {stretches.map((stretch, i) => (
                 <motion.div
@@ -331,29 +366,31 @@ const AppWorkoutDashboard = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-2xl p-4"
-                  style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+                  className="p-4"
+                  style={cardStyle}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-2xl">🧘‍♀️</span>
-                    <span 
-                      className="text-[10px] font-semibold px-2 py-1 rounded-md"
-                      style={{ color: "#6C63FF", background: "rgba(108,99,255,0.13)" }}
+                    <span
+                      className="text-[10px] font-semibold px-2.5 py-1"
+                      style={{ color: "#7C3AED", background: "rgba(124,58,237,0.1)", borderRadius: "0.5rem" }}
                     >
                       {stretch.type}
                     </span>
                   </div>
-                  <h3 className="font-bold text-sm mb-0.5 text-foreground">{stretch.name_pt}</h3>
-                  <p className="text-xs text-muted-foreground mb-2">
+                  <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
+                    {stretch.name_pt}
+                  </h3>
+                  <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>
                     {stretch.target_muscles.join(", ")}
                   </p>
-                  <div className="flex gap-3 text-xs text-muted-foreground">
+                  <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
                     <span>⏱️ {stretch.duration_seconds}s</span>
                   </div>
                 </motion.div>
               ))}
               {stretches.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12" style={{ color: S.textMuted }}>
                   <span className="text-3xl mb-3 block">🧘‍♀️</span>
                   <p className="text-sm">Nenhum alongamento disponível</p>
                 </div>
@@ -362,34 +399,7 @@ const AppWorkoutDashboard = () => {
           </div>
         </section>
       )}
-
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-border z-20">
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-6">
-          <button onClick={() => navigate("/app")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">🏠</span>
-            <span className="text-[10px] text-muted-foreground">Home</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg">🏋️‍♀️</span>
-            <span className="text-[10px] font-semibold text-primary">Treinos</span>
-            <div className="w-1 h-1 rounded-full bg-primary" />
-          </button>
-          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👥</span>
-            <span className="text-[10px] text-muted-foreground">Social</span>
-          </button>
-          <button onClick={() => navigate("/app/history")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">📊</span>
-            <span className="text-[10px] text-muted-foreground">Progresso</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👤</span>
-            <span className="text-[10px] text-muted-foreground">Perfil</span>
-          </button>
-        </div>
-      </nav>
-    </div>
+    </SolarPage>
   );
 };
 

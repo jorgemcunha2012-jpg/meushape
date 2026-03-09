@@ -4,11 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
-  Home, Dumbbell, Users, TrendingUp, User,
   Bell, Sparkles, ChevronRight, Trophy, Flame,
-  Target, Calendar, Zap
+  Target, Calendar, Zap, Dumbbell, TrendingUp, Users
 } from "lucide-react";
 import { BodyMap } from "@/components/BodyMap";
+import { SolarBottomNav, S } from "@/components/SolarLayout";
 
 /* ─── Types ─── */
 interface WeekDay {
@@ -56,21 +56,7 @@ function muscleStatusColor(status: MuscleStatus): string {
   }
 }
 
-/* ─── Solar palette ─── */
-const S = {
-  bg: "#FDFCFB",
-  card: "#FFFFFF",
-  cardBorder: "#F0EBE5",
-  orange: "#EA580C",
-  amber: "#F59E0B",
-  coral: "#F87171",
-  terracotta: "#C2410C",
-  text: "#18181B",
-  textMuted: "#A1A1AA",
-  textSub: "#71717A",
-  glow: "rgba(234,88,12,0.15)",
-  glowStrong: "rgba(234,88,12,0.25)",
-};
+/* S is now imported from SolarLayout */
 
 const AppDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
@@ -217,13 +203,7 @@ const AppDashboard = () => {
     { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", gradient: "linear-gradient(135deg, #FFF7ED, #FED7AA)", iconColor: S.terracotta },
   ];
 
-  const navItems = [
-    { icon: Home, label: "Início", route: "/app", active: true },
-    { icon: Dumbbell, label: "Treino", route: "/app/workouts", active: false },
-    { icon: Users, label: "Feed", route: "/app/community", active: false },
-    { icon: TrendingUp, label: "Evolução", route: "/app/history", active: false },
-    { icon: User, label: "Perfil", route: "/app/profile", active: false },
-  ];
+  // navItems removed — using shared SolarBottomNav
 
   /* ─── Muscle legend helper ─── */
   const muscleLabels: Record<string, string> = {
@@ -725,63 +705,7 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ BOTTOM TAB BAR — Floating Glassmorphism ═══ */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-30"
-        style={{
-          backgroundColor: "rgba(253,252,251,0.82)",
-          backdropFilter: "blur(32px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(32px) saturate(1.8)",
-          borderTop: `1px solid ${S.cardBorder}`,
-        }}
-      >
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-7">
-          {navItems.map((item, i) => (
-            <button
-              key={i}
-              onClick={() => navigate(item.route)}
-              className="flex flex-col items-center gap-0.5 py-1 px-3 transition-all active:scale-95"
-            >
-              <div className="relative">
-                {item.active && (
-                  <div
-                    className="absolute inset-0 -m-1.5 rounded-lg"
-                    style={{
-                      backgroundColor: "rgba(234,88,12,0.08)",
-                    }}
-                  />
-                )}
-                <item.icon
-                  size={20}
-                  style={{
-                    color: item.active ? S.orange : S.textMuted,
-                    strokeWidth: item.active ? 2.5 : 1.8,
-                    position: "relative",
-                  }}
-                />
-                {item.active && (
-                  <div
-                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                    style={{
-                      backgroundColor: S.orange,
-                      boxShadow: `0 0 8px ${S.orange}`,
-                    }}
-                  />
-                )}
-              </div>
-              <span
-                className="text-[10px]"
-                style={{
-                  color: item.active ? S.orange : S.textMuted,
-                  fontWeight: item.active ? 700 : 500,
-                }}
-              >
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      <SolarBottomNav />
     </div>
   );
 };
