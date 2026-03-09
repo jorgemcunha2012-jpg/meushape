@@ -539,12 +539,24 @@ const AppDashboard = () => {
           {menuItems.map((item, i) => (
             <motion.button
               key={i}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.06 }}
-              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 24, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                delay: 0.3 + i * 0.1,
+                duration: 0.5,
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+              }}
+              whileHover={{
+                y: -4,
+                scale: 1.03,
+                boxShadow: `0 12px 32px rgba(234,88,12,0.15), 0 0 0 1px ${S.orange}20`,
+                transition: { duration: 0.25 },
+              }}
+              whileTap={{ scale: 0.95, y: 0 }}
               onClick={() => navigate(item.route)}
-              className="relative p-4 text-left transition-all group"
+              className="relative p-4 text-left group overflow-hidden"
               style={{
                 borderRadius: "1.5rem",
                 backgroundColor: S.card,
@@ -552,20 +564,34 @@ const AppDashboard = () => {
                 boxShadow: `0 2px 12px rgba(234,88,12,0.05)`,
               }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div
+              {/* Hover glow orb */}
+              <motion.div
+                className="absolute -top-8 -right-8 w-24 h-24 rounded-full pointer-events-none"
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileHover={{ opacity: 1, scale: 1 }}
+                style={{
+                  background: `radial-gradient(circle, ${item.iconColor}18 0%, transparent 70%)`,
+                  filter: "blur(12px)",
+                }}
+              />
+
+              <div className="flex items-center justify-between mb-3 relative z-10">
+                <motion.div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ background: item.gradient }}
+                  whileHover={{ rotate: [0, -8, 8, 0], transition: { duration: 0.5 } }}
                 >
                   <item.icon size={18} style={{ color: item.iconColor }} strokeWidth={2.5} />
-                </div>
-                <ChevronRight
-                  size={14}
-                  style={{ color: S.cardBorder }}
-                  className="group-hover:translate-x-0.5 transition-transform"
-                />
+                </motion.div>
+                <motion.div
+                  initial={{ x: 0 }}
+                  whileHover={{ x: 3 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <ChevronRight size={14} style={{ color: S.cardBorder }} />
+                </motion.div>
               </div>
-              <p className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
+              <p className="font-display text-sm mb-0.5 relative z-10" style={{ fontWeight: 700, color: S.text }}>
                 {item.title}
               </p>
               <p className="text-[11px]" style={{ color: S.textMuted }}>
