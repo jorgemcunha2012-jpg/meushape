@@ -33,9 +33,9 @@ type Phase = "overview" | "warmup" | "exercise" | "rest" | "cooldown" | "complet
 const AppWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const { user, subscribed, subscriptionLoading, isAdmin } = useAuth();
   
-  if (!subscriptionLoading && !subscribed && user) {
+  if (!subscriptionLoading && !subscribed && user && !isAdmin) {
     navigate("/app/login");
   }
 
