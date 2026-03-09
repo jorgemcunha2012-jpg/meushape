@@ -172,7 +172,21 @@ const AppDashboard = () => {
       fetchData();
     } catch (err: any) {
       console.error("Generate error:", err);
-      toast.error(err.message || "Erro ao gerar treino. Tente novamente.");
+      
+      // Handle specific error types
+      let errorMessage = "Erro ao gerar treino. Tente novamente.";
+      
+      if (err.message?.includes("temporariamente indisponível")) {
+        errorMessage = "O sistema de IA está temporariamente indisponível. Tente novamente em alguns minutos.";
+      } else if (err.message?.includes("Rate limit exceeded")) {
+        errorMessage = "Muitas tentativas. Aguarde alguns segundos e tente novamente.";
+      } else if (err.message?.includes("Créditos insuficientes")) {
+        errorMessage = "Créditos insuficientes para gerar o treino. Contate o suporte.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setGenerating(false);
     }
