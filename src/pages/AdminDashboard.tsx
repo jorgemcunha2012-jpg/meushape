@@ -99,7 +99,7 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem("admin_session");
     navigate("/admin/login");
   };
 
