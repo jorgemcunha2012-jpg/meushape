@@ -16,6 +16,50 @@ interface WeekDay {
   workoutId?: string;
 }
 
+type MuscleStatus = "today" | "recent" | "recovering" | "none";
+
+interface MuscleData {
+  [key: string]: MuscleStatus;
+}
+
+const MUSCLE_GROUP_MAP: Record<string, string[]> = {
+  chest: ["chest", "pectorals", "peito", "peitoral"],
+  shoulders: ["shoulders", "deltoids", "ombros", "deltoides", "delts"],
+  arms: ["biceps", "triceps", "forearms", "braços", "bíceps", "tríceps", "antebraço"],
+  back: ["back", "lats", "traps", "costas", "dorsal", "trapézio", "latíssimo"],
+  abs: ["abs", "core", "abdominals", "abdome", "abdominais", "oblíquos"],
+  glutes: ["glutes", "gluteus", "glúteos", "glúteo", "bumbum"],
+  legs: ["quads", "quadriceps", "hamstrings", "quadríceps", "posterior", "coxa", "adductors", "abductors", "adutores", "abdutores", "pernas"],
+  calves: ["calves", "panturrilha", "panturrilhas"],
+};
+
+function classifyMuscle(target: string, bodyPart: string): string[] {
+  const text = `${target} ${bodyPart}`.toLowerCase();
+  const matched: string[] = [];
+  for (const [group, keywords] of Object.entries(MUSCLE_GROUP_MAP)) {
+    if (keywords.some(kw => text.includes(kw))) {
+      matched.push(group);
+    }
+  }
+  return matched.length > 0 ? matched : [];
+}
+
+function getMuscleStatus(daysSinceTraining: number): MuscleStatus {
+  if (daysSinceTraining === 0) return "today";
+  if (daysSinceTraining <= 2) return "recent";
+  if (daysSinceTraining <= 5) return "recovering";
+  return "none";
+}
+
+function muscleStatusColor(status: MuscleStatus): string {
+  switch (status) {
+    case "today": return "hsl(var(--success))";
+    case "recent": return "hsl(var(--warning))";
+    case "recovering": return "hsl(var(--orange))";
+    default: return "hsl(var(--muted))";
+  }
+}
+
 const AppDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
@@ -24,6 +68,10 @@ const AppDashboard = () => {
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [streak, setStreak] = useState(0);
   const [lastWorkoutDate, setLastWorkoutDate] = useState<string>("");
+  const [muscleMap, setMuscleMap] = useState<MuscleData>({
+    chest: "none", shoulders: "none", arms: "none", back: "none",
+    abs: "none", glutes: "none", legs: "none", calves: "none",
+  });
 
   useEffect(() => {
     if (!subscriptionLoading && !subscribed && user) {
@@ -32,11 +80,86 @@ const AppDashboard = () => {
     }
     if (user && subscribed) {
       fetchData();
+      fetchMuscleMap();
     }
   }, [user, subscribed, subscriptionLoading, navigate]);
 
+  const fetchMuscleMap = async () => {
+    if (!user) return;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // 1. Get workout logs from last 7 days
+    const { data: logs } = await supabase
+      .from("workout_logs")
+      .select("workout_id, completed_at")
+      .eq("user_id", user.id)
+      .gte("completed_at", sevenDaysAgo.toISOString())
+      .order("completed_at", { ascending: false });
+
+    if (!logs || logs.length === 0) return;
+
+    // 2. Get exercises for those workouts
+    const workoutIds = [...new Set(logs.map(l => l.workout_id))];
+    const { data: exercises } = await supabase
+      .from("exercises")
+      .select("name, workout_id")
+      .in("workout_id", workoutIds);
+
+    if (!exercises || exercises.length === 0) return;
+
+    // 3. Get curated data for muscle mapping
+    const exerciseNames = [...new Set(exercises.map(e => e.name))];
+    const { data: curated } = await supabase
+      .from("curated_exercises")
+      .select("name_pt, target, body_part")
+      .in("name_pt", exerciseNames);
+
+    const curatedLookup: Record<string, { target: string; body_part: string }> = {};
+    curated?.forEach(c => { curatedLookup[c.name_pt] = c; });
+
+    // 4. Build workout_id -> latest completed_at map
+    const workoutDateMap: Record<string, Date> = {};
+    logs.forEach(l => {
+      const d = new Date(l.completed_at);
+      if (!workoutDateMap[l.workout_id] || d > workoutDateMap[l.workout_id]) {
+        workoutDateMap[l.workout_id] = d;
+      }
+    });
+
+    // 5. Map muscles to days since last trained
+    const muscleDays: Record<string, number> = {};
+    const now = new Date();
+
+    exercises.forEach(ex => {
+      const info = curatedLookup[ex.name];
+      if (!info) return;
+      const groups = classifyMuscle(info.target, info.body_part);
+      const completedAt = workoutDateMap[ex.workout_id];
+      if (!completedAt) return;
+      const daysDiff = Math.floor((now.getTime() - completedAt.getTime()) / (1000 * 60 * 60 * 24));
+
+      groups.forEach(g => {
+        if (muscleDays[g] === undefined || daysDiff < muscleDays[g]) {
+          muscleDays[g] = daysDiff;
+        }
+      });
+    });
+
+    // 6. Convert to statuses
+    const newMap: MuscleData = {
+      chest: "none", shoulders: "none", arms: "none", back: "none",
+      abs: "none", glutes: "none", legs: "none", calves: "none",
+    };
+    for (const [muscle, days] of Object.entries(muscleDays)) {
+      if (muscle in newMap) {
+        newMap[muscle] = getMuscleStatus(days);
+      }
+    }
+    setMuscleMap(newMap);
+  };
+
   const fetchData = async () => {
-    // Fetch current program and workouts
     const { data: program } = await supabase
       .from("workout_programs")
       .select("*")
@@ -52,12 +175,10 @@ const AppDashboard = () => {
       .eq("program_id", program.id)
       .order("sort_order");
 
-    // Generate week plan
     if (workouts) {
       const plan = generateWeekPlan(workouts);
       setWeekPlan(plan);
       
-      // Find today's workout
       const today = plan.find(d => d.today);
       if (today && today.workoutId) {
         const { data: exercises } = await supabase
@@ -72,7 +193,6 @@ const AppDashboard = () => {
       }
     }
 
-    // Fetch user stats
     const { data: streakData } = await supabase
       .from("user_streaks")
       .select("*")
@@ -229,58 +349,61 @@ const AppDashboard = () => {
         </section>
       )}
 
-      {/* Muscle Heat Map */}
+      {/* Muscle Heat Map - Dynamic */}
       <section className="px-5 mb-4">
         <div className="max-w-lg mx-auto">
           <div className="p-4 rounded-2xl bg-card border border-border">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-semibold text-foreground">Mapa Muscular</h3>
-              <span className="text-xs text-muted-foreground">Última semana</span>
+              <h3 className="text-sm font-semibold text-foreground font-sans">Mapa Muscular</h3>
+              <span className="text-xs text-muted-foreground">Últimos 7 dias</span>
             </div>
             <div className="flex items-center gap-4">
               {/* SVG Silhouette */}
               <div className="relative w-20 h-32 flex-shrink-0">
                 <svg viewBox="0 0 100 160" className="w-full h-full">
-                  {/* Head */}
-                  <ellipse cx="50" cy="14" rx="11" ry="13" fill="#2A2A3A" />
-                  {/* Neck */}
-                  <rect x="46" y="26" width="8" height="6" rx="2" fill="#2A2A3A" />
-                  {/* Chest */}
-                  <ellipse cx="50" cy="42" rx="22" ry="14" fill="#16C79A" opacity="0.8" />
-                  {/* Arms */}
-                  <ellipse cx="26" cy="52" rx="5" ry="16" fill="#2A2A3A" opacity="0.8" transform="rotate(-8, 26, 52)" />
-                  <ellipse cx="74" cy="52" rx="5" ry="16" fill="#2A2A3A" opacity="0.8" transform="rotate(8, 74, 52)" />
-                  {/* Core */}
-                  <ellipse cx="50" cy="62" rx="16" ry="10" fill="#FF6B35" opacity="0.8" />
-                  {/* Glutes */}
-                  <ellipse cx="50" cy="78" rx="20" ry="10" fill="#16C79A" opacity="0.8" />
-                  {/* Legs */}
-                  <ellipse cx="40" cy="105" rx="9" ry="24" fill="#F5A623" opacity="0.8" />
-                  <ellipse cx="60" cy="105" rx="9" ry="24" fill="#F5A623" opacity="0.8" />
-                  {/* Calves */}
-                  <ellipse cx="40" cy="137" rx="6" ry="14" fill="#2A2A3A" opacity="0.8" />
-                  <ellipse cx="60" cy="137" rx="6" ry="14" fill="#2A2A3A" opacity="0.8" />
+                  <ellipse cx="50" cy="14" rx="11" ry="13" fill="hsl(var(--muted))" />
+                  <rect x="46" y="26" width="8" height="6" rx="2" fill="hsl(var(--muted))" />
+                  <ellipse cx="50" cy="42" rx="22" ry="14" fill={muscleStatusColor(muscleMap.chest)} opacity="0.85" />
+                  <ellipse cx="26" cy="48" rx="5" ry="16" fill={muscleStatusColor(muscleMap.arms)} opacity="0.85" transform="rotate(-8, 26, 48)" />
+                  <ellipse cx="74" cy="48" rx="5" ry="16" fill={muscleStatusColor(muscleMap.arms)} opacity="0.85" transform="rotate(8, 74, 48)" />
+                  <ellipse cx="38" cy="34" rx="8" ry="6" fill={muscleStatusColor(muscleMap.shoulders)} opacity="0.85" />
+                  <ellipse cx="62" cy="34" rx="8" ry="6" fill={muscleStatusColor(muscleMap.shoulders)} opacity="0.85" />
+                  <ellipse cx="50" cy="62" rx="16" ry="10" fill={muscleStatusColor(muscleMap.abs)} opacity="0.85" />
+                  <ellipse cx="50" cy="78" rx="20" ry="10" fill={muscleStatusColor(muscleMap.glutes)} opacity="0.85" />
+                  <ellipse cx="40" cy="105" rx="9" ry="24" fill={muscleStatusColor(muscleMap.legs)} opacity="0.85" />
+                  <ellipse cx="60" cy="105" rx="9" ry="24" fill={muscleStatusColor(muscleMap.legs)} opacity="0.85" />
+                  <ellipse cx="40" cy="137" rx="6" ry="14" fill={muscleStatusColor(muscleMap.calves)} opacity="0.85" />
+                  <ellipse cx="60" cy="137" rx="6" ry="14" fill={muscleStatusColor(muscleMap.calves)} opacity="0.85" />
                 </svg>
               </div>
               {/* Legend */}
               <div className="flex-1 space-y-2">
-                {[
-                  { color: "#16C79A", label: "Treinado hoje", muscles: "Peito, Glúteos" },
-                  { color: "#F5A623", label: "Últimos 2-3 dias", muscles: "Pernas" },
-                  { color: "#FF6B35", label: "Em recuperação", muscles: "Abdome" },
-                  { color: "#2A2A3A", label: "Não treinado", muscles: "Costas, Braços" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div 
-                      className="w-2.5 h-2.5 rounded-sm flex-shrink-0" 
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <div>
-                      <div className="text-xs font-medium text-foreground">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">{item.muscles}</div>
-                    </div>
-                  </div>
-                ))}
+                {(() => {
+                  const statusGroups: Record<MuscleStatus, string[]> = { today: [], recent: [], recovering: [], none: [] };
+                  const muscleLabels: Record<string, string> = {
+                    chest: "Peito", shoulders: "Ombros", arms: "Braços",
+                    back: "Costas", abs: "Abdome", glutes: "Glúteos",
+                    legs: "Pernas", calves: "Panturrilha",
+                  };
+                  Object.entries(muscleMap).forEach(([m, s]) => statusGroups[s].push(muscleLabels[m] || m));
+
+                  return [
+                    { status: "today" as MuscleStatus, label: "Treinado hoje", color: "hsl(var(--success))" },
+                    { status: "recent" as MuscleStatus, label: "Últimos 2 dias", color: "hsl(var(--warning))" },
+                    { status: "recovering" as MuscleStatus, label: "Em recuperação", color: "hsl(var(--orange))" },
+                    { status: "none" as MuscleStatus, label: "Não treinado", color: "hsl(var(--muted))" },
+                  ]
+                    .filter(item => statusGroups[item.status].length > 0)
+                    .map((item, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: item.color }} />
+                        <div>
+                          <div className="text-xs font-medium text-foreground">{item.label}</div>
+                          <div className="text-xs text-muted-foreground">{statusGroups[item.status].join(", ")}</div>
+                        </div>
+                      </div>
+                    ));
+                })()}
               </div>
             </div>
           </div>
