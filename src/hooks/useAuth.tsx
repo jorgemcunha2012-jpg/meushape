@@ -8,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   subscribed: boolean;
   subscriptionLoading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   checkSubscription: () => Promise<void>;
 }
