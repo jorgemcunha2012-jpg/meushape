@@ -4,11 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
-  Home, Dumbbell, Users, TrendingUp, User,
   Bell, Sparkles, ChevronRight, Trophy, Flame,
-  Target, Calendar, Zap
+  Target, Calendar, Zap, Dumbbell, TrendingUp, Users
 } from "lucide-react";
 import { BodyMap } from "@/components/BodyMap";
+import { SolarBottomNav, S } from "@/components/SolarLayout";
 
 /* ─── Types ─── */
 interface WeekDay {
