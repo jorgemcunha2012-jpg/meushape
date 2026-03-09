@@ -16,6 +16,41 @@ interface WeekDay {
   workoutId?: string;
 }
 
+type MuscleStatus = "today" | "recent" | "recovering" | "none";
+
+interface MuscleData {
+  [key: string]: MuscleStatus;
+}
+
+const MUSCLE_GROUP_MAP: Record<string, string[]> = {
+  chest: ["chest", "pectorals", "peito", "peitoral"],
+  shoulders: ["shoulders", "deltoids", "ombros", "deltoides", "delts"],
+  arms: ["biceps", "triceps", "forearms", "braços", "bíceps", "tríceps", "antebraço"],
+  back: ["back", "lats", "traps", "costas", "dorsal", "trapézio", "latíssimo"],
+  abs: ["abs", "core", "abdominals", "abdome", "abdominais", "oblíquos"],
+  glutes: ["glutes", "gluteus", "glúteos", "glúteo", "bumbum"],
+  legs: ["quads", "quadriceps", "hamstrings", "quadríceps", "posterior", "coxa", "adductors", "abductors", "adutores", "abdutores", "pernas"],
+  calves: ["calves", "panturrilha", "panturrilhas"],
+};
+
+function classifyMuscle(target: string, bodyPart: string): string[] {
+  const text = `${target} ${bodyPart}`.toLowerCase();
+  const matched: string[] = [];
+  for (const [group, keywords] of Object.entries(MUSCLE_GROUP_MAP)) {
+    if (keywords.some(kw => text.includes(kw))) {
+      matched.push(group);
+    }
+  }
+  return matched.length > 0 ? matched : [];
+}
+
+function getMuscleStatus(daysSinceTraining: number): MuscleStatus {
+  if (daysSinceTraining === 0) return "today";
+  if (daysSinceTraining <= 2) return "recent";
+  if (daysSinceTraining <= 5) return "recovering";
+  return "none";
+}
+
 const AppDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
@@ -24,6 +59,10 @@ const AppDashboard = () => {
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [streak, setStreak] = useState(0);
   const [lastWorkoutDate, setLastWorkoutDate] = useState<string>("");
+  const [muscleMap, setMuscleMap] = useState<MuscleData>({
+    chest: "none", shoulders: "none", arms: "none", back: "none",
+    abs: "none", glutes: "none", legs: "none", calves: "none",
+  });
 
   useEffect(() => {
     if (!subscriptionLoading && !subscribed && user) {
@@ -32,11 +71,86 @@ const AppDashboard = () => {
     }
     if (user && subscribed) {
       fetchData();
+      fetchMuscleMap();
     }
   }, [user, subscribed, subscriptionLoading, navigate]);
 
+  const fetchMuscleMap = async () => {
+    if (!user) return;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // 1. Get workout logs from last 7 days
+    const { data: logs } = await supabase
+      .from("workout_logs")
+      .select("workout_id, completed_at")
+      .eq("user_id", user.id)
+      .gte("completed_at", sevenDaysAgo.toISOString())
+      .order("completed_at", { ascending: false });
+
+    if (!logs || logs.length === 0) return;
+
+    // 2. Get exercises for those workouts
+    const workoutIds = [...new Set(logs.map(l => l.workout_id))];
+    const { data: exercises } = await supabase
+      .from("exercises")
+      .select("name, workout_id")
+      .in("workout_id", workoutIds);
+
+    if (!exercises || exercises.length === 0) return;
+
+    // 3. Get curated data for muscle mapping
+    const exerciseNames = [...new Set(exercises.map(e => e.name))];
+    const { data: curated } = await supabase
+      .from("curated_exercises")
+      .select("name_pt, target, body_part")
+      .in("name_pt", exerciseNames);
+
+    const curatedLookup: Record<string, { target: string; body_part: string }> = {};
+    curated?.forEach(c => { curatedLookup[c.name_pt] = c; });
+
+    // 4. Build workout_id -> latest completed_at map
+    const workoutDateMap: Record<string, Date> = {};
+    logs.forEach(l => {
+      const d = new Date(l.completed_at);
+      if (!workoutDateMap[l.workout_id] || d > workoutDateMap[l.workout_id]) {
+        workoutDateMap[l.workout_id] = d;
+      }
+    });
+
+    // 5. Map muscles to days since last trained
+    const muscleDays: Record<string, number> = {};
+    const now = new Date();
+
+    exercises.forEach(ex => {
+      const info = curatedLookup[ex.name];
+      if (!info) return;
+      const groups = classifyMuscle(info.target, info.body_part);
+      const completedAt = workoutDateMap[ex.workout_id];
+      if (!completedAt) return;
+      const daysDiff = Math.floor((now.getTime() - completedAt.getTime()) / (1000 * 60 * 60 * 24));
+
+      groups.forEach(g => {
+        if (muscleDays[g] === undefined || daysDiff < muscleDays[g]) {
+          muscleDays[g] = daysDiff;
+        }
+      });
+    });
+
+    // 6. Convert to statuses
+    const newMap: MuscleData = {
+      chest: "none", shoulders: "none", arms: "none", back: "none",
+      abs: "none", glutes: "none", legs: "none", calves: "none",
+    };
+    for (const [muscle, days] of Object.entries(muscleDays)) {
+      if (muscle in newMap) {
+        newMap[muscle] = getMuscleStatus(days);
+      }
+    }
+    setMuscleMap(newMap);
+  };
+
   const fetchData = async () => {
-    // Fetch current program and workouts
     const { data: program } = await supabase
       .from("workout_programs")
       .select("*")
@@ -52,12 +166,10 @@ const AppDashboard = () => {
       .eq("program_id", program.id)
       .order("sort_order");
 
-    // Generate week plan
     if (workouts) {
       const plan = generateWeekPlan(workouts);
       setWeekPlan(plan);
       
-      // Find today's workout
       const today = plan.find(d => d.today);
       if (today && today.workoutId) {
         const { data: exercises } = await supabase
@@ -72,7 +184,6 @@ const AppDashboard = () => {
       }
     }
 
-    // Fetch user stats
     const { data: streakData } = await supabase
       .from("user_streaks")
       .select("*")
