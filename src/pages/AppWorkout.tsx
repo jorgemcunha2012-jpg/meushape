@@ -33,9 +33,9 @@ type Phase = "overview" | "warmup" | "exercise" | "rest" | "cooldown" | "complet
 const AppWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const { user, subscribed, subscriptionLoading, isAdmin } = useAuth();
   
-  if (!subscriptionLoading && !subscribed && user) {
+  if (!subscriptionLoading && !subscribed && user && !isAdmin) {
     navigate("/app/login");
   }
 
@@ -181,7 +181,13 @@ const AppWorkout = () => {
   };
 
   const submitFeedback = async () => {
-    if (!user || !workoutId) return;
+    if ((!user && !isAdmin) || !workoutId) return;
+    
+    // Admin mode - skip logging to avoid errors
+    if (isAdmin) {
+      setPhase("complete");
+      return;
+    }
 
     const durationMin = Math.round(workoutDuration / 60);
     const { data: log, error } = await supabase

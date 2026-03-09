@@ -44,7 +44,7 @@ interface Exercise {
 }
 
 const AppManageWorkouts = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -63,9 +63,9 @@ const AppManageWorkouts = () => {
   const [newWorkoutTitle, setNewWorkoutTitle] = useState("");
 
   useEffect(() => {
-    if (!loading && !user) navigate("/app/login");
-    if (user) fetchPrograms();
-  }, [user, loading]);
+    if (!loading && !user && !isAdmin) navigate("/app/login");
+    if (user || isAdmin) fetchPrograms();
+  }, [user, loading, isAdmin]);
 
   useEffect(() => {
     if (selectedProgram) fetchWorkouts();

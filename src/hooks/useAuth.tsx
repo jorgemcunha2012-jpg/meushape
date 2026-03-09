@@ -8,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   subscribed: boolean;
   subscriptionLoading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   checkSubscription: () => Promise<void>;
 }
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   subscribed: false,
   subscriptionLoading: true,
+  isAdmin: false,
   signOut: async () => {},
   checkSubscription: async () => {},
 });
@@ -28,8 +30,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Helper function to check admin session
+  const isAdminSession = () => {
+    return !!localStorage.getItem("admin_session");
+  };
 
   const checkSubscription = useCallback(async () => {
+    // Admin is always "subscribed"
+    if (isAdminSession()) {
+      setSubscribed(true);
+      setSubscriptionLoading(false);
+      return;
+    }
+    
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
@@ -43,6 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Check admin session on load
+    setIsAdmin(isAdminSession());
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -58,9 +76,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check subscription when user changes
+  // Check subscription when user changes or admin status
   useEffect(() => {
-    if (user) {
+    setIsAdmin(isAdminSession());
+    
+    if (user || isAdminSession()) {
       checkSubscription();
     } else {
       setSubscribed(false);
@@ -70,20 +90,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Periodic check every 60s
   useEffect(() => {
-    if (!user) return;
+    if (!user && !isAdminSession()) return;
     const interval = setInterval(checkSubscription, 60000);
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
   const signOut = async () => {
+    // Clear admin session
+    localStorage.removeItem("admin_session");
+    setIsAdmin(false);
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, subscribed, subscriptionLoading, signOut, checkSubscription }}>
+    <AuthContext.Provider value={{ user, session, loading, subscribed, subscriptionLoading, isAdmin, signOut, checkSubscription }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+
+// Helper function to check admin session (can be used independently)
+export const isAdminSession = () => {
+  return !!localStorage.getItem("admin_session");
+};

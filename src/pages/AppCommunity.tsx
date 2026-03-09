@@ -19,7 +19,7 @@ interface Post {
 }
 
 const AppCommunity = () => {
-  const { user, loading, subscribed, subscriptionLoading } = useAuth();
+  const { user, loading, subscribed, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
@@ -27,12 +27,12 @@ const AppCommunity = () => {
   const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isAdmin) {
       navigate("/app/login");
       return;
     }
-    if (user && subscribed) fetchPosts();
-  }, [user, loading, subscribed]);
+    if ((user && subscribed) || isAdmin) fetchPosts();
+  }, [user, loading, subscribed, isAdmin]);
 
   const fetchPosts = async () => {
     const { data } = await supabase
@@ -58,7 +58,13 @@ const AppCommunity = () => {
   };
 
   const handlePost = async () => {
-    if (!newPost.trim() || !user) return;
+    if (!newPost.trim() || (!user && !isAdmin)) return;
+    
+    // Admin mode - skip posting to avoid errors
+    if (isAdmin) {
+      toast.error("Admins não podem postar na comunidade");
+      return;
+    }
     setPosting(true);
 
     const { error } = await supabase
@@ -76,7 +82,13 @@ const AppCommunity = () => {
   };
 
   const toggleLike = async (postId: string) => {
-    if (!user) return;
+    if (!user && !isAdmin) return;
+    
+    // Admin mode - skip liking to avoid errors
+    if (isAdmin) {
+      toast.error("Admins não podem curtir posts");
+      return;
+    }
     const liked = myLikes.has(postId);
 
     if (liked) {

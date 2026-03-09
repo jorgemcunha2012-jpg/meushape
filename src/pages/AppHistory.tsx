@@ -13,19 +13,25 @@ interface WorkoutLog {
 }
 
 const AppHistory = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [logs, setLogs] = useState<WorkoutLog[]>([]);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isAdmin) {
       navigate("/app/login");
       return;
     }
-    if (user) fetchLogs();
-  }, [user, loading]);
+    if (user || isAdmin) fetchLogs();
+  }, [user, loading, isAdmin]);
 
   const fetchLogs = async () => {
+    // Admin mode - return empty logs to avoid errors
+    if (isAdmin) {
+      setLogs([]);
+      return;
+    }
+    
     const { data } = await supabase
       .from("workout_logs")
       .select("id, completed_at, duration_minutes, workout_id, workouts(title)")
