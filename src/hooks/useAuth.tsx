@@ -32,7 +32,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Helper function to check admin session
+  const isAdminSession = () => {
+    return !!localStorage.getItem("admin_session");
+  };
+
   const checkSubscription = useCallback(async () => {
+    // Admin is always "subscribed"
+    if (isAdminSession()) {
+      setSubscribed(true);
+      setSubscriptionLoading(false);
+      return;
+    }
+    
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
