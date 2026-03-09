@@ -50,7 +50,10 @@ const App = () => (
             {/* Workout App */}
             <Route path="/app/login" element={<AppLogin />} />
             <Route path="/app" element={<AppDashboard />} />
+            <Route path="/app/workouts" element={<AppWorkoutDashboard />} />
+            <Route path="/app/workout-detail/:workoutId" element={<AppWorkoutDetail />} />
             <Route path="/app/workout/:workoutId" element={<AppWorkout />} />
+            <Route path="/app/exercise/:exerciseId" element={<AppExerciseDetail />} />
             <Route path="/app/history" element={<AppHistory />} />
             <Route path="/app/community" element={<AppCommunity />} />
             <Route path="/app/manage" element={<AppManageWorkouts />} />
