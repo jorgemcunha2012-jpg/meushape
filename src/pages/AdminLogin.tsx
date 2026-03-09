@@ -17,16 +17,22 @@ const AdminLogin = () => {
     setLoading(true);
     setError("");
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-auth", {
+        body: { email, password },
+      });
 
-    if (authError) {
-      setError("E-mail ou senha incorretos.");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Store admin session token
+      localStorage.setItem("admin_session", data.sessionToken);
+      navigate("/admin");
+    } catch (err: any) {
+      setError(err.message || "E-mail ou senha incorretos.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    navigate("/admin");
-    setLoading(false);
   };
 
   return (

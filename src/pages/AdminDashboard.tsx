@@ -56,9 +56,9 @@ const AdminDashboard = () => {
   const [todayLeads, setTodayLeads] = useState(0);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+    const checkAuth = () => {
+      const adminSession = localStorage.getItem("admin_session");
+      if (!adminSession) {
         navigate("/admin/login");
         return;
       }
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem("admin_session");
     navigate("/admin/login");
   };
 
