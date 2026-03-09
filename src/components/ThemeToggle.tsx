@@ -4,9 +4,17 @@ import { useTheme } from "next-themes";
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
+  const toggleTheme = () => {
+    document.documentElement.classList.add("theme-transition");
+    setTheme(theme === "dark" ? "light" : "dark");
+    setTimeout(() => {
+      document.documentElement.classList.remove("theme-transition");
+    }, 500);
+  };
+
   return (
     <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={toggleTheme}
       className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors"
     >
       <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
