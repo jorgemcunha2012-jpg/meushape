@@ -705,63 +705,7 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ BOTTOM TAB BAR — Floating Glassmorphism ═══ */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-30"
-        style={{
-          backgroundColor: "rgba(253,252,251,0.82)",
-          backdropFilter: "blur(32px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(32px) saturate(1.8)",
-          borderTop: `1px solid ${S.cardBorder}`,
-        }}
-      >
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-7">
-          {navItems.map((item, i) => (
-            <button
-              key={i}
-              onClick={() => navigate(item.route)}
-              className="flex flex-col items-center gap-0.5 py-1 px-3 transition-all active:scale-95"
-            >
-              <div className="relative">
-                {item.active && (
-                  <div
-                    className="absolute inset-0 -m-1.5 rounded-lg"
-                    style={{
-                      backgroundColor: "rgba(234,88,12,0.08)",
-                    }}
-                  />
-                )}
-                <item.icon
-                  size={20}
-                  style={{
-                    color: item.active ? S.orange : S.textMuted,
-                    strokeWidth: item.active ? 2.5 : 1.8,
-                    position: "relative",
-                  }}
-                />
-                {item.active && (
-                  <div
-                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                    style={{
-                      backgroundColor: S.orange,
-                      boxShadow: `0 0 8px ${S.orange}`,
-                    }}
-                  />
-                )}
-              </div>
-              <span
-                className="text-[10px]"
-                style={{
-                  color: item.active ? S.orange : S.textMuted,
-                  fontWeight: item.active ? 700 : 500,
-                }}
-              >
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      <SolarBottomNav />
     </div>
   );
 };
