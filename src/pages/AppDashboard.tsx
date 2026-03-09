@@ -51,6 +51,15 @@ function getMuscleStatus(daysSinceTraining: number): MuscleStatus {
   return "none";
 }
 
+function muscleStatusColor(status: MuscleStatus): string {
+  switch (status) {
+    case "today": return "hsl(var(--success))";
+    case "recent": return "hsl(var(--warning))";
+    case "recovering": return "hsl(var(--orange))";
+    default: return "hsl(var(--muted))";
+  }
+}
+
 const AppDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
