@@ -56,21 +56,7 @@ function muscleStatusColor(status: MuscleStatus): string {
   }
 }
 
-/* ─── Solar palette ─── */
-const S = {
-  bg: "#FDFCFB",
-  card: "#FFFFFF",
-  cardBorder: "#F0EBE5",
-  orange: "#EA580C",
-  amber: "#F59E0B",
-  coral: "#F87171",
-  terracotta: "#C2410C",
-  text: "#18181B",
-  textMuted: "#A1A1AA",
-  textSub: "#71717A",
-  glow: "rgba(234,88,12,0.15)",
-  glowStrong: "rgba(234,88,12,0.25)",
-};
+/* S is now imported from SolarLayout */
 
 const AppDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
