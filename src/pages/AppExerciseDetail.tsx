@@ -44,7 +44,7 @@ const AppExerciseDetail = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    if (!subscriptionLoading && !subscribed && user) {
+    if (!subscriptionLoading && !user) {
       navigate("/app/login");
       return;
     }
