@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { Home, Dumbbell, Users, TrendingUp, User } from "lucide-react";
 
-/* ─── Solar palette — shared across all pages ─── */
-export const S = {
+/* ─── Solar palette — light & dark variants ─── */
+const LIGHT = {
   bg: "#FDFCFB",
   card: "#FFFFFF",
   cardBorder: "#F0EBE5",
@@ -15,7 +16,36 @@ export const S = {
   textSub: "#71717A",
   glow: "rgba(234,88,12,0.15)",
   glowStrong: "rgba(234,88,12,0.25)",
+  navBg: "rgba(253,252,251,0.82)",
+  headerBg: "rgba(253,252,251,0.8)",
 };
+
+const DARK = {
+  bg: "#1A1412",          // warm near-black (brown tint)
+  card: "#231D19",        // warm dark card
+  cardBorder: "#332A24",  // warm border
+  orange: "#F97316",      // slightly brighter for contrast
+  amber: "#FBBF24",
+  coral: "#FB7185",
+  terracotta: "#EA580C",
+  text: "#FAF5F0",        // warm off-white
+  textMuted: "#8C7E74",   // warm muted
+  textSub: "#A69890",     // warm sub text
+  glow: "rgba(249,115,22,0.2)",
+  glowStrong: "rgba(249,115,22,0.35)",
+  navBg: "rgba(26,20,18,0.85)",
+  headerBg: "rgba(26,20,18,0.82)",
+};
+
+export type SolarPalette = typeof LIGHT;
+
+export function useSolar(): SolarPalette {
+  const { resolvedTheme } = useTheme();
+  return resolvedTheme === "dark" ? DARK : LIGHT;
+}
+
+/* ─── Backward-compat static export (light default) ─── */
+export const S = LIGHT;
 
 const NAV_ITEMS = [
   { icon: Home, label: "Início", route: "/app" },
@@ -28,6 +58,7 @@ const NAV_ITEMS = [
 export const SolarBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const s = useSolar();
 
   const isActive = (route: string) => location.pathname === route;
 
@@ -35,10 +66,10 @@ export const SolarBottomNav = () => {
     <nav
       className="fixed bottom-0 left-0 right-0 z-30"
       style={{
-        backgroundColor: "rgba(253,252,251,0.82)",
+        backgroundColor: s.navBg,
         backdropFilter: "blur(32px) saturate(1.8)",
         WebkitBackdropFilter: "blur(32px) saturate(1.8)",
-        borderTop: `1px solid ${S.cardBorder}`,
+        borderTop: `1px solid ${s.cardBorder}`,
       }}
     >
       <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-7">
@@ -54,13 +85,13 @@ export const SolarBottomNav = () => {
                 {active && (
                   <div
                     className="absolute inset-0 -m-1.5 rounded-lg"
-                    style={{ backgroundColor: "rgba(234,88,12,0.08)" }}
+                    style={{ backgroundColor: `${s.orange}14` }}
                   />
                 )}
                 <item.icon
                   size={20}
                   style={{
-                    color: active ? S.orange : S.textMuted,
+                    color: active ? s.orange : s.textMuted,
                     strokeWidth: active ? 2.5 : 1.8,
                     position: "relative",
                   }}
@@ -68,14 +99,14 @@ export const SolarBottomNav = () => {
                 {active && (
                   <div
                     className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                    style={{ backgroundColor: S.orange, boxShadow: `0 0 8px ${S.orange}` }}
+                    style={{ backgroundColor: s.orange, boxShadow: `0 0 8px ${s.orange}` }}
                   />
                 )}
               </div>
               <span
                 className="text-[10px]"
                 style={{
-                  color: active ? S.orange : S.textMuted,
+                  color: active ? s.orange : s.textMuted,
                   fontWeight: active ? 700 : 500,
                 }}
               >
@@ -93,12 +124,15 @@ interface SolarPageProps {
   children: React.ReactNode;
 }
 
-export const SolarPage: React.FC<SolarPageProps> = ({ children }) => (
-  <div
-    className="min-h-screen pb-28 overflow-x-hidden"
-    style={{ backgroundColor: S.bg, fontFamily: "'Inter', sans-serif" }}
-  >
-    {children}
-    <SolarBottomNav />
-  </div>
-);
+export const SolarPage: React.FC<SolarPageProps> = ({ children }) => {
+  const s = useSolar();
+  return (
+    <div
+      className="min-h-screen pb-28 overflow-x-hidden"
+      style={{ backgroundColor: s.bg, fontFamily: "'Inter', sans-serif" }}
+    >
+      {children}
+      <SolarBottomNav />
+    </div>
+  );
+};
