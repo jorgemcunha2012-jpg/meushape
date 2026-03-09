@@ -58,6 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Check admin session on load
+    setIsAdmin(isAdminSession());
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -73,9 +76,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check subscription when user changes
+  // Check subscription when user changes or admin status
   useEffect(() => {
-    if (user) {
+    setIsAdmin(isAdminSession());
+    
+    if (user || isAdminSession()) {
       checkSubscription();
     } else {
       setSubscribed(false);
