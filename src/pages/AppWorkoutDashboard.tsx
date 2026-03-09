@@ -337,13 +337,13 @@ const AppWorkoutDashboard = () => {
             <span className="text-[10px] font-semibold text-primary">Treinos</span>
             <div className="w-1 h-1 rounded-full bg-primary" />
           </button>
-          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👥</span>
-            <span className="text-[10px] text-muted-foreground">Social</span>
-          </button>
           <button onClick={() => navigate("/app/history")} className="flex flex-col items-center gap-1 py-1 px-3">
             <span className="text-lg opacity-50 grayscale">📊</span>
             <span className="text-[10px] text-muted-foreground">Progresso</span>
+          </button>
+          <button onClick={() => navigate("/app/community")} className="flex flex-col items-center gap-1 py-1 px-3">
+            <span className="text-lg opacity-50 grayscale">👥</span>
+            <span className="text-[10px] text-muted-foreground">Social</span>
           </button>
         </div>
       </nav>
