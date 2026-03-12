@@ -1,11 +1,34 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { calculateAxisScores, diagnosisTexts, generateSummary, type AxisScores } from "@/lib/quizData";
-import { ArrowRight, CheckCircle2, Shield, Star, Lock, Loader2 } from "lucide-react";
+import { calculateAxisScores } from "@/lib/quizData";
+import {
+  deriveSixDimensions,
+  computeOverallScore,
+  computePotential,
+  generateInsights,
+  testimonials as allTestimonials,
+  dimensionLabels,
+} from "@/lib/quizResultUtils";
+import { ArrowRight, Lock, Loader2, Shield, Star } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import ScoreRing from "@/components/quiz-result/ScoreRing";
+import RadarChartComponent from "@/components/quiz-result/RadarChart";
+import InsightCards from "@/components/quiz-result/InsightCards";
+import TestimonialCarousel from "@/components/quiz-result/TestimonialCarousel";
+import UrgencyModal from "@/components/quiz-result/UrgencyModal";
+
+type TabKey = "score" | "grafico" | "insights" | "depoimentos";
+
+const tabs: { key: TabKey; label: string }[] = [
+  { key: "score", label: "Score" },
+  { key: "grafico", label: "Gráfico" },
+  { key: "insights", label: "Insights" },
+  { key: "depoimentos", label: "Provas" },
+];
 
 const QuizResult = () => {
   const location = useLocation();
@@ -14,45 +37,48 @@ const QuizResult = () => {
 
   const scores = calculateAxisScores(answers || {});
   const firstName = name?.split(" ")[0] || "linda";
-  const summary = generateSummary(scores);
+  const dims = deriveSixDimensions(scores);
+  const potential = computePotential(dims);
+  const overallScore = computeOverallScore(dims);
+  const insights = generateInsights(dims, answers || {});
+  const bottleneckLabel = insights[0]?.title?.split(" é ")[0] || "Consistência";
 
+  // Filter testimonials by user profile, fallback to all
+  const objetivo = getObjetivo(answers);
+  const filtered = allTestimonials.filter((t) => t.profile === objetivo);
+  const displayTestimonials = filtered.length >= 2 ? filtered : allTestimonials;
+
+  const [activeTab, setActiveTab] = useState<TabKey>("score");
   const [password, setPassword] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  const scrollToCTA = () => {
+    ctaRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleCheckout = async () => {
     if (!email || !password || password.length < 6) {
       toast.error("Crie uma senha com pelo menos 6 caracteres.");
       return;
     }
-
     setCheckingOut(true);
     try {
-      // 1. Sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { name },
-          emailRedirectTo: window.location.origin + "/app",
-        },
+        options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
       });
-
-      // If user already exists, try sign in
       if (signUpError?.message?.includes("already registered")) {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
       } else if (signUpError) {
         throw signUpError;
       }
-
-      // 2. Create checkout session
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       console.error("Checkout error:", err);
       toast.error(err.message || "Erro ao processar. Tente novamente.");
@@ -61,195 +87,293 @@ const QuizResult = () => {
     }
   };
 
+  const scoreLabel = overallScore <= 40
+    ? "Você precisa de atenção urgente. Mas calma — com o plano certo, tudo muda."
+    : overallScore <= 70
+    ? "Você tem potencial, mas precisa de direção. O plano personalizado vai acelerar seus resultados."
+    : "Ótima base! Com ajustes pontuais, seus resultados vão explodir.";
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="px-4 pt-12 pb-8">
-        <div className="max-w-lg mx-auto text-center animate-fade-in-up">
-          <p className="text-sm text-primary font-medium mb-2">Seu Diagnóstico Fitness</p>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-            {firstName}, seu plano de treino personalizado tá pronto!
-          </h1>
-          <p className="text-muted-foreground">
-            Baseado nas suas respostas, montamos seu diagnóstico completo.
+    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+      {/* Header */}
+      <section className="px-5 pt-10 pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: "#FF6B2B" }}>
+            Diagnóstico Completo
           </p>
-        </div>
+          <h1
+            className="text-2xl font-black text-white mb-1"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            {firstName}, seu resultado
+          </h1>
+          <p className="text-sm text-white/50">
+            Baseado nas suas {Object.keys(answers || {}).length} respostas
+          </p>
+        </motion.div>
       </section>
 
-      {/* Body Analysis Section */}
-      {bodyAnalysis && bodyAnalysis.body_type !== "indefinido" && (
-        <section className="px-4 pb-8">
-          <div className="max-w-lg mx-auto">
-            <div className="bg-card border border-primary/20 rounded-2xl p-6">
-              <h3 className="font-display text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                📸 Sua Análise Corporal
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Biotipo estimado</span>
-                  <span className="text-sm font-semibold text-foreground capitalize">{bodyAnalysis.body_type}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">% Gordura estimado</span>
-                  <span className="text-sm font-semibold text-foreground">{bodyAnalysis.estimated_bf_range}</span>
-                </div>
-                {bodyAnalysis.strengths && (
-                  <div>
-                    <span className="text-xs text-muted-foreground block mb-1">💪 Pontos fortes</span>
-                    <p className="text-sm text-foreground">{bodyAnalysis.strengths}</p>
-                  </div>
-                )}
-                {bodyAnalysis.focus_areas && (
-                  <div>
-                    <span className="text-xs text-muted-foreground block mb-1">🎯 Foco sugerido</span>
-                    <p className="text-sm text-foreground">{bodyAnalysis.focus_areas}</p>
-                  </div>
-                )}
-                {bodyAnalysis.posture_notes && (
-                  <div>
-                    <span className="text-xs text-muted-foreground block mb-1">🧘 Postura</span>
-                    <p className="text-sm text-foreground">{bodyAnalysis.posture_notes}</p>
-                  </div>
-                )}
-                {bodyAnalysis.recommendation && (
-                  <div className="mt-2 pt-3 border-t border-border">
-                    <p className="text-sm text-primary font-medium">✨ {bodyAnalysis.recommendation}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Tabs */}
+      <nav className="px-5 mb-4">
+        <div
+          className="flex rounded-xl p-1 gap-1"
+          style={{ background: "rgba(255,255,255,0.05)" }}
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
+              style={{
+                background: activeTab === tab.key ? "#FF6B2B" : "transparent",
+                color: activeTab === tab.key ? "#fff" : "rgba(255,255,255,0.4)",
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </nav>
 
-      {/* Radar / Bar Chart */}
-      <section className="px-4 pb-8">
-        <div className="max-w-lg mx-auto">
-          <div className="bg-card border border-border rounded-2xl p-6">
-            <div className="space-y-5">
-              {diagnosisTexts.map((diag) => {
-                const score = scores[diag.axis as keyof AxisScores];
-                return (
-                  <div key={diag.axis}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-                        <span>{diag.emoji}</span> {diag.label}
-                      </span>
-                      <span className="text-sm font-bold text-primary">{score}/10</span>
-                    </div>
-                    <div className="h-3 bg-secondary rounded-full overflow-hidden mb-2">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
+      {/* Tab Content */}
+      <section className="px-5 pb-6">
+        <AnimatePresence mode="wait">
+          {activeTab === "score" && (
+            <motion.div
+              key="score"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="flex flex-col items-center"
+            >
+              <ScoreRing score={overallScore} label={scoreLabel} />
+
+              {/* Dimension breakdown */}
+              <div className="w-full mt-6 space-y-3">
+                {(Object.keys(dims) as (keyof typeof dims)[]).map((key, i) => (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 + i * 0.08 }}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="text-xs text-white/50 w-24 text-right shrink-0">
+                      {dimensionLabels[key]}
+                    </span>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                      <motion.div
+                        className="h-full rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${dims[key] * 10}%` }}
+                        transition={{ delay: 1 + i * 0.1, duration: 0.6 }}
                         style={{
-                          width: `${score * 10}%`,
-                          backgroundColor: score <= 3
-                            ? "hsl(0, 70%, 60%)"
-                            : score <= 6
-                            ? "hsl(40, 80%, 55%)"
-                            : "hsl(140, 60%, 45%)",
+                          background:
+                            dims[key] <= 3 ? "#EF4444" : dims[key] <= 6 ? "#F59E0B" : "#10B981",
                         }}
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {diag.getText(score)}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-foreground font-medium text-sm leading-relaxed">
-                💡 {summary}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* What you get */}
-      <section className="px-4 pb-8">
-        <div className="max-w-lg mx-auto">
-          <h3 className="font-display text-xl font-bold text-foreground mb-4 text-center">
-            O que você recebe
-          </h3>
-          <div className="space-y-3">
-            {[
-              "Plano de treino personalizado pro seu nível",
-              "Vídeo de cada exercício mostrando como fazer",
-              "Contagem de repetição e tempo de descanso",
-              "Treinos que evoluem com você toda semana",
-              "Treinos complementares em casa quando necessário",
-              "Comunidade de mulheres treinando juntas",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                <span className="text-foreground text-sm">{item}</span>
+                    <span
+                      className="text-xs font-bold w-8 text-right tabular-nums"
+                      style={{
+                        color:
+                          dims[key] <= 3 ? "#EF4444" : dims[key] <= 6 ? "#F59E0B" : "#10B981",
+                      }}
+                    >
+                      {dims[key]}
+                    </span>
+                  </motion.div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </motion.div>
+          )}
 
-      {/* Pricing + Signup */}
-      <section className="px-4 pb-8">
-        <div className="max-w-lg mx-auto">
-          <div className="bg-card border-2 border-primary rounded-2xl p-6 text-center">
-            <div className="inline-flex items-center gap-1 bg-rose-soft text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              <Star className="w-3 h-3" /> OFERTA DE BOAS-VINDAS
-            </div>
-            <h3 className="font-display text-2xl font-bold text-foreground mb-1">
-              7 dias grátis
-            </h3>
-            <p className="text-muted-foreground text-sm mb-6">
-              Depois, apenas R$ 19,90/mês. Cancele quando quiser.
-            </p>
-
-            {/* Password field */}
-            <div className="mb-4 text-left">
-              <label className="text-xs text-muted-foreground mb-1 block">Crie uma senha para acessar o app</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="password"
-                  placeholder="Mínimo 6 caracteres"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-12 rounded-xl"
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <Button
-              size="lg"
-              onClick={handleCheckout}
-              disabled={checkingOut || password.length < 6}
-              className="w-full rounded-full py-6 text-base font-semibold shadow-lg"
+          {activeTab === "grafico" && (
+            <motion.div
+              key="grafico"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
             >
-              {checkingOut ? (
-                <><Loader2 className="w-5 h-5 mr-1 animate-spin" /> Processando...</>
-              ) : (
-                <>Começar meus 7 dias grátis <ArrowRight className="w-5 h-5 ml-1" /></>
-              )}
-            </Button>
+              <div className="text-center mb-2">
+                <p className="text-xs text-white/40">Comparação: Atual vs. Potencial em 12 Semanas</p>
+              </div>
+              <RadarChartComponent current={dims} potential={potential} />
+              <div className="flex justify-center gap-6 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ background: "#EF4444" }} />
+                  <span className="text-[11px] text-white/50">Hoje</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ background: "#10B981" }} />
+                  <span className="text-[11px] text-white/50">12 Semanas</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-            <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Shield className="w-3 h-3" /> Garantia 30 dias
-              </span>
-              <span>•</span>
-              <span>Cancele a qualquer momento</span>
+          {activeTab === "insights" && (
+            <motion.div
+              key="insights"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              <InsightCards insights={insights} />
+
+              {/* Body analysis if available */}
+              {bodyAnalysis && bodyAnalysis.body_type !== "indefinido" && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-4 rounded-2xl p-4"
+                  style={{
+                    background: "rgba(255,107,43,0.05)",
+                    border: "1px solid rgba(255,107,43,0.15)",
+                  }}
+                >
+                  <h4
+                    className="text-sm font-bold text-white/90 mb-3"
+                    style={{ fontFamily: "'Montserrat', sans-serif" }}
+                  >
+                    📸 Análise Corporal
+                  </h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-white/40">Biotipo</span>
+                      <span className="text-white/80 capitalize">{bodyAnalysis.body_type}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/40">% Gordura</span>
+                      <span className="text-white/80">{bodyAnalysis.estimated_bf_range}</span>
+                    </div>
+                    {bodyAnalysis.recommendation && (
+                      <p className="text-white/60 pt-2 border-t border-white/5">
+                        ✨ {bodyAnalysis.recommendation}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === "depoimentos" && (
+            <motion.div
+              key="depoimentos"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              <p className="text-xs text-white/40 text-center mb-4">
+                Mulheres com perfil parecido com o seu
+              </p>
+              <TestimonialCarousel testimonials={displayTestimonials} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* CTA Section */}
+      <section ref={ctaRef} className="px-5 pb-10">
+        <div
+          className="rounded-2xl p-5 text-center"
+          style={{
+            background: "linear-gradient(180deg, rgba(255,107,43,0.08) 0%, rgba(255,107,43,0.02) 100%)",
+            border: "1px solid rgba(255,107,43,0.2)",
+          }}
+        >
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold mb-3"
+            style={{ background: "rgba(255,107,43,0.15)", color: "#FF6B2B" }}>
+            <Star size={10} /> OFERTA DE BOAS-VINDAS
+          </div>
+
+          <h3
+            className="text-xl font-black text-white mb-1"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            7 dias grátis
+          </h3>
+          <p className="text-xs text-white/40 mb-5">
+            Depois, apenas R$ 19,90/mês. Cancele quando quiser.
+          </p>
+
+          {/* Password */}
+          <div className="mb-4 text-left">
+            <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha para acessar</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Input
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
+                minLength={6}
+              />
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            Se você seguir o plano por 30 dias e não sentir diferença, devolvemos seu dinheiro. Sem burocracia.
-          </p>
+          <Button
+            size="lg"
+            onClick={handleCheckout}
+            disabled={checkingOut || password.length < 6}
+            className="w-full rounded-full py-6 text-sm font-bold"
+            style={{
+              background: password.length >= 6
+                ? "linear-gradient(135deg, #FF6B2B, #F59E0B)"
+                : "rgba(255,255,255,0.1)",
+              color: password.length >= 6 ? "#fff" : "rgba(255,255,255,0.3)",
+            }}
+          >
+            {checkingOut ? (
+              <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
+            ) : (
+              <>Começar meus 7 dias grátis <ArrowRight className="w-4 h-4 ml-1" /></>
+            )}
+          </Button>
+
+          <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-white/30">
+            <span className="flex items-center gap-1">
+              <Shield className="w-3 h-3" /> Garantia 30 dias
+            </span>
+            <span>•</span>
+            <span>Cancele a qualquer momento</span>
+          </div>
         </div>
       </section>
+
+      {/* Urgency Modal */}
+      <UrgencyModal
+        firstName={firstName}
+        bottleneck={bottleneckLabel}
+        onCTA={scrollToCTA}
+      />
     </div>
   );
 };
+
+function getObjetivo(answers: Record<string, string | string[]> | undefined): string {
+  if (!answers) return "";
+  const a = answers["t01"];
+  const id = Array.isArray(a) ? a[0] : a;
+  const map: Record<string, string> = {
+    t01a: "Emagrecer",
+    t01b: "Definir",
+    t01c: "Emagrecer + Definir",
+    t01d: "Iniciante",
+  };
+  return map[id] || "";
+}
 
 export default QuizResult;
