@@ -42,6 +42,9 @@ const AppProfile = () => {
   const [loading, setLoading] = useState(true);
   const [onboardingData, setOnboardingData] = useState<Record<string, any> | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
