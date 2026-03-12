@@ -159,7 +159,9 @@ const AppWarmup = () => {
         </span>
 
         {/* MuscleWiki media */}
-        {currentMedia?.video ? (
+        {mediaLoading && !currentMedia ? (
+          <div className="h-36 w-48 rounded-2xl mb-4 bg-muted shimmer-loading" />
+        ) : currentMedia?.video ? (
           <video src={currentMedia.video} autoPlay loop muted playsInline className="h-36 rounded-2xl object-contain mb-4" />
         ) : currentMedia?.image ? (
           <img src={currentMedia.image} alt={current.name} className="h-36 rounded-2xl object-contain mb-4" />
