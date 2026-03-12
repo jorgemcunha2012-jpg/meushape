@@ -81,14 +81,14 @@ const AppExerciseDetail = () => {
       const baseName = stripParentheses(exerciseData.name);
       let { data: curatedData } = await supabase
         .from("curated_exercises")
-        .select("name_pt, simple_instruction_pt, common_mistakes_pt, gif_url, target, body_part")
+        .select("name_pt, simple_instruction_pt, common_mistakes_pt, target, body_part")
         .eq("name_pt", exerciseData.name)
         .single();
 
       if (!curatedData && baseName !== exerciseData.name) {
         const { data: fallback } = await supabase
           .from("curated_exercises")
-          .select("name_pt, simple_instruction_pt, common_mistakes_pt, gif_url, target, body_part")
+          .select("name_pt, simple_instruction_pt, common_mistakes_pt, target, body_part")
           .eq("name_pt", baseName)
           .single();
         curatedData = fallback;
