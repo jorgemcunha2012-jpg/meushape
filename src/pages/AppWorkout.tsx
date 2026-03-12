@@ -161,12 +161,12 @@ const AppWorkout = () => {
     if (wkRes.data) setWorkout(wkRes.data);
     if (exRes.data) {
       setExercises(exRes.data);
-      // Fetch curated GIFs
+      // Fetch curated info (for target/body_part labels only)
       const names = exRes.data.map((e) => e.name);
       if (names.length > 0) {
         const { data: curated } = await supabase
           .from("curated_exercises")
-          .select("name_pt, gif_url, target, body_part")
+          .select("name_pt, target, body_part")
           .in("name_pt", names);
         if (curated) {
           const map: Record<string, CuratedExercise> = {};
