@@ -129,11 +129,13 @@ const AppMeusTreinos = () => {
   };
 
   const handleGenerateNew = (type: GenerationType) => {
-    const limit = limits[type];
-    if (!limit.canGenerate) {
+    const program = activePrograms[type];
+    // If there's already an active program, go to purchase flow
+    if (program) {
       setPurchaseModal(type);
       return;
     }
+    // No active program — generate for free
     if (type === "plan") {
       navigate("/app/workouts");
     } else {
