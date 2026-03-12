@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { X, ArrowRight, Play, Pause, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateStreak, checkAndAwardBadges } from "@/lib/streaksAndBadges";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 // ==========================================
 // TYPES
@@ -41,7 +42,6 @@ interface CooldownStretch {
 
 interface CuratedExercise {
   name_pt: string;
-  gif_url: string | null;
   target: string;
   body_part: string;
 }
@@ -136,6 +136,8 @@ const AppWorkout = () => {
   // Current exercise data
   const currentEx = exercises[exIndex];
   const totalExercises = exercises.length;
+  const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
+  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
 
   useEffect(() => {
     if (workoutId) fetchWorkout();
@@ -158,12 +160,12 @@ const AppWorkout = () => {
     if (wkRes.data) setWorkout(wkRes.data);
     if (exRes.data) {
       setExercises(exRes.data);
-      // Fetch curated GIFs
+      // Fetch curated info (for target/body_part labels only)
       const names = exRes.data.map((e) => e.name);
       if (names.length > 0) {
         const { data: curated } = await supabase
           .from("curated_exercises")
-          .select("name_pt, gif_url, target, body_part")
+          .select("name_pt, target, body_part")
           .in("name_pt", names);
         if (curated) {
           const map: Record<string, CuratedExercise> = {};
@@ -305,7 +307,9 @@ const AppWorkout = () => {
     if (!currentEx) return null;
 
     const curated = curatedMap[currentEx.name];
-    const gifUrl = curated?.gif_url || currentEx.image_url;
+    const mw = mwMedia[currentEx.name];
+    const videoUrl = mw?.video;
+    const imageUrl = mw?.image || currentEx.image_url;
 
     const handleCompleteSet = () => {
       const newCompleted = { ...setsCompleted };
@@ -348,9 +352,18 @@ const AppWorkout = () => {
           {/* GIF Area */}
           <div className="w-full aspect-square max-h-60 rounded-2xl flex items-center justify-center mt-4 mb-4 relative overflow-hidden bg-card border border-border">
             <div className="absolute -bottom-5 -left-5 w-24 h-24 rounded-full bg-primary/15 blur-[40px]" />
-            {gifUrl ? (
+            {videoUrl ? (
+              <video
+                src={videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-contain relative z-10"
+              />
+            ) : imageUrl ? (
               <img
-                src={gifUrl}
+                src={imageUrl}
                 alt={currentEx.name}
                 className="w-full h-full object-contain relative z-10"
               />

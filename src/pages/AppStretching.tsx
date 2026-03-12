@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, SkipForward, CheckCircle2, Timer } from "lucide-react";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 interface Stretch {
   id: string;
@@ -59,6 +60,9 @@ const AppStretching = () => {
   };
 
   const current = stretches[currentIndex];
+  const stretchNames = useMemo(() => stretches.map(s => s.name_pt), [stretches]);
+  const { media: mwMedia } = useMuscleWikiMedia(stretchNames);
+  const currentMedia = current ? mwMedia[current.name_pt] : undefined;
 
   const tick = useCallback(() => {
     setTimeLeft((prev) => {
@@ -170,6 +174,14 @@ const AppStretching = () => {
         <p className="text-xs text-primary font-medium uppercase tracking-wider mb-2">
           {current.per_side ? `Lado ${side === "left" ? "esquerdo" : "direito"}` : ""}
         </p>
+
+        {/* MuscleWiki media */}
+        {currentMedia?.video ? (
+          <video src={currentMedia.video} autoPlay loop muted playsInline className="h-36 rounded-2xl object-contain mb-4" />
+        ) : currentMedia?.image ? (
+          <img src={currentMedia.image} alt={current.name_pt} className="h-36 rounded-2xl object-contain mb-4" />
+        ) : null}
+
         <h2 className="font-display text-2xl font-bold text-foreground text-center mb-4">
           {current.name_pt}
         </h2>

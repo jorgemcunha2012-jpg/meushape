@@ -10,6 +10,7 @@ import {
 import { SolarPage, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 interface Exercise {
   id: string;
@@ -26,7 +27,6 @@ interface CuratedExercise {
   name_pt: string;
   simple_instruction_pt: string | null;
   common_mistakes_pt: string | null;
-  gif_url: string | null;
   target: string;
   body_part: string;
 }
@@ -47,6 +47,9 @@ const AppExerciseDetail = () => {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [curatedExercise, setCuratedExercise] = useState<CuratedExercise | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const exerciseNames = useMemo(() => exercise ? [exercise.name] : [], [exercise]);
+  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
 
   const [reps, setReps] = useState("12");
   const [restSeconds, setRestSeconds] = useState(60);
@@ -81,14 +84,14 @@ const AppExerciseDetail = () => {
       const baseName = stripParentheses(exerciseData.name);
       let { data: curatedData } = await supabase
         .from("curated_exercises")
-        .select("name_pt, simple_instruction_pt, common_mistakes_pt, gif_url, target, body_part")
+        .select("name_pt, simple_instruction_pt, common_mistakes_pt, target, body_part")
         .eq("name_pt", exerciseData.name)
         .single();
 
       if (!curatedData && baseName !== exerciseData.name) {
         const { data: fallback } = await supabase
           .from("curated_exercises")
-          .select("name_pt, simple_instruction_pt, common_mistakes_pt, gif_url, target, body_part")
+          .select("name_pt, simple_instruction_pt, common_mistakes_pt, target, body_part")
           .eq("name_pt", baseName)
           .single();
         curatedData = fallback;
@@ -190,7 +193,9 @@ const AppExerciseDetail = () => {
     );
   }
 
-  const mediaUrl = curatedExercise?.gif_url || exercise?.image_url;
+  const mw = exercise ? mwMedia[exercise.name] : undefined;
+  const videoUrl = mw?.video;
+  const mediaUrl = mw?.image || exercise?.image_url;
   const displayName = exercise ? stripParentheses(exercise.name) : "";
 
   return (
@@ -208,14 +213,24 @@ const AppExerciseDetail = () => {
         <div className="flex items-center justify-center py-6" style={{ background: S.bg }}>
           <div className="w-[55%] aspect-square rounded-2xl overflow-hidden"
             style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-            {mediaUrl && (
+            {videoUrl ? (
+              <video
+                src={videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-contain"
+                style={{ background: S.card }}
+              />
+            ) : mediaUrl ? (
               <img
                 src={mediaUrl}
                 alt={displayName}
                 className="w-full h-full object-contain"
                 style={{ background: S.card }}
               />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

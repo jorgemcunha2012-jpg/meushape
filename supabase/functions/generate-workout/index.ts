@@ -482,55 +482,36 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
       curatedMap[ex.id] = ex;
     }
 
-    // Helper: validate a GIF/image URL with a HEAD request (timeout 5s)
-    async function validateGifUrl(url: string): Promise<boolean> {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-        const res = await fetch(url, { method: "HEAD", signal: controller.signal });
-        clearTimeout(timeout);
-        return res.ok;
-      } catch {
-        return false;
-      }
-    }
+    // Helper: search MuscleWiki for exercise media
+    const MUSCLEWIKI_API_KEY = Deno.env.get("MUSCLEWIKI_API_KEY");
+    const projectId = Deno.env.get("SUPABASE_URL")?.match(/https:\/\/([^.]+)/)?.[1] || "";
 
-    // Helper: fetch GIF from ExerciseDB API as fallback
-    async function fetchGifFallback(namePt: string): Promise<string | null> {
+    async function resolveMuscleWikiMedia(namePt: string): Promise<{ image_url: string | null; video_url: string | null }> {
+      if (!MUSCLEWIKI_API_KEY) return { image_url: null, video_url: null };
       try {
-        const normalized = namePt
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase()
-          .replace(/[^a-z0-9 ]/g, "")
-          .trim();
-        const url = `https://www.exercisedb.dev/api/v1/exercises/search?q=${encodeURIComponent(normalized)}&limit=1`;
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json?.data?.[0]?.gifUrl || null;
-      } catch {
-        return null;
+        // Try search with original name first, then stripped
+        const queries = [namePt, namePt.replace(/\s*\(.*\)$/, "")];
+        for (const q of queries) {
+          const res = await fetch(
+            `https://api.musclewiki.com/search?q=${encodeURIComponent(q)}&limit=1`,
+            { headers: { "X-API-Key": MUSCLEWIKI_API_KEY } }
+          );
+          if (!res.ok) continue;
+          const results = await res.json();
+          if (results.length > 0) {
+            const ex = results[0];
+            const video = ex.videos?.find((v: any) => v.gender === "female") || ex.videos?.[0];
+            const videoUrl = video?.url
+              ? `https://${projectId}.supabase.co/functions/v1/musclewiki-media?url=${encodeURIComponent(video.url)}`
+              : null;
+            const imageUrl = video?.og_image || null;
+            if (videoUrl || imageUrl) return { image_url: imageUrl, video_url: videoUrl };
+          }
+        }
+      } catch (e) {
+        console.warn("MuscleWiki search failed for:", namePt, e);
       }
-    }
-
-    // Helper: get a validated GIF URL, trying curated first, then fallback
-    async function resolveValidGif(curated: any, name: string): Promise<string | null> {
-      // Try curated gif_url
-      if (curated?.gif_url) {
-        const valid = await validateGifUrl(curated.gif_url);
-        if (valid) return curated.gif_url;
-        // Curated URL is broken — deactivate it in background
-        console.warn(`Broken gif_url for curated exercise ${curated.id}: ${curated.gif_url}`);
-        supabase.from("curated_exercises").update({ gif_url: null }).eq("id", curated.id).then(() => {});
-      }
-      // Try ExerciseDB fallback
-      const fallback = await fetchGifFallback(name);
-      if (fallback) {
-        const valid = await validateGifUrl(fallback);
-        if (valid) return fallback;
-      }
-      return null;
+      return { image_url: null, video_url: null };
     }
 
     // Create workouts and exercises
@@ -548,11 +529,11 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
 
       if (wkErr) throw wkErr;
 
-      // Resolve and validate GIFs in parallel
+      // Resolve MuscleWiki media in parallel
       const exerciseInserts = await Promise.all(
         (wk.exercises || []).map(async (ex: any) => {
           const curated = curatedMap[ex.curated_exercise_id];
-          const gif_url = await resolveValidGif(curated, ex.name);
+          const mwMedia = await resolveMuscleWikiMedia(ex.name);
           return {
             workout_id: workout.id,
             name: ex.name,
@@ -560,7 +541,8 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
             reps: ex.reps,
             rest_seconds: ex.rest_seconds,
             sort_order: ex.sort_order,
-            image_url: gif_url,
+            image_url: mwMedia.image_url,
+            video_url: mwMedia.video_url,
             description: curated?.simple_instruction_pt || null,
           };
         })

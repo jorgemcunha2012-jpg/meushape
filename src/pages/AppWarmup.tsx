@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, SkipForward, CheckCircle2, Zap } from "lucide-react";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 interface WarmupExercise {
   phase: string;
@@ -68,6 +69,9 @@ const AppWarmup = () => {
   };
 
   const current = routine?.exercises[currentIndex];
+  const exerciseNames = useMemo(() => routine?.exercises.map(e => e.name) || [], [routine]);
+  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const currentMedia = current ? mwMedia[current.name] : undefined;
 
   const tick = useCallback(() => {
     setTimeLeft((prev) => {
@@ -153,6 +157,13 @@ const AppWarmup = () => {
         <span className={`text-xs font-semibold px-3 py-1 rounded-full mb-4 ${phaseColors[current.phase] || "bg-primary/10 text-primary"}`}>
           {current.phase}
         </span>
+
+        {/* MuscleWiki media */}
+        {currentMedia?.video ? (
+          <video src={currentMedia.video} autoPlay loop muted playsInline className="h-36 rounded-2xl object-contain mb-4" />
+        ) : currentMedia?.image ? (
+          <img src={currentMedia.image} alt={current.name} className="h-36 rounded-2xl object-contain mb-4" />
+        ) : null}
 
         <h2 className="font-display text-2xl font-bold text-foreground text-center mb-2">
           {current.name}

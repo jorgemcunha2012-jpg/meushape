@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, CheckCircle2, Home, Dumbbell, Flame, Heart } from "lucide-react";
 import AnimatedExercise from "@/components/AnimatedExercise";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 interface HomeExercise {
   order: number;
@@ -246,6 +247,9 @@ const AppHomeWorkout = () => {
   const totalExInRound = selected.exercises.length;
   const overallProgress = ((((round - 1) * totalExInRound + exerciseIndex) / (selected.rounds * totalExInRound)) * 100);
 
+  const allExerciseNames = useMemo(() => selected.exercises.map(e => e.name), [selected]);
+  const { media: mwMedia } = useMuscleWikiMedia(allExerciseNames);
+  const currentMedia = currentExercise ? mwMedia[currentExercise.name] : undefined;
   const maxTime = phase === "work" ? selected.work_seconds : phase === "rest" ? selected.rest_seconds : selected.rest_between_rounds;
 
   return (
@@ -280,11 +284,25 @@ const AppHomeWorkout = () => {
         {/* Animated illustration during work phase */}
         {phase === "work" && currentExercise && (
           <>
-            <AnimatedExercise
-              name={currentExercise.name}
-              focus={currentExercise.focus}
-              className="h-40 mb-4 max-w-sm"
-            />
+            {currentMedia?.video ? (
+              <video
+                src={currentMedia.video}
+                autoPlay loop muted playsInline
+                className="h-40 mb-4 max-w-sm rounded-2xl object-contain"
+              />
+            ) : currentMedia?.image ? (
+              <img
+                src={currentMedia.image}
+                alt={currentExercise.name}
+                className="h-40 mb-4 max-w-sm rounded-2xl object-contain"
+              />
+            ) : (
+              <AnimatedExercise
+                name={currentExercise.name}
+                focus={currentExercise.focus}
+                className="h-40 mb-4 max-w-sm"
+              />
+            )}
             <h2 className="font-display text-2xl font-bold text-foreground text-center mb-1">
               {currentExercise.name}
             </h2>
