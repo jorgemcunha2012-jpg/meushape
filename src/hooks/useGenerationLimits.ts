@@ -48,13 +48,14 @@ function setLocalLimit(type: GenerationType, date: string) {
 
 const defaultLimit: LimitInfo = { canGenerate: true, daysUntilNext: 0, lastGeneratedAt: null, activeProgramId: null };
 
-export function useGenerationLimits(userId: string | undefined): GenerationLimits {
+export function useGenerationLimits(userId: string | undefined, isAdmin = false): GenerationLimits {
+  const adminLimit: LimitInfo = { canGenerate: true, daysUntilNext: 0, lastGeneratedAt: null, activeProgramId: null };
   const [limits, setLimits] = useState<Record<GenerationType, LimitInfo>>({
-    plan: defaultLimit,
-    challenge: defaultLimit,
-    project: defaultLimit,
+    plan: isAdmin ? adminLimit : defaultLimit,
+    challenge: isAdmin ? adminLimit : defaultLimit,
+    project: isAdmin ? adminLimit : defaultLimit,
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isAdmin);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
