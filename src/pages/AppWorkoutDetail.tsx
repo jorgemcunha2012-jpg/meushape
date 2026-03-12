@@ -134,23 +134,6 @@ const AppWorkoutDetail = () => {
         </div>
       </section>
 
-      {/* Muscle Tags */}
-      {muscleTags.length > 0 && (
-        <section className="px-5 pb-3">
-          <div className="max-w-lg mx-auto flex gap-2 flex-wrap">
-            {muscleTags.map((tag, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 rounded-full text-[11px] font-semibold"
-                style={{ background: `${S.orange}15`, color: S.orange }}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Exercises List */}
       <section className="px-5 pb-28">
         <div className="max-w-lg mx-auto">
