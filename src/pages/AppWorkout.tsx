@@ -223,6 +223,7 @@ const AppWorkout = () => {
       const summary = `Concluí o treino "${workout?.title}" em ${durationMin} minutos! 💪🔥`;
       await supabase.from("community_posts").insert({ user_id: user!.id, content: summary });
     }
+    setHasNewWorkout(true);
     setPhase("complete");
   };
 
