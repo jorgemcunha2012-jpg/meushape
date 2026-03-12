@@ -35,7 +35,7 @@ const AppWorkoutDetail = () => {
   const [loading, setLoading] = useState(true);
 
   const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
-  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) {
@@ -113,6 +113,7 @@ const AppWorkoutDetail = () => {
             {exercises.map((exercise, index) => {
               const mw = mwMedia[exercise.name];
               const thumbUrl = mw?.image || exercise.image_url;
+              const isMediaPending = mediaLoading && !mw;
 
               return (
                 <motion.button
@@ -124,8 +125,14 @@ const AppWorkoutDetail = () => {
                   className="w-full flex items-center gap-3 p-3 text-left group transition-colors"
                   style={{ ...cardStyle, cursor: "pointer" }}
                 >
-                  {/* Thumbnail or Number */}
-                  {thumbUrl ? (
+                  {/* Thumbnail / Shimmer / Number */}
+                  {isMediaPending ? (
+                    <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden"
+                      style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+                      <div className="w-full h-full animate-pulse"
+                        style={{ background: `linear-gradient(90deg, ${S.cardBorder}00 0%, ${S.cardBorder}80 50%, ${S.cardBorder}00 100%)`, backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
+                    </div>
+                  ) : thumbUrl ? (
                     <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"
                       style={{ background: `${S.orange}12`, border: `1px solid ${S.cardBorder}` }}>
                       <img

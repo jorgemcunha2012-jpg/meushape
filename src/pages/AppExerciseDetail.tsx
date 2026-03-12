@@ -49,7 +49,7 @@ const AppExerciseDetail = () => {
   const [loading, setLoading] = useState(true);
 
   const exerciseNames = useMemo(() => exercise ? [exercise.name] : [], [exercise]);
-  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
 
   const [reps, setReps] = useState("12");
   const [restSeconds, setRestSeconds] = useState(60);
@@ -194,6 +194,7 @@ const AppExerciseDetail = () => {
   }
 
   const mw = exercise ? mwMedia[exercise.name] : undefined;
+  const isMediaPending = mediaLoading && !mw;
   const videoUrl = mw?.video;
   const mediaUrl = mw?.image || exercise?.image_url;
   const displayName = exercise ? stripParentheses(exercise.name) : "";
@@ -213,7 +214,10 @@ const AppExerciseDetail = () => {
         <div className="flex items-center justify-center py-6" style={{ background: S.bg }}>
           <div className="w-[55%] aspect-square rounded-2xl overflow-hidden"
             style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-            {videoUrl ? (
+            {isMediaPending ? (
+              <div className="w-full h-full"
+                style={{ background: `linear-gradient(90deg, ${S.cardBorder}00 0%, ${S.cardBorder}80 50%, ${S.cardBorder}00 100%)`, backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
+            ) : videoUrl ? (
               <video
                 src={videoUrl}
                 autoPlay
