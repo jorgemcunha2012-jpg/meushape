@@ -268,25 +268,8 @@ const AppDashboard = () => {
                 style={{ backgroundColor: S.coral }}
               />
             </button>
-            <button
-              className="w-10 h-10 rounded-2xl overflow-hidden transition-all active:scale-95"
-              onClick={() => navigate("/app/profile")}
-              style={{
-                border: `2px solid ${S.orange}`,
-                boxShadow: `0 0 0 3px ${S.glow}`,
-              }}
-            >
-              <div
-                className="w-full h-full flex items-center justify-center font-display text-sm"
-                style={{
-                  fontWeight: 800,
-                  background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
-                  color: "#fff",
-                }}
-              >
-                {userName.charAt(0).toUpperCase()}
-              </div>
-            </button>
+
+
           </div>
         </div>
       </header>
