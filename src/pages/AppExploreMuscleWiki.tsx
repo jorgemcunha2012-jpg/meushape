@@ -367,8 +367,8 @@ const AppExploreMuscleWiki = () => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <div
-                        onClick={() => navigate(`/app/musclewiki/${item.id}`)}
-                        className="flex items-center gap-3 flex-1 min-w-0"
+                        onClick={() => clickGuard(() => navigate(`/app/musclewiki/${item.id}`))}
+                        className={`flex items-center gap-3 flex-1 min-w-0 ${clickBlocked ? 'pointer-events-none opacity-70' : ''}`}
                       >
                         {thumbnail ? (
                           <img
