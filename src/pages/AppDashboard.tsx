@@ -432,10 +432,10 @@ const AppDashboard = () => {
                       }}
                     />
                     <div>
-                      <div className="text-[11px] font-semibold" style={{ color: S.text }}>
+                      <div className="text-[12px] font-bold" style={{ color: S.text }}>
                         {item.label}
                       </div>
-                      <div className="text-[10px]" style={{ color: S.textMuted }}>
+                      <div className="text-[11px] font-medium" style={{ color: S.textMuted }}>
                         {statusGroups[item.status].join(", ")}
                       </div>
                     </div>
