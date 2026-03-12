@@ -89,7 +89,7 @@ const UrgencyModal = ({ firstName, bottleneck, onCTA }: UrgencyModalProps) => {
                   color: "#fff",
                 }}
               >
-                Pagar R$ 19,90 e começar agora
+                Começar agora — Grátis
                 <ArrowRight size={16} className="ml-1" />
               </Button>
 

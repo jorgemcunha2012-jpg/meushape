@@ -40,7 +40,7 @@ const Paywall = () => {
           Assine para continuar
         </h1>
         <p className="text-muted-foreground text-sm mb-8">
-          Desbloqueie seus treinos personalizados por apenas R$ 19,90/mês.
+          Desbloqueie seus treinos personalizados — grátis por tempo limitado.
         </p>
 
         <div className="space-y-3 text-left mb-8">
@@ -61,8 +61,8 @@ const Paywall = () => {
           <div className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-3">
             <Star className="w-3 h-3" /> ACESSO IMEDIATO
           </div>
-          <p className="text-2xl font-bold text-foreground">R$ 19,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-          <p className="text-xs text-muted-foreground mt-1">Após o período de teste</p>
+          <p className="text-2xl font-bold text-foreground">R$ 0,00<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+          <p className="text-xs text-muted-foreground mt-1">Grátis por tempo limitado</p>
         </div>
 
         <Button
@@ -71,7 +71,7 @@ const Paywall = () => {
           size="lg"
           className="w-full rounded-full py-6 text-base font-semibold"
         >
-          {loading ? "Processando..." : "Pagar R$ 19,90 e começar agora"}
+          {loading ? "Processando..." : "Começar agora — Grátis"}
           <ArrowRight className="w-5 h-5 ml-1" />
         </Button>
 

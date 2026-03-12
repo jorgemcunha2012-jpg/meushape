@@ -346,7 +346,7 @@ const QuizResult = () => {
             Acesso Imediato
           </h3>
           <p className="text-xs text-white/40 mb-5">
-            R$ 19,90/mês • Garantia de 30 dias ou seu dinheiro de volta.
+            Grátis por tempo limitado • Garantia de 30 dias.
           </p>
 
           {/* Password */}
@@ -380,7 +380,7 @@ const QuizResult = () => {
             {checkingOut ? (
               <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
             ) : (
-              <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-4 h-4 ml-1" /></>
+              <>Começar agora — Grátis <ArrowRight className="w-4 h-4 ml-1" /></>
             )}
           </Button>
 

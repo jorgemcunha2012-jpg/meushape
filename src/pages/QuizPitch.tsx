@@ -290,7 +290,7 @@ const QuizPitch = () => {
 
                 <h3 className="text-2xl font-black text-white mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>Acesso Imediato</h3>
 
-                <p className="text-xs text-white/40 mb-5">R$ 19,90/mês • Garantia de 30 dias ou seu dinheiro de volta.</p>
+                <p className="text-xs text-white/40 mb-5">Grátis por tempo limitado • Garantia de 30 dias.</p>
 
                 <div className="space-y-2 text-left mb-5">
                   {["Treinos personalizados por IA", "Progressão automática semanal", "Comunidade exclusiva", "Suporte 24/7", "Garantia de 30 dias"].map((item, i) => (
@@ -378,7 +378,7 @@ const QuizPitch = () => {
                   {checkingOut ? (
                     <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
                   ) : (
-                    <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-4 h-4 ml-1" /></>
+                    <>Começar agora — Grátis <ArrowRight className="w-4 h-4 ml-1" /></>
                   )}
                 </Button>
 

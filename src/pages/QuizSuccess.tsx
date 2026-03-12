@@ -68,7 +68,7 @@ const QuizSuccess = () => {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-white/40">Plano</span>
-            <span className="text-white font-semibold">Mensal — R$ 19,90/mês</span>
+            <span className="text-white font-semibold">Mensal — Grátis</span>
           </div>
           <div className="flex justify-between">
             <span className="text-white/40">Status</span>

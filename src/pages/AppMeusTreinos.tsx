@@ -251,7 +251,7 @@ const AppMeusTreinos = () => {
                     ) : (
                       <>
                         <Sparkles size={12} className="mr-1" />
-                        Gerar Extra • R$ 9,90
+                        Gerar Extra • Grátis
                       </>
                     )}
                   </Button>
@@ -343,12 +343,12 @@ const AppMeusTreinos = () => {
             </DialogTitle>
             <DialogDescription>
               Você já gerou seu {purchaseModal === "challenge" ? "desafio" : "projeto"} deste mês.
-              Compre um extra por apenas <strong className="text-foreground">R$ 9,90</strong>!
+              Compre um extra — <strong className="text-foreground">Grátis</strong> por tempo limitado!
             </DialogDescription>
           </DialogHeader>
           <div className="p-4 rounded-xl bg-muted/50 text-center">
-            <p className="text-3xl font-bold text-foreground mb-1">R$ 9,90</p>
-            <p className="text-xs text-muted-foreground">Pagamento único via Stripe</p>
+            <p className="text-3xl font-bold text-foreground mb-1">R$ 0,00</p>
+            <p className="text-xs text-muted-foreground">Grátis por tempo limitado</p>
           </div>
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => setPurchaseModal(null)} className="flex-1 rounded-xl">

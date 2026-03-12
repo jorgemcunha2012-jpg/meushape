@@ -40,9 +40,9 @@ const ProgressRing = () => {
 };
 
 const timelineSteps = [
-  { day: "Hoje", title: "Pague R$ 19,90 e comece agora", description: "Acesso imediato a todos os treinos, programas e funcionalidades.", active: true },
-  { day: "30 dias", title: "Teste tudo com garantia total", description: "Se não gostar, cancele e receba seu dinheiro de volta. Sem perguntas.", active: false },
-  { day: "Dia 31", title: "Renovação automática", description: "Se continuou, próxima cobrança de R$ 19,90. Cancele quando quiser.", active: false },
+  { day: "Hoje", title: "Comece agora — Grátis", description: "Acesso imediato a todos os treinos, programas e funcionalidades.", active: true },
+  { day: "30 dias", title: "Teste tudo com garantia total", description: "Explore todas as funcionalidades sem compromisso.", active: false },
+  { day: "Dia 31", title: "Renovação automática", description: "Plano gratuito por tempo limitado. Aproveite!", active: false },
 ];
 
 const QuizCheckout = () => {
@@ -115,7 +115,7 @@ const QuizCheckout = () => {
       <motion.div className="text-center mt-2 mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
         <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Comece hoje por apenas</h1>
         <div className="flex items-baseline justify-center gap-1.5 mt-3">
-          <span className="text-4xl font-extrabold" style={{ color: "#FF6B2B", fontFamily: "'Manrope', sans-serif" }}>R$ 19,90</span>
+          <span className="text-4xl font-extrabold" style={{ color: "#FF6B2B", fontFamily: "'Manrope', sans-serif" }}>R$ 0,00</span>
           <span className="text-sm" style={{ color: "#888" }}>/mês</span>
         </div>
         <p className="text-xs mt-2" style={{ color: "#666" }}>Garantia de 30 dias • Dinheiro de volta</p>
@@ -251,7 +251,7 @@ const QuizCheckout = () => {
           {checkingOut ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</>
           ) : (
-            <>Pagar R$ 19,90 agora <ArrowRight className="w-4 h-4" /></>
+            <>Começar agora — Grátis <ArrowRight className="w-4 h-4" /></>
           )}
         </motion.button>
 
