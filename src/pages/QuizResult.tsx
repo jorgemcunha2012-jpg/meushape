@@ -345,7 +345,7 @@ const QuizResult = () => {
             {checkingOut ? (
               <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
             ) : (
-              <>Começar meus 7 dias grátis <ArrowRight className="w-4 h-4 ml-1" /></>
+              <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-4 h-4 ml-1" /></>
             )}
           </Button>
 

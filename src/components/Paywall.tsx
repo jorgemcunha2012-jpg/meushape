@@ -71,7 +71,7 @@ const Paywall = () => {
           size="lg"
           className="w-full rounded-full py-6 text-base font-semibold"
         >
-          {loading ? "Processando..." : "Começar 7 dias grátis"}
+          {loading ? "Processando..." : "Pagar R$ 19,90 e começar agora"}
           <ArrowRight className="w-5 h-5 ml-1" />
         </Button>
 
