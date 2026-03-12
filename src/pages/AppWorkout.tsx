@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo, forwardRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,7 +110,7 @@ const DEFAULT_COOLDOWN: CooldownStretch[] = [
 // ==========================================
 // MAIN WORKOUT COMPONENT
 // ==========================================
-const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
+const AppWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
@@ -162,7 +162,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     if (wkRes.data) setWorkout(wkRes.data);
     if (exRes.data) {
       setExercises(exRes.data);
-      // Fetch curated info (for target/body_part labels only)
       const names = exRes.data.map((e) => e.name);
       if (names.length > 0) {
         const { data: curated } = await supabase
@@ -184,7 +183,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     ? Math.round(((exIndex + currentSet / (currentEx?.sets || 1)) / totalExercises) * 100)
     : 0;
 
-  // Save workout to database
   const saveWorkout = async () => {
     if ((!user && !isAdmin) || !workoutId) return;
     if (isAdmin) { setPhase("complete"); return; }
@@ -228,9 +226,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     setPhase("complete");
   };
 
-  // ==========================================
   // WARMUP PHASE
-  // ==========================================
   const WarmupPhase = () => {
     const current = warmupExercises[warmupStep];
     const timer = useTimer(current.duration, () => {
@@ -251,7 +247,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           </span>
         </div>
 
-        {/* Progress dots */}
         <div className="flex gap-1 mb-6">
           {warmupExercises.map((_, i) => (
             <div
@@ -261,7 +256,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           ))}
         </div>
 
-        {/* Animation area */}
         <div className="w-full h-52 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden bg-warning/5 border border-warning/10">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-warning/10 blur-[40px]" />
           <div className="text-center relative z-10">
@@ -270,17 +264,14 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
         </div>
 
-        {/* Instruction */}
         <div className="p-4 rounded-2xl bg-card border border-border mb-6">
           <p className="text-sm text-foreground leading-relaxed">{current.instruction}</p>
         </div>
 
-        {/* Timer */}
         <div className="text-center mb-6">
           <div className="text-5xl font-bold text-foreground tabular-nums">{timer.formatted}</div>
         </div>
 
-        {/* Buttons */}
         {!timer.running ? (
           <button
             onClick={timer.start}
@@ -303,9 +294,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     );
   };
 
-  // ==========================================
   // EXERCISE PHASE
-  // ==========================================
   const ExercisePhase = () => {
     if (!currentEx) return null;
 
@@ -330,7 +319,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
 
     return (
       <div className="min-h-screen bg-background">
-        {/* Top bar */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm">
           <div className="flex items-center justify-between px-5 py-3">
             <button onClick={() => navigate("/app")} className="text-muted-foreground">
@@ -352,7 +340,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
         </div>
 
         <div className="px-5 pb-8">
-          {/* GIF Area */}
           <div className="w-full aspect-square max-h-60 rounded-2xl flex items-center justify-center mt-4 mb-4 relative overflow-hidden bg-card border border-border">
             <div className="absolute -bottom-5 -left-5 w-24 h-24 rounded-full bg-primary/15 blur-[40px]" />
             {videoUrl ? (
@@ -378,7 +365,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
             )}
           </div>
 
-          {/* Exercise name + muscle */}
           <div className="mb-4">
             <h2 className="text-xl font-bold text-foreground tracking-tight mb-1">{currentEx.name}</h2>
             {(curated?.target || currentEx.description) && (
@@ -386,7 +372,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
             )}
           </div>
 
-          {/* Sets counter circles */}
           <div className="flex justify-center gap-2 mb-4">
             {Array.from({ length: currentEx.sets }, (_, i) => (
               <div
@@ -404,7 +389,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
             ))}
           </div>
 
-          {/* Current set info */}
           <div className="text-center mb-6">
             <p className="text-sm text-muted-foreground mb-1">
               Série {currentSet + 1} de {currentEx.sets}
@@ -412,7 +396,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
             <p className="text-3xl font-bold text-foreground">{currentEx.reps} reps</p>
           </div>
 
-          {/* Complete set button */}
           <button
             onClick={handleCompleteSet}
             className="w-full py-4 rounded-2xl font-bold text-base bg-primary text-primary-foreground shadow-lg shadow-primary/25 mb-3"
@@ -432,9 +415,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     );
   };
 
-  // ==========================================
   // REST PHASE
-  // ==========================================
   const RestPhase = () => {
     const restSeconds = currentEx?.rest_seconds || 45;
     const timer = useTimer(restSeconds, handleRestComplete);
@@ -457,7 +438,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
 
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
-        {/* Circular timer */}
         <div className="relative w-48 h-48 mb-8">
           <svg width="192" height="192" style={{ transform: "rotate(-90deg)" }}>
             <circle cx="96" cy="96" r="86" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
@@ -477,7 +457,6 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex items-center justify-center gap-4 mb-8">
           <button
             onClick={() => (timer.running ? timer.pause() : timer.start())}
@@ -493,38 +472,45 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           </button>
         </div>
 
-        {/* Next exercise preview */}
         {nextEx && (
           <div className="w-full p-4 rounded-2xl bg-card border border-border mb-6">
             <div className="text-xs text-muted-foreground mb-2">Próximo:</div>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-xl shrink-0">
-                🏋️‍♀️
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                {nextSetNum}
               </div>
               <div>
-                <p className="font-semibold text-sm text-foreground">{nextEx.name}</p>
+                <p className="font-medium text-foreground">{nextEx.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  Série {nextSetNum} de {nextEx.sets}
+                  {currentSet < (currentEx?.sets || 1) - 1 ? "Próxima série" : "Próximo exercício"}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Skip button */}
         <button
-          onClick={handleRestComplete}
-          className="py-3 px-8 rounded-2xl font-semibold text-sm border border-success/30 text-success bg-transparent"
+          onClick={() => {
+            if (currentSet < (currentEx?.sets || 1) - 1) {
+              setCurrentSet((s) => s + 1);
+            } else if (exIndex < totalExercises - 1) {
+              setExIndex((i) => i + 1);
+              setCurrentSet(0);
+            } else {
+              setPhase("cooldown");
+              return;
+            }
+            setPhase("exercise");
+          }}
+          className="flex items-center gap-2 text-sm font-semibold text-primary"
         >
-          Pular descanso →
+          Pular descanso <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     );
   };
 
-  // ==========================================
   // COOLDOWN PHASE
-  // ==========================================
   const CooldownPhase = () => {
     const current = cooldownStretches[cooldownStep];
     const timer = useTimer(current.duration, () => {
@@ -537,8 +523,8 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     return (
       <div className="min-h-screen bg-background px-5 pt-4 pb-8">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-purple">
-            🧘‍♀️ Volta à Calma
+          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-info">
+            🧘‍♀️ Resfriamento
           </div>
           <span className="text-xs text-muted-foreground">
             {cooldownStep + 1} de {cooldownStretches.length}
@@ -549,13 +535,14 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           {cooldownStretches.map((_, i) => (
             <div
               key={i}
-              className={`flex-1 h-1 rounded-full transition-colors ${i <= cooldownStep ? "bg-purple" : "bg-border"}`}
+              className={`flex-1 h-1 rounded-full transition-colors ${i <= cooldownStep ? "bg-info" : "bg-border"}`}
             />
           ))}
         </div>
 
-        <div className="w-full h-48 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden bg-purple/5 border border-purple/10">
-          <div className="text-center">
+        <div className="w-full h-52 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden bg-info/5 border border-info/10">
+          <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-info/10 blur-[40px]" />
+          <div className="text-center relative z-10">
             <div className="text-5xl mb-2">🧘‍♀️</div>
             <div className="text-lg font-bold text-foreground">{current.name}</div>
           </div>
@@ -572,9 +559,9 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
         {!timer.running ? (
           <button
             onClick={timer.start}
-            className="w-full py-4 rounded-2xl font-bold text-base bg-purple text-primary-foreground"
+            className="w-full py-4 rounded-2xl font-bold text-base bg-info text-info-foreground"
           >
-            Iniciar ▶
+            {cooldownStep === 0 ? "Começar Resfriamento ▶" : "Iniciar ▶"}
           </button>
         ) : (
           <button
@@ -582,7 +569,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
               if (cooldownStep < cooldownStretches.length - 1) setCooldownStep((s) => s + 1);
               else setPhase("feedback");
             }}
-            className="w-full py-4 rounded-2xl font-semibold text-sm border border-purple/30 text-purple bg-transparent"
+            className="w-full py-4 rounded-2xl font-semibold text-sm border border-info/40 text-info bg-transparent"
           >
             Pular →
           </button>
@@ -591,9 +578,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     );
   };
 
-  // ==========================================
   // FEEDBACK PHASE
-  // ==========================================
   const FeedbackPhase = () => {
     const options = [
       { emoji: "😅", label: "Fácil", value: "too_easy", className: "border-success bg-success/10" },
@@ -632,9 +617,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
     );
   };
 
-  // ==========================================
   // COMPLETION PHASE
-  // ==========================================
   const CompletionPhase = () => {
     const totalSets = Object.values(setsCompleted).reduce((a, b) => a + b, 0);
     const durationMin = Math.round(workoutDuration / 60);
@@ -661,13 +644,11 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           ))}
         </div>
 
-        {/* Volume */}
         <div className="p-4 rounded-2xl bg-card border border-border mb-6">
           <p className="text-sm font-semibold text-foreground mb-1">Volume Total</p>
           <p className="text-2xl font-bold text-success">{totalSets} séries</p>
         </div>
 
-        {/* Share card */}
         <div className="p-5 rounded-2xl mb-4 text-left bg-gradient-to-br from-primary/10 to-purple/10 border border-primary/20">
           <p className="text-sm font-semibold text-foreground mb-1">Compartilhar na Comunidade</p>
           <p className="text-xs text-muted-foreground mb-3">Mostre que você treinou hoje!</p>
@@ -688,7 +669,19 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
         </button>
       </div>
     );
-  });
-}
+  };
+
+  // RENDER
+  return (
+    <div ref={ref}>
+      {phase === "warmup" && <WarmupPhase />}
+      {phase === "exercise" && <ExercisePhase />}
+      {phase === "rest" && <RestPhase />}
+      {phase === "cooldown" && <CooldownPhase />}
+      {phase === "feedback" && <FeedbackPhase />}
+      {phase === "complete" && <CompletionPhase />}
+    </div>
+  );
+};
 
 export default AppWorkout;
