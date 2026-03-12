@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, Plus, Zap, Home, StretchHorizontal,
-  Compass, Star, Dumbbell, BookmarkPlus, Sparkles,
+  Compass, Star, Dumbbell, BookmarkPlus, Sparkles, Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
