@@ -65,6 +65,7 @@ const App = () => (
             <Route path="/app/history" element={<AppHistory />} />
             <Route path="/app/community" element={<AppCommunity />} />
             <Route path="/app/manage" element={<AppManageWorkouts />} />
+            <Route path="/app/meus-treinos" element={<AppMeusTreinos />} />
             <Route path="/app/stretching" element={<AppStretching />} />
             <Route path="/app/cardio" element={<AppCardio />} />
             <Route path="/app/cardio/:protocolId" element={<AppCardio />} />
