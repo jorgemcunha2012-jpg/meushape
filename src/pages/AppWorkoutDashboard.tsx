@@ -304,20 +304,6 @@ const AppWorkoutDashboard = () => {
                 </div>
               </div>
             )
-                    onClick={() => setShowAIWizard(true)}
-                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
-                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}>
-                    <Sparkles size={14} /> Gerar com IA
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.97 }}
-                    onClick={() => setShowExplorer(true)}
-                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
-                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.textMuted }}>
-                    <Compass size={14} /> Explorar
-                  </motion.button>
-                </div>
-              </div>
-            )}
           </div>
         </section>
       )}
