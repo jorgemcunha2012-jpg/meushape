@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Dumbbell, Flame, ChevronRight, Zap } from "lucide-react";
+import { Play, Clock, Dumbbell, Flame, ChevronRight, Zap } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface Exercise {
@@ -33,6 +33,7 @@ interface WorkoutInfo {
 const AppWorkoutDetail = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
+  const S = useSolar();
   const { user, subscribed, subscriptionLoading } = useAuth();
 
   const [workout, setWorkout] = useState<WorkoutInfo | null>(null);
@@ -58,7 +59,6 @@ const AppWorkoutDetail = () => {
     if (workoutRes.data) setWorkout(workoutRes.data);
     if (exerciseRes.data) {
       setExercises(exerciseRes.data);
-      // Fetch curated data for GIFs
       const names = exerciseRes.data.map(e => e.name);
       if (names.length > 0) {
         const { data: curated } = await supabase
@@ -79,8 +79,20 @@ const AppWorkoutDetail = () => {
     ? Math.round(exercises.reduce((acc, ex) => acc + ex.sets * 1.5 + (ex.sets - 1) * (ex.rest_seconds / 60), 0) + 10)
     : 0;
 
-  const muscleTags = [...new Set(exercises.map(e => e.description).filter(Boolean))].slice(0, 5);
   const totalSets = exercises.reduce((a, e) => a + e.sets, 0);
+
+  // Extract real muscle targets from curated data
+  const muscleTags = [...new Set(
+    exercises
+      .map(e => curatedMap[e.name]?.target || curatedMap[e.name]?.body_part)
+      .filter(Boolean) as string[]
+  )].slice(0, 5);
+
+  const cardStyle = {
+    backgroundColor: S.card,
+    border: `1px solid ${S.cardBorder}`,
+    borderRadius: "1.25rem",
+  };
 
   if (loading) {
     return (
@@ -90,23 +102,30 @@ const AppWorkoutDetail = () => {
     );
   }
 
+  const stats = [
+    { icon: Clock, label: "Duração", value: `~${estimatedTime}`, unit: "min", color: "#3B82F6" },
+    { icon: Dumbbell, label: "Exercícios", value: `${exercises.length}`, unit: "", color: S.orange },
+    { icon: Flame, label: "Calorias", value: `~${Math.round(estimatedTime * 7)}`, unit: "kcal", color: "#F59E0B" },
+    { icon: Zap, label: "Séries", value: `${totalSets}`, unit: "", color: "#22C55E" },
+  ];
+
   return (
     <SolarPage>
       <SolarHeader title={workout?.title || "Treino"} showBack />
 
-      {/* Stats Row */}
+      {/* Stats Grid - 2x2 */}
       <section className="px-5 py-4">
-        <div className="max-w-lg mx-auto flex gap-3">
-          {[
-            { icon: Clock, label: "Duração", value: `~${estimatedTime} min`, color: "text-info" },
-            { icon: Dumbbell, label: "Exercícios", value: `${exercises.length}`, color: "text-primary" },
-            { icon: Flame, label: "Calorias", value: `~${Math.round(estimatedTime * 7)} kcal`, color: "text-warning" },
-            { icon: Zap, label: "Séries", value: `${totalSets}`, color: "text-success" },
-          ].map((stat, i) => (
-            <div key={i} className="flex-1 bg-card border border-border rounded-2xl p-3 text-center">
-              <stat.icon className={`w-4 h-4 mx-auto mb-1.5 ${stat.color}`} />
-              <p className="text-base font-bold">{stat.value}</p>
-              <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+        <div className="max-w-lg mx-auto grid grid-cols-4 gap-2">
+          {stats.map((stat, i) => (
+            <div key={i} className="p-3 text-center" style={cardStyle}>
+              <stat.icon className="w-5 h-5 mx-auto mb-2" style={{ color: stat.color }} />
+              <p className="font-display text-lg leading-none" style={{ fontWeight: 800, color: S.text }}>
+                {stat.value}
+              </p>
+              {stat.unit && (
+                <p className="text-xs mt-0.5" style={{ fontWeight: 600, color: S.text }}>{stat.unit}</p>
+              )}
+              <p className="text-[10px] mt-1" style={{ color: S.textMuted }}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -119,7 +138,8 @@ const AppWorkoutDetail = () => {
             {muscleTags.map((tag, i) => (
               <span
                 key={i}
-                className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
+                className="px-3 py-1 rounded-full text-[11px] font-semibold"
+                style={{ background: `${S.orange}15`, color: S.orange }}
               >
                 {tag}
               </span>
@@ -128,27 +148,10 @@ const AppWorkoutDetail = () => {
         </section>
       )}
 
-      {/* Phase Overview */}
-      <section className="px-5 pb-4">
-        <div className="max-w-lg mx-auto flex gap-2">
-          {[
-            { label: "Aquecimento", time: "~3 min", colorClass: "bg-warning" },
-            { label: "Treino", time: `~${Math.max(1, estimatedTime - 6)} min`, colorClass: "bg-primary" },
-            { label: "Alongamento", time: "~3 min", colorClass: "bg-purple" },
-          ].map((p, i) => (
-            <div key={i} className="flex-1 bg-card border border-border rounded-xl p-3 text-center">
-              <div className={`w-2 h-2 rounded-full mx-auto mb-2 ${p.colorClass}`} />
-              <div className="text-xs font-semibold">{p.label}</div>
-              <div className="text-[10px] text-muted-foreground">{p.time}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Exercises List */}
-      <section className="px-5">
+      <section className="px-5 pb-28">
         <div className="max-w-lg mx-auto">
-          <h2 className="text-sm font-semibold mb-3 font-sans">Exercícios</h2>
+          <h2 className="font-display text-sm mb-3" style={{ fontWeight: 700, color: S.text }}>Exercícios</h2>
 
           <div className="space-y-2">
             {exercises.map((exercise, index) => {
@@ -162,35 +165,41 @@ const AppWorkoutDetail = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.04 }}
                   onClick={() => navigate(`/app/exercise/${exercise.id}`)}
-                  className="w-full flex items-center gap-3 p-3 bg-card border border-border rounded-2xl text-left group hover:border-primary/30 transition-colors"
+                  className="w-full flex items-center gap-3 p-3 text-left group transition-colors"
+                  style={{ ...cardStyle, cursor: "pointer" }}
                 >
                   {/* Thumbnail or Number */}
                   {thumbUrl ? (
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary shrink-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"
+                      style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
                       <img src={thumbUrl} alt={exercise.name} className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-xl bg-secondary border border-border flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sm shrink-0 font-display"
+                      style={{
+                        fontWeight: 800, background: `${S.orange}12`, color: S.orange,
+                        border: `1px solid ${S.cardBorder}`,
+                      }}>
                       {index + 1}
                     </div>
                   )}
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm mb-0.5 truncate font-sans">{exercise.name}</h3>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {curated?.target || exercise.description || ""}
+                    <h3 className="font-display text-sm mb-0.5 truncate" style={{ fontWeight: 700, color: S.text }}>
+                      {exercise.name}
+                    </h3>
+                    <p className="text-[11px] truncate" style={{ color: S.textMuted }}>
+                      {curated?.target || curated?.body_part || ""}
                     </p>
                   </div>
 
                   {/* Sets x Reps */}
-                  <div className="text-right shrink-0 flex items-center gap-2">
-                    <div>
-                      <span className="text-sm font-bold text-primary">
-                        {exercise.sets}×{exercise.reps}
-                      </span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <div className="shrink-0 flex items-center gap-2">
+                    <span className="text-sm font-display" style={{ fontWeight: 800, color: S.orange }}>
+                      {exercise.sets}×{exercise.reps}
+                    </span>
+                    <ChevronRight className="w-4 h-4" style={{ color: S.cardBorder }} />
                   </div>
                 </motion.button>
               );
@@ -204,10 +213,15 @@ const AppWorkoutDetail = () => {
         <div className="max-w-lg mx-auto">
           <motion.button
             onClick={() => navigate(`/app/workout/${workoutId}`)}
-            className="w-full font-bold py-4 rounded-2xl text-base text-primary-foreground bg-primary shadow-lg shadow-primary/25"
+            className="w-full py-4 rounded-2xl text-base font-display"
+            style={{
+              fontWeight: 700, color: "#fff",
+              background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+              boxShadow: `0 4px 16px ${S.glowStrong}`,
+            }}
             whileTap={{ scale: 0.97 }}
           >
-            <div className="flex items-center justify-center gap-2 font-sans">
+            <div className="flex items-center justify-center gap-2">
               <Play className="w-4 h-4" />
               Começar Treino
             </div>
