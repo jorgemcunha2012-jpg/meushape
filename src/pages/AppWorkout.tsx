@@ -687,20 +687,7 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           Voltar pro app
         </button>
       </div>
-    );
-  };
-
-  // ==========================================
-  // RENDER PHASE
-  // ==========================================
-  if (phase === "warmup") return <WarmupPhase />;
-  if (phase === "exercise") return <ExercisePhase />;
-  if (phase === "rest") return <RestPhase />;
-  if (phase === "cooldown") return <CooldownPhase />;
-  if (phase === "feedback") return <FeedbackPhase />;
-  if (phase === "complete") return <CompletionPhase />;
-
-  return null;
-};
+  );
+});
 
 export default AppWorkout;
