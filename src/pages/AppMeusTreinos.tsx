@@ -195,14 +195,6 @@ const AppMeusTreinos = () => {
                         1 por {config.period}
                       </p>
                     </div>
-                    <div
-                      className="flex items-center gap-1 px-2 py-1 rounded-full"
-                      style={{ background: limit.canGenerate ? `${S.orange}15` : `${S.orange}12` }}
-                    >
-                      <span className="text-[10px] font-semibold" style={{ color: S.orange }}>
-                        {limit.canGenerate ? "Disponível" : `Em ${limit.daysUntilNext}d`}
-                      </span>
-                    </div>
                   </div>
 
                   {/* Active program */}
