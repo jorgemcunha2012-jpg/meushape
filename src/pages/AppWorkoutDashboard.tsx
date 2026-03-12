@@ -249,41 +249,58 @@ const AppWorkoutDashboard = () => {
                     prog.title.toLowerCase().includes("desafio") ? "🔥" : "🏋️‍♀️";
 
                   return (
-                    <motion.button
+                    <motion.div
                       key={prog.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: gi * 0.05 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => navigate(`/app/program/${prog.id}`)}
-                      className="w-full text-left p-4 transition-all"
-                      style={cardStyle}
+                      className="flex items-center gap-2"
                     >
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0"
-                          style={{ background: `linear-gradient(135deg, ${S.orange}15, ${S.amber}15)` }}>
-                          {emoji}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
-                            <span className="text-[9px] font-semibold px-1.5 py-0.5"
-                              style={{ color: lc.text, background: lc.bg, borderRadius: "0.4rem" }}>
-                              {levelLabel(prog.level)}
-                            </span>
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => navigate(`/app/program/${prog.id}`)}
+                        className="flex-1 text-left p-4 transition-all min-w-0"
+                        style={cardStyle}
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0"
+                            style={{ background: `linear-gradient(135deg, ${S.orange}15, ${S.amber}15)` }}>
+                            {emoji}
                           </div>
-                          {prog.description && (
-                            <p className="text-[11px] truncate mb-1" style={{ color: S.textMuted }}>{prog.description}</p>
-                          )}
-                          <div className="flex items-center gap-3 text-[10px]" style={{ color: S.textSub }}>
-                            <span>{workoutCount} treinos</span>
-                            <span>{prog.days_per_week}x/sem</span>
-                            <span>{prog.duration_minutes} min</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
+                              <span className="text-[9px] font-semibold px-1.5 py-0.5"
+                                style={{ color: lc.text, background: lc.bg, borderRadius: "0.4rem" }}>
+                                {levelLabel(prog.level)}
+                              </span>
+                            </div>
+                            {prog.description && (
+                              <p className="text-[11px] truncate mb-1" style={{ color: S.textMuted }}>{prog.description}</p>
+                            )}
+                            <div className="flex items-center gap-3 text-[10px]" style={{ color: S.textSub }}>
+                              <span>{workoutCount} treinos</span>
+                              <span>{prog.days_per_week}x/sem</span>
+                              <span>{prog.duration_minutes} min</span>
+                            </div>
                           </div>
+                          <ChevronRight size={16} style={{ color: S.cardBorder }} />
                         </div>
-                        <ChevronRight size={16} style={{ color: S.cardBorder }} />
-                      </div>
-                    </motion.button>
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Remover este programa dos seus treinos?")) {
+                            removeProgram(prog.id);
+                          }
+                        }}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                        style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}
+                      >
+                        <Trash2 size={16} style={{ color: "#EF4444" }} />
+                      </motion.button>
+                    </motion.div>
                   );
                 })}
 
