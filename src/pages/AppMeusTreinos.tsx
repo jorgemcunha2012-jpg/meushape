@@ -235,23 +235,17 @@ const AppMeusTreinos = () => {
                     size="sm"
                     className="w-full rounded-xl text-xs h-9"
                     onClick={() => handleGenerateNew(type)}
-                    disabled={type === "plan" && !limit.canGenerate}
                     style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }}
                   >
-                    {limit.canGenerate ? (
+                    {program ? (
                       <>
                         <Sparkles size={12} className="mr-1" />
-                        Gerar Novo
-                      </>
-                    ) : type === "plan" ? (
-                      <>
-                        <Clock size={12} className="mr-1" />
-                        Disponível em {limit.daysUntilNext} dias
+                        Gerar Extra • Grátis
                       </>
                     ) : (
                       <>
                         <Sparkles size={12} className="mr-1" />
-                        Gerar Extra • Grátis
+                        Gerar Novo
                       </>
                     )}
                   </Button>
