@@ -5,11 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, Plus, Zap, Home, StretchHorizontal,
-  Compass, Star, Dumbbell, BookmarkPlus, X,
+  Compass, Star, Dumbbell, BookmarkPlus, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
+import AIWorkoutWizard from "@/components/AIWorkoutWizard";
 
 /* ─── Types ─── */
 interface Program {
