@@ -18,8 +18,10 @@ const MuscleMap: React.FC<MuscleMapProps> = ({
   const trainedColor = "#ff4d4d";
   const hoverOpacity = 0.7;
 
-  const getColor = (id: string) =>
-    trainedMuscles.includes(id) ? trainedColor : defaultColor;
+  const getColor = (id: string) => {
+    if (muscleColors?.[id]) return muscleColors[id];
+    return trainedMuscles.includes(id) ? trainedColor : defaultColor;
+  };
 
   const common = (id: string) => ({
     id,
