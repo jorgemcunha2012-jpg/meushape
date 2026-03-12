@@ -90,7 +90,7 @@ const AppWorkoutDetail = () => {
 
       {/* Stats Strip */}
       <section className="px-5 py-3">
-        <div className="max-w-lg mx-auto grid grid-cols-4 gap-2">
+        <div className="max-w-lg mx-auto grid grid-cols-3 gap-2">
           {stats.map((stat, i) => (
             <div key={i} className="flex flex-col items-center justify-center py-3 px-1 rounded-xl gap-1.5"
               style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
