@@ -175,14 +175,10 @@ const AppWorkoutDetail = () => {
                   )}
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
+                   <div className="flex-1 min-w-0">
                     <h3 className="font-display text-sm mb-0.5 truncate" style={{ fontWeight: 700, color: S.text }}>
                       {exercise.name.replace(/\s*\(.*\)$/, "")}
                     </h3>
-                    </h3>
-                    <p className="text-[11px] truncate" style={{ color: S.textMuted }}>
-                      {curated?.target || curated?.body_part || ""}
-                    </p>
                   </div>
 
                   {/* Sets x Reps */}
