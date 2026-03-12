@@ -203,23 +203,34 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
     );
   }
 
-  // Has onboarding data — 1-click generate
+  // Has onboarding data — 1-click generate (with cooldown check)
+  const allowed = canGeneratePlan();
+  const daysLeft = daysUntilNextPlan();
+
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 flex items-center justify-center mb-4"
         style={{ borderRadius: "1.5rem", background: `linear-gradient(135deg, ${S.orange}15, ${S.amber}15)` }}>
-        <Sparkles size={32} style={{ color: S.orange }} />
+        {allowed ? <Sparkles size={32} style={{ color: S.orange }} /> : <Lock size={32} style={{ color: S.textMuted }} />}
       </div>
       <p className="font-display text-base mb-2" style={{ fontWeight: 700, color: S.text }}>
-        Gerar treino com IA
+        {allowed ? "Gerar treino com IA" : "Plano em cooldown"}
       </p>
       <p className="text-sm mb-6" style={{ color: S.textMuted, maxWidth: 260 }}>
-        Baseado no seu perfil de treino, a IA vai montar um plano personalizado
+        {allowed
+          ? "Baseado no seu perfil de treino, a IA vai montar um plano personalizado"
+          : `Próximo plano disponível em ${daysLeft} dia${daysLeft > 1 ? "s" : ""}. Você pode gerar 1 plano por semana.`}
       </p>
-      <Button onClick={generateWorkout} className="rounded-xl"
-        style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
-        <Sparkles size={16} className="mr-1" /> Gerar meu treino agora
-      </Button>
+      {allowed ? (
+        <Button onClick={generateWorkout} className="rounded-xl"
+          style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
+          <Sparkles size={16} className="mr-1" /> Gerar meu treino agora
+        </Button>
+      ) : (
+        <Button disabled className="rounded-xl opacity-50 cursor-not-allowed">
+          <Lock size={16} className="mr-1" /> Aguarde {daysLeft} dia{daysLeft > 1 ? "s" : ""}
+        </Button>
+      )}
       <button onClick={onCancel} className="text-xs mt-4" style={{ color: S.textMuted }}>Cancelar</button>
     </div>
   );
