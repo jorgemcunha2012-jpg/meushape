@@ -206,7 +206,7 @@ const AppWorkoutDashboard = () => {
       </section>
 
       {/* ─── TAB: Meus Treinos ─── */}
-      {tab === "meus" && !showExplorer && (
+      {tab === "meus" && !showExplorer && !showAIWizard && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
             {cyclePhase && programsWithWorkouts.length > 0 && (
@@ -216,7 +216,7 @@ const AppWorkoutDashboard = () => {
             )}
 
             {programsWithWorkouts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-20 h-20 flex items-center justify-center mb-4"
                   style={{ borderRadius: "1.5rem", background: `linear-gradient(135deg, ${S.orange}12, ${S.amber}12)` }}>
                   <Dumbbell size={40} style={{ color: S.orange }} />
@@ -225,12 +225,17 @@ const AppWorkoutDashboard = () => {
                   Nenhum treino ainda
                 </p>
                 <p className="text-sm mb-6" style={{ color: S.textMuted, maxWidth: 260 }}>
-                  Explore os programas disponíveis e adicione o primeiro ao seu plano
+                  Gere um plano personalizado com IA ou explore programas prontos
                 </p>
-                <Button onClick={() => setShowExplorer(true)} className="rounded-xl px-6"
-                  style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
-                  <Compass size={16} className="mr-1" /> Explorar Programas
-                </Button>
+                <div className="flex flex-col gap-2.5 w-full max-w-[260px]">
+                  <Button onClick={() => setShowAIWizard(true)} className="rounded-xl w-full"
+                    style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
+                    <Sparkles size={16} className="mr-1" /> Gerar com IA
+                  </Button>
+                  <Button onClick={() => setShowExplorer(true)} variant="outline" className="rounded-xl w-full">
+                    <Compass size={16} className="mr-1" /> Explorar Programas
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-5">
