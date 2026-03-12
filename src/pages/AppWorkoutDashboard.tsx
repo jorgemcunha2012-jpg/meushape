@@ -491,12 +491,8 @@ const AppWorkoutDashboard = () => {
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="p-4" style={cardStyle}>
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="mb-2">
                     <span className="text-2xl">🧘‍♀️</span>
-                    <span className="text-[10px] font-semibold px-2.5 py-1"
-                      style={{ color: "#7C3AED", background: "rgba(124,58,237,0.1)", borderRadius: "0.5rem" }}>
-                      {stretch.type}
-                    </span>
                   </div>
                   <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>{stretch.name_pt}</h3>
                   <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{stretch.target_muscles.join(", ")}</p>
