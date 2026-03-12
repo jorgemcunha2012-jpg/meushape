@@ -308,7 +308,9 @@ const AppWorkout = () => {
     if (!currentEx) return null;
 
     const curated = curatedMap[currentEx.name];
-    const gifUrl = curated?.gif_url || currentEx.image_url;
+    const mw = mwMedia[currentEx.name];
+    const videoUrl = mw?.video;
+    const imageUrl = mw?.image || currentEx.image_url;
 
     const handleCompleteSet = () => {
       const newCompleted = { ...setsCompleted };
