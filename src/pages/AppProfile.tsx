@@ -105,6 +105,21 @@ const AppProfile = () => {
     navigate("/app/login");
   };
 
+  const handleSaveName = async () => {
+    if (!user || !nameInput.trim()) return;
+    setSavingName(true);
+    const trimmed = nameInput.trim().slice(0, 100);
+    const { error } = await supabase.from("profiles").update({ name: trimmed }).eq("id", user.id);
+    if (error) {
+      toast.error("Erro ao salvar nome");
+    } else {
+      setProfile(prev => prev ? { ...prev, name: trimmed } : prev);
+      toast.success("Nome atualizado!");
+      setEditingName(false);
+    }
+    setSavingName(false);
+  };
+
   const memberSince = profile?.created_at
     ? new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date(profile.created_at))
     : "";
