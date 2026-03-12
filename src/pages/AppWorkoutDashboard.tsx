@@ -57,6 +57,7 @@ const AppWorkoutDashboard = () => {
 
   const [tab, setTab] = useState<TabId>("meus");
   const [showExplorer, setShowExplorer] = useState(false);
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   // User's programs with their workouts
   const [programsWithWorkouts, setProgramsWithWorkouts] = useState<
