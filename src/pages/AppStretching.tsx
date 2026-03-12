@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, SkipForward, CheckCircle2, Timer } from "lucide-react";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 interface Stretch {
   id: string;
