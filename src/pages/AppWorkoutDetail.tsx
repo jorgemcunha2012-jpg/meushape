@@ -82,7 +82,6 @@ const AppWorkoutDetail = () => {
     { icon: Clock, label: "Duração", value: `~${estimatedTime}`, unit: "min", color: "#3B82F6" },
     { icon: Dumbbell, label: "Exercícios", value: `${exercises.length}`, unit: "", color: S.orange },
     { icon: Flame, label: "Calorias", value: `~${Math.round(estimatedTime * 7)}`, unit: "kcal", color: "#F59E0B" },
-    { icon: Zap, label: "Séries", value: `${totalSets}`, unit: "", color: "#22C55E" },
   ];
 
   return (
