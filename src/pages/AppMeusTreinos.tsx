@@ -235,23 +235,23 @@ const AppMeusTreinos = () => {
                     size="sm"
                     className="w-full rounded-xl text-xs h-9"
                     onClick={() => handleGenerateNew(type)}
-                    disabled={!limit.canGenerate}
-                    style={
-                      limit.canGenerate
-                        ? { background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }
-                        : undefined
-                    }
-                    variant={limit.canGenerate ? "default" : "outline"}
+                    disabled={type === "plan" && !limit.canGenerate}
+                    style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }}
                   >
                     {limit.canGenerate ? (
                       <>
                         <Sparkles size={12} className="mr-1" />
                         Gerar Novo
                       </>
-                    ) : (
+                    ) : type === "plan" ? (
                       <>
                         <Clock size={12} className="mr-1" />
                         Disponível em {limit.daysUntilNext} dias
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={12} className="mr-1" />
+                        Gerar Extra • R$ 9,90
                       </>
                     )}
                   </Button>
