@@ -122,7 +122,7 @@ const AnimatedExercise = ({ name, focus, className = "" }: AnimatedExerciseProps
       {/* Animated emoji */}
       <motion.div
         className="relative z-10 text-center"
-        animate={anim.motion}
+        animate={anim.motion as any}
         transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
       >
         <div className="text-6xl mb-1">{anim.emoji}</div>
