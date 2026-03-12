@@ -143,11 +143,16 @@ export interface Testimonial {
   profile: string; // matches user's objetivo
 }
 
+import testimonialCarolina from "@/assets/testimonial-carolina.png";
+import testimonialJuliana from "@/assets/testimonial-juliana.png";
+import testimonialAmanda from "@/assets/testimonial-amanda.png";
+import testimonialBeatriz from "@/assets/testimonial-beatriz.png";
+
 export const testimonials: Testimonial[] = [
   {
     name: "Carolina S.",
     age: 28,
-    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+    photo: testimonialCarolina,
     quote: "Em 8 semanas perdi 5kg e ganhei uma autoestima que não tinha há anos. O app me guiou exercício por exercício.",
     metrics: [
       { label: "Peso", value: "-5kg" },
@@ -159,7 +164,7 @@ export const testimonials: Testimonial[] = [
   {
     name: "Juliana M.",
     age: 32,
-    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
+    photo: testimonialJuliana,
     quote: "Nunca tinha treinado na vida. Hoje faço 4x por semana e amo! A comunidade é incrível.",
     metrics: [
       { label: "Shape", value: "+3cm glúteo" },
@@ -171,7 +176,7 @@ export const testimonials: Testimonial[] = [
   {
     name: "Amanda R.",
     age: 25,
-    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
+    photo: testimonialAmanda,
     quote: "Eu desistia de tudo. Mas com o plano personalizado e as meninas me apoiando, mantive firme por 3 meses!",
     metrics: [
       { label: "Peso", value: "-8kg" },
@@ -183,7 +188,7 @@ export const testimonials: Testimonial[] = [
   {
     name: "Beatriz L.",
     age: 30,
-    photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=face",
+    photo: testimonialBeatriz,
     quote: "Voltei a treinar depois de 2 anos parada. O app me deu confiança pra usar os aparelhos sem medo.",
     metrics: [
       { label: "Peso", value: "-4kg" },
