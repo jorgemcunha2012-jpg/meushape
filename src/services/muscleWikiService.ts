@@ -1,3 +1,5 @@
+import { cache } from "./cacheService";
+
 const BASE = "https://api.musclewiki.com";
 const API_KEY = "mw_N952p5CPQqKkdUcCyE4dTrFIG2Hd6de0AVXgp1Oyjhs";
 
