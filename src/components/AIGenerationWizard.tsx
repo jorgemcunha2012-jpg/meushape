@@ -78,7 +78,7 @@ const AIGenerationWizard = ({ userId, type, onComplete, onCancel, isAdmin = fals
       }
       setDone(true);
       toast.success(`${config.done} 🎉`);
-      setTimeout(() => onComplete(), 1500);
+      setTimeout(() => onComplete(data?.program_id), 1500);
     } catch (err: any) {
       console.error(`Generate ${type} error:`, err);
       if (err.message?.includes("429")) {

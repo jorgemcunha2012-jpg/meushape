@@ -333,10 +333,20 @@ const AppMeusTreinos = () => {
               userId={user!.id}
               type={generatingType}
               isAdmin={isAdmin}
-              onComplete={() => {
+              onComplete={async (programId?: string) => {
+                const completedType = generatingType!;
                 setGeneratingType(null);
-                limits.refresh();
-                fetchData();
+                await limits.refresh();
+                if (programId) {
+                  const { data: prog } = await supabase
+                    .from("workout_programs")
+                    .select("*")
+                    .eq("id", programId)
+                    .single();
+                  if (prog) {
+                    setActivePrograms(prev => ({ ...prev, [completedType]: prog as ActiveProgram }));
+                  }
+                }
               }}
               onCancel={() => setGeneratingType(null)}
             />
