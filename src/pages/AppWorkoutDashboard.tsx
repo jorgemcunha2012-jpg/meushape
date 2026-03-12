@@ -365,17 +365,11 @@ const AppWorkoutDashboard = () => {
                       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
                       className="p-4" style={cardStyle}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <h3 className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</h3>
-                          {prog.description && (
-                            <p className="text-[11px] mt-0.5" style={{ color: S.textMuted }}>{prog.description}</p>
-                          )}
-                        </div>
-                        <span className="text-[10px] font-semibold px-2.5 py-1 shrink-0 ml-2"
-                          style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
-                          {levelLabel(prog.level)}
-                        </span>
+                      <div className="mb-2">
+                        <h3 className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</h3>
+                        {prog.description && (
+                          <p className="text-[11px] mt-0.5" style={{ color: S.textMuted }}>{prog.description}</p>
+                        )}
                       </div>
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
