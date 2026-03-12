@@ -59,7 +59,11 @@ const AppProfile = () => {
       supabase.from("user_badges").select("id").eq("user_id", user.id),
     ]);
 
-    if (profileRes.data) setProfile(profileRes.data);
+    if (profileRes.data) {
+      setProfile(profileRes.data);
+      const oa = profileRes.data.onboarding_answers as Record<string, any> | undefined;
+      if (oa && Object.keys(oa).length > 0) setOnboardingData(oa);
+    }
 
     const { data: avatarData } = await supabase.storage
       .from("body-photos")
