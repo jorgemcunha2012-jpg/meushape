@@ -287,11 +287,6 @@ const QuizPitch = () => {
 
                 <h3 className="text-2xl font-black text-white mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>7 dias grátis</h3>
 
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <span className="text-white/30 line-through text-lg">R$ 99,90</span>
-                  <span className="text-3xl font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>R$ 19,90</span>
-                  <span className="text-white/40 text-xs">/mês</span>
-                </div>
 
                 <p className="text-xs text-white/40 mb-5">Cancele quando quiser. Sem compromisso.</p>
 
