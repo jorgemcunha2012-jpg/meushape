@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus, ClipboardList, Zap, Home, StretchHorizontal } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
+import illustrationTreino from "@/assets/illustration-treino.png";
+import illustrationCardio from "@/assets/illustration-cardio.png";
+import illustrationCasa from "@/assets/illustration-casa.png";
+import illustrationAlong from "@/assets/illustration-alongamento.png";
 
 interface Workout {
   id: string;
@@ -43,11 +47,11 @@ interface StretchSession {
 
 type TabId = "plano" | "cardio" | "casa" | "along";
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: "plano", label: "Meu Plano", icon: "📋" },
-  { id: "cardio", label: "Cardio", icon: "🏃‍♀️" },
-  { id: "casa", label: "Em Casa", icon: "🏠" },
-  { id: "along", label: "Alongamento", icon: "🧘‍♀️" },
+const TABS: { id: TabId; label: string; icon: typeof ClipboardList; illustration: string }[] = [
+  { id: "plano", label: "Meu Plano", icon: ClipboardList, illustration: illustrationTreino },
+  { id: "cardio", label: "Cardio", icon: Zap, illustration: illustrationCardio },
+  { id: "casa", label: "Em Casa", icon: Home, illustration: illustrationCasa },
+  { id: "along", label: "Alongamento", icon: StretchHorizontal, illustration: illustrationAlong },
 ];
 
 const levelLabel = (level: number) => {
@@ -164,7 +168,7 @@ const AppWorkoutDashboard = () => {
                   boxShadow: tab === t.id ? `0 4px 16px ${S.glowStrong}` : `0 1px 4px rgba(234,88,12,0.04)`,
                 }}
               >
-                <span className="text-sm">{t.icon}</span>
+                <t.icon size={14} strokeWidth={2.5} />
                 {t.label}
               </motion.button>
             ))}

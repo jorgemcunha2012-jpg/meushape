@@ -9,6 +9,10 @@ import {
 } from "lucide-react";
 import { BodyMap } from "@/components/BodyMap";
 import { SolarBottomNav, useSolar } from "@/components/SolarLayout";
+import illustrationTreino from "@/assets/illustration-treino.png";
+import illustrationEvolucao from "@/assets/illustration-evolucao.png";
+import illustrationComunidade from "@/assets/illustration-comunidade.png";
+import illustrationConquistas from "@/assets/illustration-conquistas.png";
 
 /* ─── Types ─── */
 interface WeekDay {
@@ -198,10 +202,10 @@ const AppDashboard = () => {
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Jorge";
 
   const menuItems = [
-    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", gradient: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", iconColor: S.orange },
-    { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", gradient: "linear-gradient(135deg, #FEF3C7, #FDE68A)", iconColor: S.amber },
-    { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirado", route: "/app/community", gradient: "linear-gradient(135deg, #FFF1F2, #FECDD3)", iconColor: S.coral },
-    { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", gradient: "linear-gradient(135deg, #FFF7ED, #FED7AA)", iconColor: S.terracotta },
+    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", illustration: illustrationTreino },
+    { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", illustration: illustrationEvolucao },
+    { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirado", route: "/app/community", illustration: illustrationComunidade },
+    { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", illustration: illustrationConquistas },
   ];
 
   // navItems removed — using shared SolarBottomNav
@@ -517,7 +521,7 @@ const AppDashboard = () => {
         </section>
       )}
 
-      {/* ═══ MENU GRID 2×2 ═══ */}
+      {/* ═══ MENU GRID 2×2 — Quiz-style cards with illustrations ═══ */}
       <section className="px-5 mb-5">
         <div className="max-w-lg mx-auto grid grid-cols-2 gap-3">
           {menuItems.map((item, i) => (
@@ -532,55 +536,36 @@ const AppDashboard = () => {
                 stiffness: 260,
                 damping: 20,
               }}
-              whileHover={{
-                y: -4,
-                scale: 1.03,
-                boxShadow: `0 12px 32px rgba(234,88,12,0.15), 0 0 0 1px ${S.orange}20`,
-                transition: { duration: 0.25 },
-              }}
-              whileTap={{ scale: 0.95, y: 0 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate(item.route)}
-              className="relative p-4 text-left group overflow-hidden"
+              className="relative text-left overflow-hidden transition-all"
               style={{
                 borderRadius: "1.5rem",
                 backgroundColor: S.card,
-                border: `1px solid ${S.cardBorder}`,
-                boxShadow: `0 2px 12px rgba(234,88,12,0.05)`,
+                border: `2px solid ${S.cardBorder}`,
+                boxShadow: `0 2px 12px rgba(0,0,0,0.04)`,
               }}
             >
-              {/* Hover glow orb */}
-              <motion.div
-                className="absolute -top-8 -right-8 w-24 h-24 rounded-full pointer-events-none"
-                initial={{ opacity: 0, scale: 0.5 }}
-                whileHover={{ opacity: 1, scale: 1 }}
-                style={{
-                  background: `radial-gradient(circle, ${item.iconColor}18 0%, transparent 70%)`,
-                  filter: "blur(12px)",
-                }}
-              />
-
-              <div className="flex items-center justify-between mb-3 relative z-10">
-                <motion.div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: item.gradient }}
-                  whileHover={{ rotate: [0, -8, 8, 0], transition: { duration: 0.5 } }}
-                >
-                  <item.icon size={18} style={{ color: item.iconColor }} strokeWidth={2.5} />
-                </motion.div>
-                <motion.div
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 3 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <ChevronRight size={14} style={{ color: S.cardBorder }} />
-                </motion.div>
+              {/* Illustration */}
+              <div
+                className="w-full h-24 flex items-center justify-center overflow-hidden"
+                style={{ background: `linear-gradient(135deg, ${S.orange}08, ${S.amber}12)` }}
+              >
+                <img
+                  src={item.illustration}
+                  alt={item.title}
+                  className="h-20 w-20 object-contain"
+                />
               </div>
-              <p className="font-display text-sm mb-0.5 relative z-10" style={{ fontWeight: 700, color: S.text }}>
-                {item.title}
-              </p>
-              <p className="text-[11px]" style={{ color: S.textMuted }}>
-                {item.sub}
-              </p>
+              {/* Text */}
+              <div className="p-3 pt-2.5">
+                <p className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
+                  {item.title}
+                </p>
+                <p className="text-[11px] font-medium" style={{ color: S.textMuted }}>
+                  {item.sub}
+                </p>
+              </div>
             </motion.button>
           ))}
         </div>
