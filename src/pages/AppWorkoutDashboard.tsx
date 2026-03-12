@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface Workout {
@@ -125,7 +125,24 @@ const AppWorkoutDashboard = () => {
 
   return (
     <SolarPage>
-      <SolarHeader title="Treinos" showBack />
+      <SolarHeader
+        title="Treinos"
+        showBack
+        rightContent={
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => navigate("/app/manage")}
+            className="w-9 h-9 flex items-center justify-center transition-all"
+            style={{
+              borderRadius: "0.75rem",
+              background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+              boxShadow: `0 2px 12px ${S.glowStrong}`,
+            }}
+          >
+            <Plus size={18} style={{ color: "#fff" }} strokeWidth={2.5} />
+          </motion.button>
+        }
+      />
 
       {/* Tab Bar */}
       <section className="px-5 py-3">
