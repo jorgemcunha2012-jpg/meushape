@@ -134,12 +134,12 @@ const AppManageWorkouts = () => {
     goTo("exercises", 1);
   };
 
-  const addExerciseFromDB = async (ex: ExerciseDB) => {
+  const addExerciseFromDB = async (ex: SelectedExercise) => {
     if (!selectedWorkout) return;
     const { error } = await supabase.from("exercises").insert({
       workout_id: selectedWorkout.id, name: ex.name,
-      description: ex.instructions?.join(" ") || null,
-      image_url: ex.gifUrl, sets: 3, reps: "12", rest_seconds: 60,
+      description: ex.instructions || null,
+      image_url: null, sets: 3, reps: "12", rest_seconds: 60,
       sort_order: exercises.length,
     });
     if (error) { toast.error("Erro ao adicionar"); return; }
