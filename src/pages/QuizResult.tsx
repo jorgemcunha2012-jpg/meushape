@@ -346,7 +346,7 @@ const QuizResult = () => {
             Acesso Imediato
           </h3>
           <p className="text-xs text-white/40 mb-5">
-            R$ 19,90/mês • Garantia de 30 dias ou seu dinheiro de volta.
+            Grátis por tempo limitado • Garantia de 30 dias.
           </p>
 
           {/* Password */}
