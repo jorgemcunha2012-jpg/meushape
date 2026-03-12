@@ -238,76 +238,72 @@ const AppWorkoutDashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-3">
+                {/* Program Cards */}
                 {programsWithWorkouts.map((group, gi) => {
                   const prog = group.program;
                   const lc = levelColor(prog.level);
-                  return (
-                    <div key={prog.id}>
-                      {/* Program header */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <p className="font-display text-xs" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
-                          <span className="text-[9px] font-semibold px-1.5 py-0.5"
-                            style={{ color: lc.text, background: lc.bg, borderRadius: "0.4rem" }}>
-                            {levelLabel(prog.level)}
-                          </span>
-                        </div>
-                        <span className="text-[10px]" style={{ color: S.textMuted }}>{prog.days_per_week}x/sem</span>
-                      </div>
+                  const workoutCount = group.workouts.length;
+                  const emoji = prog.title.toLowerCase().includes("casa") ? "🏠" :
+                    prog.title.toLowerCase().includes("cardio") || prog.title.toLowerCase().includes("corrida") ? "🏃‍♀️" :
+                    prog.title.toLowerCase().includes("desafio") ? "🔥" : "🏋️‍♀️";
 
-                      {/* Workouts list */}
-                      <div className="space-y-2">
-                        {group.workouts.map((wk, wi) => {
-                          const isToday = (wk.day_of_week ?? wk.sort_order) === todayIndex;
-                          return (
-                            <motion.button key={wk.id}
-                              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: (gi * 0.05) + (wi * 0.03) }}
-                              whileTap={{ scale: 0.97 }}
-                              onClick={() => navigate(`/app/workout-detail/${wk.id}`)}
-                              className="w-full text-left p-3.5 flex items-center gap-3 transition-all"
-                              style={cardStyle}
-                            >
-                              <div className="w-10 h-10 flex items-center justify-center text-xs shrink-0 font-display"
-                                style={{
-                                  borderRadius: "0.75rem", fontWeight: 800,
-                                  background: isToday ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : `${S.orange}12`,
-                                  color: isToday ? "#fff" : S.orange,
-                                  boxShadow: isToday ? `0 4px 12px ${S.glowStrong}` : "none",
-                                }}>
-                                {String.fromCharCode(65 + wi)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{wk.title}</p>
-                                {wk.description && (
-                                  <p className="text-[11px] truncate" style={{ color: S.textMuted }}>{wk.description}</p>
-                                )}
-                              </div>
-                              {isToday ? (
-                                <span className="text-[9px] font-bold px-2.5 py-1"
-                                  style={{ borderRadius: "0.75rem", background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff", boxShadow: `0 2px 8px ${S.glow}` }}>
-                                  HOJE
-                                </span>
-                              ) : (
-                                <ChevronRight size={16} style={{ color: S.cardBorder }} />
-                              )}
-                            </motion.button>
-                          );
-                        })}
-                        {group.workouts.length === 0 && (
-                          <p className="text-xs py-3 text-center" style={{ color: S.textMuted }}>
-                            Nenhum treino neste programa ainda
-                          </p>
-                        )}
+                  return (
+                    <motion.button
+                      key={prog.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: gi * 0.05 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => navigate(`/app/program/${prog.id}`)}
+                      className="w-full text-left p-4 transition-all"
+                      style={cardStyle}
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0"
+                          style={{ background: `linear-gradient(135deg, ${S.orange}15, ${S.amber}15)` }}>
+                          {emoji}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5"
+                              style={{ color: lc.text, background: lc.bg, borderRadius: "0.4rem" }}>
+                              {levelLabel(prog.level)}
+                            </span>
+                          </div>
+                          {prog.description && (
+                            <p className="text-[11px] truncate mb-1" style={{ color: S.textMuted }}>{prog.description}</p>
+                          )}
+                          <div className="flex items-center gap-3 text-[10px]" style={{ color: S.textSub }}>
+                            <span>{workoutCount} treinos</span>
+                            <span>{prog.days_per_week}x/sem</span>
+                            <span>{prog.duration_minutes} min</span>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} style={{ color: S.cardBorder }} />
                       </div>
-                    </div>
+                    </motion.button>
                   );
                 })}
 
                 {/* Bottom actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-2">
                   <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowAIWizard(true)}
+                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}>
+                    <Sparkles size={14} /> Gerar com IA
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowExplorer(true)}
+                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.textMuted }}>
+                    <Compass size={14} /> Explorar
+                  </motion.button>
+                </div>
+              </div>
+            )
                     onClick={() => setShowAIWizard(true)}
                     className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
                     style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}>
