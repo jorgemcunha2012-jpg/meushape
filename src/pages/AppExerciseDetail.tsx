@@ -134,8 +134,16 @@ const AppExerciseDetail = () => {
 
   return (
     <SolarPage>
-      {/* GIF Hero with overlay stats */}
+      {/* GIF Hero */}
       <div className="relative">
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center z-10"
+          style={{ background: `${S.bg}cc`, border: `1px solid ${S.cardBorder}` }}
+        >
+          <ArrowLeft className="w-4 h-4" style={{ color: S.text }} />
+        </button>
+
         <div className="flex items-center justify-center py-6" style={{ background: S.bg }}>
           <div className="w-[55%] aspect-square rounded-2xl overflow-hidden"
             style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
@@ -149,46 +157,34 @@ const AppExerciseDetail = () => {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-10 left-5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center"
-          style={{ background: `${S.bg}cc`, border: `1px solid ${S.cardBorder}` }}
-        >
-          <ArrowLeft className="w-4 h-4" style={{ color: S.text }} />
-        </button>
-
-        {/* Overlay: Sets × Reps + Rest badge */}
-        <div className="absolute bottom-3 left-5 right-5 flex items-end justify-between">
-          {/* Muscle badge */}
+      {/* Stats bar below GIF */}
+      <div className="px-5 -mt-1 mb-2">
+        <div className="max-w-lg mx-auto flex items-center justify-center gap-3">
           {curatedExercise?.target && (
-            <span className="px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md"
-              style={{ background: `${S.orange}dd`, color: "#fff" }}>
+            <span className="px-3 py-1.5 rounded-full text-xs font-bold"
+              style={{ background: `${S.orange}18`, color: S.orange }}>
               {curatedExercise.target}
             </span>
           )}
-
-          {/* Sets × Reps pill */}
-          <div className="flex items-center gap-2">
-            <div className="px-4 py-2 rounded-2xl backdrop-blur-md flex items-center gap-3"
-              style={{ background: `${S.bg}ee`, border: `1px solid ${S.cardBorder}` }}>
-              <div className="text-center">
-                <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{sets}</p>
-                <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>séries</p>
-              </div>
-              <span className="text-sm font-bold" style={{ color: S.textMuted }}>×</span>
-              <div className="text-center">
-                <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{reps}</p>
-                <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>reps</p>
-              </div>
-              <div className="w-px h-6" style={{ background: S.cardBorder }} />
-              <div className="text-center">
-                <p className="text-sm font-bold leading-none" style={{ color: S.textMuted }}>
-                  <Clock className="w-3 h-3 inline mr-0.5 -mt-0.5" />{formatTime(restSeconds)}
-                </p>
-                <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>descanso</p>
-              </div>
+          <div className="px-4 py-2 rounded-2xl flex items-center gap-3"
+            style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+            <div className="text-center">
+              <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{sets}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>séries</p>
+            </div>
+            <span className="text-sm font-bold" style={{ color: S.textMuted }}>×</span>
+            <div className="text-center">
+              <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{reps}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>reps</p>
+            </div>
+            <div className="w-px h-6" style={{ background: S.cardBorder }} />
+            <div className="text-center">
+              <p className="text-sm font-bold leading-none" style={{ color: S.textMuted }}>
+                <Clock className="w-3 h-3 inline mr-0.5 -mt-0.5" />{formatTime(restSeconds)}
+              </p>
+              <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>descanso</p>
             </div>
           </div>
         </div>
