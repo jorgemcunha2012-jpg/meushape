@@ -6,62 +6,62 @@
 
 @layer base {
   :root {
-    /* Meu Shape – Deep Black Premium Dark Mode */
-    --background: 0 0% 4%; /* #0a0a0a */
-    --foreground: 0 0% 98%; /* #fafafa */
+    /* Meu Shape – Solar Warm Dark (default) */
+    --background: 15 18% 9%;       /* #1A1412 warm near-black */
+    --foreground: 30 56% 96%;      /* #FAF5F0 warm off-white */
 
-    --card: 0 0% 7%; /* #121212 */
-    --card-foreground: 0 0% 98%;
+    --card: 15 16% 12%;            /* #231D19 warm dark card */
+    --card-foreground: 30 56% 96%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 15 16% 12%;
+    --popover-foreground: 30 56% 96%;
 
-    --primary: 348 83% 47%; /* Crimson red – #DC143C */
+    --primary: 25 95% 53%;         /* #F97316 Solar orange */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 10%; /* #1a1a1a */
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 20 14% 14%;       /* warm dark secondary */
+    --secondary-foreground: 30 20% 80%;
 
-    --muted: 0 0% 12%; /* #1f1f1f */
-    --muted-foreground: 0 0% 50%; /* #808080 */
+    --muted: 20 12% 16%;           /* warm muted */
+    --muted-foreground: 20 10% 50%; /* #8C7E74 warm muted text */
 
-    --accent: 348 83% 47%;
+    --accent: 25 95% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14%; /* #242424 */
-    --input: 0 0% 14%;
-    --ring: 348 83% 47%;
+    --border: 24 16% 17%;          /* #332A24 warm border */
+    --input: 24 16% 17%;
+    --ring: 25 95% 53%;
 
     --radius: 1rem;
 
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 348 83% 47%;
+    --sidebar-background: 15 18% 9%;
+    --sidebar-foreground: 30 20% 80%;
+    --sidebar-primary: 25 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 348 83% 47%;
+    --sidebar-accent: 20 14% 14%;
+    --sidebar-accent-foreground: 30 20% 80%;
+    --sidebar-border: 24 16% 17%;
+    --sidebar-ring: 25 95% 53%;
 
     /* Semantic colors */
-    --success: 160 84% 39%; /* #10B981 */
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%; /* #F59E0B */
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 217 91% 60%; /* #3B82F6 */
+    --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
-    --orange: 25 95% 53%; /* #F97316 */
-    --purple: 263 70% 50%; /* #7C3AED */
+    --orange: 25 95% 53%;
+    --purple: 263 70% 50%;
 
     /* Text variations */
-    --text-muted: 0 0% 50%;
-    --text-dim: 0 0% 35%;
+    --text-muted: 20 10% 50%;
+    --text-dim: 20 8% 35%;
 
     /* Glow effects */
-    --accent-glow: 348 83% 47% / 0.25;
+    --accent-glow: 25 95% 53% / 0.25;
     --success-glow: 160 84% 39% / 0.15;
     --card-glow: 0 0% 100% / 0.03;
   }
