@@ -75,7 +75,7 @@ interface MWListResponse {
 
 export const fetchMuscles = async (): Promise<MWMuscle[]> => {
   return cache.fetchWithCache("mw:muscles", async () => {
-    const res = await fetch(`${BASE}/muscles`, { headers });
+    const res = await fetch(proxyUrl("muscles"));
     if (!res.ok) throw new Error(`MuscleWiki muscles error: ${res.status}`);
     return res.json();
   }, cache.TTL.LONG);
@@ -83,7 +83,7 @@ export const fetchMuscles = async (): Promise<MWMuscle[]> => {
 
 export const fetchCategories = async (): Promise<MWCategory[]> => {
   return cache.fetchWithCache("mw:categories", async () => {
-    const res = await fetch(`${BASE}/categories`, { headers });
+    const res = await fetch(proxyUrl("categories"));
     if (!res.ok) throw new Error(`MuscleWiki categories error: ${res.status}`);
     return res.json();
   }, cache.TTL.LONG);
@@ -91,7 +91,7 @@ export const fetchCategories = async (): Promise<MWCategory[]> => {
 
 export const fetchFilters = async (): Promise<MWFilters> => {
   return cache.fetchWithCache("mw:filters", async () => {
-    const res = await fetch(`${BASE}/filters`, { headers });
+    const res = await fetch(proxyUrl("filters"));
     if (!res.ok) throw new Error(`MuscleWiki filters error: ${res.status}`);
     return res.json();
   }, cache.TTL.LONG);
@@ -109,15 +109,14 @@ export const listExercises = async (params: {
   const cacheKey = `mw:list:${limit}:${offset}:${category || ""}:${muscles || ""}:${difficulty || ""}:${gender || ""}`;
 
   return cache.fetchWithCache(cacheKey, async () => {
-    const url = new URL(`${BASE}/exercises`);
-    url.searchParams.set("limit", String(limit));
-    url.searchParams.set("offset", String(offset));
-    if (category) url.searchParams.set("category", category);
-    if (muscles) url.searchParams.set("muscles", muscles);
-    if (difficulty) url.searchParams.set("difficulty", difficulty);
-    if (gender) url.searchParams.set("gender", gender);
-
-    const res = await fetch(url.toString(), { headers });
+    const res = await fetch(proxyUrl("exercises", {
+      limit: String(limit),
+      offset: String(offset),
+      ...(category && { category }),
+      ...(muscles && { muscles }),
+      ...(difficulty && { difficulty }),
+      ...(gender && { gender }),
+    }));
     if (!res.ok) throw new Error(`MuscleWiki exercises error: ${res.status}`);
     return res.json();
   }, cache.TTL.MEDIUM);
@@ -125,7 +124,7 @@ export const listExercises = async (params: {
 
 export const fetchExerciseDetail = async (id: number): Promise<MWExerciseDetail> => {
   return cache.fetchWithCache(`mw:exercise:${id}`, async () => {
-    const res = await fetch(`${BASE}/exercises/${id}`, { headers });
+    const res = await fetch(proxyUrl(`exercises/${id}`));
     if (!res.ok) throw new Error(`MuscleWiki exercise detail error: ${res.status}`);
     return res.json();
   }, cache.TTL.LONG);
@@ -134,18 +133,16 @@ export const fetchExerciseDetail = async (id: number): Promise<MWExerciseDetail>
 export const searchExercisesMW = async (query: string, limit = 20): Promise<MWExerciseDetail[]> => {
   const cacheKey = `mw:search:${query.toLowerCase().trim()}:${limit}`;
   return cache.fetchWithCache(cacheKey, async () => {
-    const res = await fetch(`${BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`, { headers });
+    const res = await fetch(proxyUrl("search", { q: query, limit: String(limit) }));
     if (!res.ok) throw new Error(`MuscleWiki search error: ${res.status}`);
     return res.json();
   }, cache.TTL.SHORT);
 };
 
 // ─── Media URL helper ───
-// Videos/images need the API key header — we proxy through an edge function
 export const getProxiedMediaUrl = (originalUrl: string): string => {
   if (!originalUrl) return "";
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  return `https://${projectId}.supabase.co/functions/v1/musclewiki-media?url=${encodeURIComponent(originalUrl)}`;
+  return `${PROXY_BASE}?url=${encodeURIComponent(originalUrl)}`;
 };
 
 // ─── Translation helpers ───
