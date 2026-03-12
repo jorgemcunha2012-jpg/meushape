@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useClickGuard } from "@/hooks/useThrottle";
 import { useAuth } from "@/hooks/useAuth";
 import { SolarPage, useSolar } from "@/components/SolarLayout";
 import {
