@@ -2,6 +2,8 @@ import React, { useState } from "react";
 
 interface MuscleMapProps {
   trainedMuscles?: string[];
+  /** Optional per-muscle color override map (e.g. heatmap) */
+  muscleColors?: Record<string, string>;
   onMuscleClick?: (muscleName: string) => void;
 }
 
