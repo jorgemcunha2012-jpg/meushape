@@ -27,6 +27,7 @@ import AppCardio from "./pages/AppCardio";
 import AppWarmup from "./pages/AppWarmup";
 import AppHomeWorkout from "./pages/AppHomeWorkout";
 import AppProfile from "./pages/AppProfile";
+import AppProgramDetail from "./pages/AppProgramDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/app" element={<AppDashboard />} />
             <Route path="/app/workouts" element={<AppWorkoutDashboard />} />
             <Route path="/app/workout-detail/:workoutId" element={<AppWorkoutDetail />} />
+            <Route path="/app/program/:programId" element={<AppProgramDetail />} />
             <Route path="/app/workout/:workoutId" element={<AppWorkout />} />
             <Route path="/app/exercise/:exerciseId" element={<AppExerciseDetail />} />
             <Route path="/app/history" element={<AppHistory />} />
