@@ -325,6 +325,24 @@ const AppMeusTreinos = () => {
         </div>
       </section>
 
+      {/* Generation Wizard Dialog */}
+      <Dialog open={!!generatingType} onOpenChange={() => setGeneratingType(null)}>
+        <DialogContent className="max-w-sm mx-auto rounded-2xl p-0 overflow-hidden">
+          {generatingType && (
+            <AIGenerationWizard
+              userId={user!.id}
+              type={generatingType}
+              onComplete={() => {
+                setGeneratingType(null);
+                limits.refresh();
+                fetchData();
+              }}
+              onCancel={() => setGeneratingType(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Purchase Modal */}
       <Dialog open={!!purchaseModal} onOpenChange={() => setPurchaseModal(null)}>
         <DialogContent className="max-w-sm mx-auto rounded-2xl">
