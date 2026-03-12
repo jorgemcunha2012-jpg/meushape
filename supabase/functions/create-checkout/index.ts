@@ -44,9 +44,9 @@ serve(async (req) => {
       customer_email: customerId ? undefined : email,
       line_items: [{ price: PRICE_ID, quantity: 1 }],
       mode: "subscription",
-      subscription_data: { trial_period_days: 7 },
-      success_url: `${origin}/app`,
-      cancel_url: `${origin}/quiz/resultado`,
+      payment_method_types: ["card"],
+      success_url: `${origin}/quiz/success`,
+      cancel_url: `${origin}/quiz/checkout`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
