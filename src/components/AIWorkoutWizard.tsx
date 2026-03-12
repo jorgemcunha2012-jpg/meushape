@@ -13,11 +13,12 @@ interface AIWorkoutWizardProps {
   userId: string;
   onComplete: () => void;
   onCancel: () => void;
+  isAdmin?: boolean;
 }
 
-const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps) => {
+const AIWorkoutWizard = ({ userId, onComplete, onCancel, isAdmin = false }: AIWorkoutWizardProps) => {
   const S = useSolar();
-  const limits = useGenerationLimits(userId);
+  const limits = useGenerationLimits(userId, isAdmin);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
