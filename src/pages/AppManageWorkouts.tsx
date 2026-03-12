@@ -526,7 +526,7 @@ const AppManageWorkouts = () => {
         </DrawerContent>
       </Drawer>
 
-      {/* ExerciseDB Browser Modal */}
+      {/* MuscleWiki Browser Modal */}
       {showBrowser && (
         <ExerciseBrowser
           onSelect={addExerciseFromDB}
