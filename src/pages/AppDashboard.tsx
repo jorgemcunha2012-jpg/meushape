@@ -21,43 +21,10 @@ interface WeekDay {
   today?: boolean; workoutId?: string;
 }
 
-type MuscleStatus = "today" | "recent" | "recovering" | "none";
-interface MuscleData { [key: string]: MuscleStatus; }
-
-const MUSCLE_GROUP_MAP: Record<string, string[]> = {
-  chest: ["chest", "pectorals", "peito", "peitoral"],
-  shoulders: ["shoulders", "deltoids", "ombros", "deltoides", "delts"],
-  arms: ["biceps", "triceps", "forearms", "braços", "bíceps", "tríceps", "antebraço"],
-  back: ["back", "lats", "traps", "costas", "dorsal", "trapézio", "latíssimo"],
-  abs: ["abs", "core", "abdominals", "abdome", "abdominais", "oblíquos"],
-  glutes: ["glutes", "gluteus", "glúteos", "glúteo", "bumbum"],
-  legs: ["quads", "quadriceps", "hamstrings", "quadríceps", "posterior", "coxa", "adductors", "abductors", "adutores", "abdutores", "pernas"],
-  calves: ["calves", "panturrilha", "panturrilhas"],
-};
-
-function classifyMuscle(target: string, bodyPart: string): string[] {
-  const text = `${target} ${bodyPart}`.toLowerCase();
-  const matched: string[] = [];
-  for (const [group, keywords] of Object.entries(MUSCLE_GROUP_MAP)) {
-    if (keywords.some(kw => text.includes(kw))) matched.push(group);
-  }
-  return matched.length > 0 ? matched : [];
-}
-
-function getMuscleStatus(daysSinceTraining: number): MuscleStatus {
-  if (daysSinceTraining === 0) return "today";
-  if (daysSinceTraining <= 2) return "recent";
-  if (daysSinceTraining <= 5) return "recovering";
-  return "none";
-}
-
-function muscleStatusColor(status: MuscleStatus): string {
-  switch (status) {
-    case "today": return "#F97316";
-    case "recent": return "#FBBF24";
-    case "recovering": return "#D97706";
-    default: return "#E7E5E4";
-  }
+interface WeekLog {
+  workoutTitle: string;
+  durationMin: number;
+  completedAt: string;
 }
 
 /* S is now imported from SolarLayout */
