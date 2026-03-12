@@ -251,7 +251,7 @@ const QuizCheckout = () => {
           {checkingOut ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</>
           ) : (
-            <>Pagar R$ 19,90 agora <ArrowRight className="w-4 h-4" /></>
+            <>Começar agora — Grátis <ArrowRight className="w-4 h-4" /></>
           )}
         </motion.button>
 

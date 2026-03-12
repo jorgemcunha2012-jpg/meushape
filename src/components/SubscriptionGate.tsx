@@ -54,7 +54,7 @@ const SubscriptionGate = () => {
           className="w-full rounded-full py-6 text-base font-semibold shadow-lg"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-            <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-5 h-5 ml-1" /></>
+            <>Começar agora — Grátis <ArrowRight className="w-5 h-5 ml-1" /></>
           )}
         </Button>
         <button

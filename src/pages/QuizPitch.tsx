@@ -378,7 +378,7 @@ const QuizPitch = () => {
                   {checkingOut ? (
                     <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
                   ) : (
-                    <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-4 h-4 ml-1" /></>
+                    <>Começar agora — Grátis <ArrowRight className="w-4 h-4 ml-1" /></>
                   )}
                 </Button>
 

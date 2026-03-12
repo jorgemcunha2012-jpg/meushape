@@ -347,8 +347,8 @@ const AppMeusTreinos = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="p-4 rounded-xl bg-muted/50 text-center">
-            <p className="text-3xl font-bold text-foreground mb-1">R$ 9,90</p>
-            <p className="text-xs text-muted-foreground">Pagamento único via Stripe</p>
+            <p className="text-3xl font-bold text-foreground mb-1">R$ 0,00</p>
+            <p className="text-xs text-muted-foreground">Grátis por tempo limitado</p>
           </div>
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => setPurchaseModal(null)} className="flex-1 rounded-xl">
