@@ -12,6 +12,7 @@ import QuizEmail from "./pages/QuizEmail";
 import QuizResult from "./pages/QuizResult";
 import QuizPitch from "./pages/QuizPitch";
 import QuizCheckout from "./pages/QuizCheckout";
+import QuizSuccess from "./pages/QuizSuccess";
 import QuizBodyAnalysis from "./pages/QuizBodyAnalysis";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
