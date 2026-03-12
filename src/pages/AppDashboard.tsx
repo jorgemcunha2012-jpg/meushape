@@ -27,7 +27,16 @@ interface WeekLog {
   completedAt: string;
 }
 
-/* S is now imported from SolarLayout */
+function relativeDay(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "hoje";
+  if (diffDays === 1) return "ontem";
+  const weekDays = ["domingo", "2ª feira", "3ª feira", "4ª feira", "5ª feira", "6ª feira", "sábado"];
+  return weekDays[d.getDay()];
+}
 
 const AppDashboard = () => {
   const S = useSolar();
@@ -44,7 +53,7 @@ const AppDashboard = () => {
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
-    if (user && subscribed) { fetchData(); fetchMuscleMap(); }
+    if (user && subscribed) { fetchData(); }
     if (user) checkOnboarding();
   }, [user, subscribed, subscriptionLoading, navigate]);
 
@@ -61,71 +70,13 @@ const AppDashboard = () => {
     }
   };
 
-  /* ─── Data fetching (unchanged logic) ─── */
-  const fetchMuscleMap = async () => {
-    if (!user) return;
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    const { data: logs } = await supabase
-      .from("workout_logs").select("workout_id, completed_at")
-      .eq("user_id", user.id)
-      .gte("completed_at", sevenDaysAgo.toISOString())
-      .order("completed_at", { ascending: false });
-
-    if (!logs || logs.length === 0) return;
-
-    const workoutIds = [...new Set(logs.map(l => l.workout_id))];
-    const { data: exercises } = await supabase
-      .from("exercises").select("name, workout_id")
-      .in("workout_id", workoutIds);
-
-    if (!exercises || exercises.length === 0) return;
-
-    const exerciseNames = [...new Set(exercises.map(e => e.name))];
-    const { data: curated } = await supabase
-      .from("curated_exercises").select("name_pt, target, body_part")
-      .in("name_pt", exerciseNames);
-
-    const curatedLookup: Record<string, { target: string; body_part: string }> = {};
-    curated?.forEach(c => { curatedLookup[c.name_pt] = c; });
-
-    const workoutDateMap: Record<string, Date> = {};
-    logs.forEach(l => {
-      const d = new Date(l.completed_at);
-      if (!workoutDateMap[l.workout_id] || d > workoutDateMap[l.workout_id])
-        workoutDateMap[l.workout_id] = d;
-    });
-
-    const muscleDays: Record<string, number> = {};
-    const now = new Date();
-    exercises.forEach(ex => {
-      const info = curatedLookup[ex.name];
-      if (!info) return;
-      const groups = classifyMuscle(info.target, info.body_part);
-      const completedAt = workoutDateMap[ex.workout_id];
-      if (!completedAt) return;
-      const daysDiff = Math.floor((now.getTime() - completedAt.getTime()) / (1000 * 60 * 60 * 24));
-      groups.forEach(g => {
-        if (muscleDays[g] === undefined || daysDiff < muscleDays[g]) muscleDays[g] = daysDiff;
-      });
-    });
-
-    const newMap: MuscleData = {
-      chest: "none", shoulders: "none", arms: "none", back: "none",
-      abs: "none", glutes: "none", legs: "none", calves: "none",
-    };
-    for (const [muscle, days] of Object.entries(muscleDays)) {
-      if (muscle in newMap) newMap[muscle] = getMuscleStatus(days);
-    }
-    setMuscleMap(newMap);
-  };
-
   const fetchData = async () => {
     const { data: program } = await supabase
       .from("workout_programs").select("*")
       .eq("is_active", true).limit(1).single();
     if (!program) return;
+
+    const daysGoal = program.days_per_week || 5;
 
     const { data: workouts } = await supabase
       .from("workouts").select("*")
@@ -151,14 +102,37 @@ const AppDashboard = () => {
       setLastWorkoutDate(streakData.last_workout_date || "");
     }
 
+    // Week stats
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
     const { data: weekLogs } = await supabase
-      .from("workout_logs").select("id")
+      .from("workout_logs").select("id, completed_at, duration_minutes, workout_id")
       .eq("user_id", user!.id)
-      .gte("completed_at", weekStart.toISOString());
-    const daysTarget = 5;
-    setWeeklyProgress(Math.min(100, Math.round(((weekLogs?.length || 0) / daysTarget) * 100)));
+      .gte("completed_at", weekStart.toISOString())
+      .order("completed_at", { ascending: false });
+
+    const done = weekLogs?.length || 0;
+    const totalMin = weekLogs?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
+    setWeekStats({ done, totalMin, goal: daysGoal });
+
+    // Recent logs with workout titles
+    if (weekLogs && weekLogs.length > 0) {
+      const wIds = [...new Set(weekLogs.map(l => l.workout_id))];
+      const { data: wData } = await supabase
+        .from("workouts").select("id, title").in("id", wIds);
+      const titleMap: Record<string, string> = {};
+      wData?.forEach(w => { titleMap[w.id] = w.title; });
+
+      setRecentLogs(
+        weekLogs.slice(0, 3).map(l => ({
+          workoutTitle: titleMap[l.workout_id] || "Treino",
+          durationMin: l.duration_minutes || 0,
+          completedAt: l.completed_at,
+        }))
+      );
+    }
   };
 
   const generateWeekPlan = (workouts: any[]): WeekDay[] => {
@@ -187,23 +161,7 @@ const AppDashboard = () => {
     { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", illustration: illustrationConquistas },
   ];
 
-  // navItems removed — using shared SolarBottomNav
-
-  /* ─── Muscle legend helper ─── */
-  const muscleLabels: Record<string, string> = {
-    chest: "Peito", shoulders: "Ombros", arms: "Braços",
-    back: "Costas", abs: "Abdome", glutes: "Glúteos",
-    legs: "Pernas", calves: "Panturrilha",
-  };
-  const statusGroups: Record<MuscleStatus, string[]> = { today: [], recent: [], recovering: [], none: [] };
-  Object.entries(muscleMap).forEach(([m, s]) => statusGroups[s].push(muscleLabels[m] || m));
-
-  const legendItems = [
-    { status: "today" as MuscleStatus, label: "Treinado hoje", color: "#F97316" },
-    { status: "recent" as MuscleStatus, label: "Últimos 2 dias", color: "#FBBF24" },
-    { status: "recovering" as MuscleStatus, label: "Recuperando", color: "#D97706" },
-    { status: "none" as MuscleStatus, label: "Não treinado", color: "#D6D3D1" },
-  ].filter(item => statusGroups[item.status].length > 0);
+  const weekProgressPct = weekStats.goal > 0 ? Math.min(100, Math.round((weekStats.done / weekStats.goal) * 100)) : 0;
 
   return (
     <div
@@ -220,7 +178,6 @@ const AppDashboard = () => {
         }}
       >
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          {/* Logo — Montserrat Black Italic */}
           <div className="flex items-center gap-1.5">
             <span
               className="font-display text-[22px]"
@@ -233,9 +190,7 @@ const AppDashboard = () => {
             >
               MEUSHAPE
             </span>
-            
           </div>
-          {/* Actions */}
           <div className="flex items-center gap-2.5">
             <button
               className="relative w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95"
@@ -251,8 +206,6 @@ const AppDashboard = () => {
                 style={{ backgroundColor: S.coral }}
               />
             </button>
-
-
           </div>
         </div>
       </header>
@@ -333,7 +286,7 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ MUSCLE MAP CARD ═══ */}
+      {/* ═══ WEEKLY SUMMARY CARD ═══ */}
       <section className="px-5 mb-5">
         <div className="max-w-lg mx-auto">
           <motion.div
@@ -357,85 +310,95 @@ const AppDashboard = () => {
               }}
             />
 
-            <div className="flex justify-between items-start mb-3 relative z-10">
-              <div>
-                <h3
-                  className="font-display text-base mb-0.5"
-                  style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}
-                >
-                  Mapa Muscular
-                </h3>
-                <p className="text-[12px] font-medium" style={{ color: S.textMuted }}>
-                  Últimos 7 dias de atividade
-                </p>
-              </div>
-              <div
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold"
-                style={{
-                  borderRadius: "0.75rem",
-                  backgroundColor: "rgba(234,88,12,0.12)",
-                  color: S.orange,
-                }}
+            <div className="relative z-10">
+              <h3
+                className="font-display text-base mb-4"
+                style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}
               >
-                <Target size={12} />
-                {weeklyProgress}%
-              </div>
-            </div>
+                Sua Semana
+              </h3>
 
-            <div className="flex items-center gap-5 relative z-10">
-              <div className="flex-shrink-0 w-[120px]">
-                <MuscleMap
-                  trainedMuscles={Object.entries(muscleMap).filter(([_, s]) => s !== "none").map(([m]) => m)}
-                  muscleColors={Object.fromEntries(Object.entries(muscleMap).map(([m, s]) => [m, muscleStatusColor(s)]))}
-                  onMuscleClick={() => navigate("/app/workouts")}
-                />
-              </div>
-
-              <div className="flex-1 space-y-2.5">
-                {legendItems.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
+              {/* 3 Stats row */}
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[
+                  { value: weekStats.done, label: "treinos", icon: Dumbbell },
+                  { value: weekStats.totalMin, label: "min", icon: Clock },
+                  { value: streak, label: "dias 🔥", icon: Flame },
+                ].map((stat, i) => (
+                  <div
+                    key={i}
+                    className="text-center py-3 px-2"
+                    style={{
+                      borderRadius: "1.25rem",
+                      backgroundColor: `${S.orange}0D`,
+                      border: `1px solid ${S.orange}1A`,
+                    }}
+                  >
                     <div
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{
-                        backgroundColor: item.color,
-                        boxShadow: item.status !== "none" ? `0 0 8px ${item.color}60` : "none",
-                      }}
-                    />
-                    <div>
-                      <div className="text-[12px] font-bold" style={{ color: S.text }}>
-                        {item.label}
-                      </div>
-                      <div className="text-[11px] font-medium" style={{ color: S.textMuted }}>
-                        {statusGroups[item.status].join(", ")}
-                      </div>
+                      className="font-display text-2xl mb-0.5"
+                      style={{ fontWeight: 900, color: S.orange }}
+                    >
+                      {stat.value}
+                    </div>
+                    <div
+                      className="text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ color: S.textMuted }}
+                    >
+                      {stat.label}
                     </div>
                   </div>
                 ))}
+              </div>
 
-                {/* Weekly Goal Progress */}
-                <div className="pt-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider" style={{ color: S.textMuted }}>
-                      Meta Semanal
-                    </span>
-                    <span className="text-[11px] font-extrabold" style={{ color: S.orange }}>
-                      {weeklyProgress}%
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(234,88,12,0.1)" }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${weeklyProgress}%` }}
-                      transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
-                      className="h-full rounded-full"
-                      style={{
-                        background: `linear-gradient(90deg, ${S.amber}, ${S.orange})`,
-                        boxShadow: `0 0 10px ${S.glowStrong}`,
-                      }}
-                    />
-                  </div>
+              {/* Progress bar */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider" style={{ color: S.textMuted }}>
+                    Meta Semanal
+                  </span>
+                  <span className="text-[12px] font-extrabold" style={{ color: S.orange }}>
+                    {weekStats.done}/{weekStats.goal} treinos
+                  </span>
+                </div>
+                <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: `${S.orange}1A` }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${weekProgressPct}%` }}
+                    transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
+                    className="h-full rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${S.amber}, ${S.orange})`,
+                      boxShadow: `0 0 10px ${S.glowStrong}`,
+                    }}
+                  />
                 </div>
               </div>
+
+              {/* Recent workouts list */}
+              {recentLogs.length > 0 && (
+                <div className="space-y-2">
+                  {recentLogs.map((log, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: S.orange, boxShadow: `0 0 6px ${S.orange}60` }}
+                      />
+                      <span className="text-[13px] font-semibold flex-1" style={{ color: S.text }}>
+                        {log.workoutTitle}
+                      </span>
+                      <span className="text-[11px] font-medium" style={{ color: S.textMuted }}>
+                        {relativeDay(log.completedAt)} · {log.durationMin} min
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {recentLogs.length === 0 && (
+                <p className="text-[12px] text-center py-2" style={{ color: S.textMuted }}>
+                  Nenhum treino esta semana ainda — bora começar! 💪
+                </p>
+              )}
             </div>
           </motion.div>
         </div>
@@ -568,7 +531,6 @@ const AppDashboard = () => {
               boxShadow: `0 8px 32px rgba(0,0,0,0.25), 0 0 60px ${S.glow}`,
             }}
           >
-            {/* Subtle gradient overlay */}
             <div
               className="absolute inset-0"
               style={{
@@ -576,7 +538,6 @@ const AppDashboard = () => {
                 pointerEvents: "none",
               }}
             />
-            {/* Inner border glow */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
