@@ -121,7 +121,7 @@ const AppExerciseDetail = () => {
   const mediaUrl = curatedExercise?.gif_url || exercise?.image_url;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <SolarPage>
       {/* GIF/Image Hero */}
       <div className="relative">
         <div className="aspect-[4/3] max-h-[340px] bg-card overflow-hidden">
