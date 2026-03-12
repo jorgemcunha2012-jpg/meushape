@@ -156,7 +156,12 @@ const AppDashboard = () => {
     prevWeekStart.setDate(prevWeekStart.getDate() - 7);
     const prevWeekEnd = new Date(weekStart);
 
-    const [weekLogsRes, prevWeekLogsRes] = await Promise.all([
+    // Calendar: last 35 days of logs
+    const calStart = new Date();
+    calStart.setDate(calStart.getDate() - 35);
+    calStart.setHours(0, 0, 0, 0);
+
+    const [weekLogsRes, prevWeekLogsRes, calLogsRes] = await Promise.all([
       supabase
         .from("workout_logs").select("id, completed_at, duration_minutes, workout_id")
         .eq("user_id", user!.id)
@@ -168,6 +173,10 @@ const AppDashboard = () => {
         .gte("completed_at", prevWeekStart.toISOString())
         .lt("completed_at", prevWeekEnd.toISOString())
         .order("completed_at", { ascending: false }),
+      supabase
+        .from("workout_logs").select("completed_at")
+        .eq("user_id", user!.id)
+        .gte("completed_at", calStart.toISOString()),
     ]);
 
     const weekLogs = weekLogsRes.data;
