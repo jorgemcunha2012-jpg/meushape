@@ -10,7 +10,7 @@ import { useGenerationLimits, type GenerationType } from "@/hooks/useGenerationL
 interface AIGenerationWizardProps {
   userId: string;
   type: "challenge" | "project";
-  onComplete: () => void;
+  onComplete: (programId?: string) => void;
   onCancel: () => void;
   isAdmin?: boolean;
 }
