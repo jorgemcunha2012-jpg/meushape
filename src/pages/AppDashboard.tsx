@@ -50,6 +50,8 @@ const AppDashboard = () => {
   const [lastWorkoutDate, setLastWorkoutDate] = useState<string>("");
   const [weekStats, setWeekStats] = useState({ done: 0, totalMin: 0, goal: 5 });
   const [recentLogs, setRecentLogs] = useState<WeekLog[]>([]);
+  const [prevWeekStats, setPrevWeekStats] = useState<{ done: number; totalMin: number } | null>(null);
+  const [lastWorkoutTitle, setLastWorkoutTitle] = useState<string>("");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
 
