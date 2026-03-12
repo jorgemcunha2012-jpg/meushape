@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Sparkles, Check, Dumbbell, Flame, Heart, Zap, Target, Timer, Trophy, Lock } from "lucide-react";
 import OnboardingDrawer from "@/components/OnboardingDrawer";
 import { canGeneratePlan, daysUntilNextPlan, setPlanGenerated } from "@/services/cacheService";
+import { useGenerationLimits } from "@/hooks/useGenerationLimits";
 
 interface AIWorkoutWizardProps {
   userId: string;
@@ -16,6 +17,7 @@ interface AIWorkoutWizardProps {
 
 const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps) => {
   const S = useSolar();
+  const limits = useGenerationLimits(userId);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -101,6 +103,10 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
       if (data?.error) throw new Error(data.error);
 
       setPlanGenerated();
+      // Record generation in DB + localStorage via hook
+      if (data?.program_id) {
+        await limits.recordGeneration("plan", data.program_id);
+      }
       setDone(true);
       toast.success("Treino gerado com sucesso! 🎉");
       setTimeout(() => onComplete(), 1500);
