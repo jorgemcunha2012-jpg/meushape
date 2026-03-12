@@ -231,7 +231,7 @@ const AppDashboard = () => {
       <header
         className="sticky top-0 z-20 px-5 pt-4 pb-3"
         style={{
-          backgroundColor: "rgba(253,252,251,0.8)",
+          background: `linear-gradient(to bottom, ${S.orange}, ${S.bg})`,
           backdropFilter: "blur(20px) saturate(1.6)",
           WebkitBackdropFilter: "blur(20px) saturate(1.6)",
         }}
