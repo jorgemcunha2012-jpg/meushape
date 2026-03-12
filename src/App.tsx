@@ -30,6 +30,7 @@ import AppProfile from "./pages/AppProfile";
 import AppProgramDetail from "./pages/AppProgramDetail";
 import AppExploreMuscleWiki from "./pages/AppExploreMuscleWiki";
 import AppMuscleWikiDetail from "./pages/AppMuscleWikiDetail";
+import AppMeusTreinos from "./pages/AppMeusTreinos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/app/history" element={<AppHistory />} />
             <Route path="/app/community" element={<AppCommunity />} />
             <Route path="/app/manage" element={<AppManageWorkouts />} />
+            <Route path="/app/meus-treinos" element={<AppMeusTreinos />} />
             <Route path="/app/stretching" element={<AppStretching />} />
             <Route path="/app/cardio" element={<AppCardio />} />
             <Route path="/app/cardio/:protocolId" element={<AppCardio />} />
