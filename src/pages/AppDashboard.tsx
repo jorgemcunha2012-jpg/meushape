@@ -920,7 +920,7 @@ const AppDashboard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>Explorar Exercícios</p>
-              <p className="text-[11px]" style={{ color: S.textMuted }}>880+ exercícios com filtros por músculo e equipamento</p>
+              <p className="text-[11px]" style={{ color: S.textMuted }}>1.800+ exercícios com 7.300+ vídeos do MuscleWiki</p>
             </div>
             <ChevronRight className="w-4 h-4 shrink-0" style={{ color: S.textMuted }} />
           </motion.button>
