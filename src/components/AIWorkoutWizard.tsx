@@ -114,17 +114,48 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
   }
 
   // Generating/done state
+  const workoutIcons = [Dumbbell, Flame, Heart, Zap, Target, Timer, Trophy, Sparkles];
+  const [iconIndex, setIconIndex] = useState(0);
+
+  useEffect(() => {
+    if (generating && !done) {
+      const interval = setInterval(() => {
+        setIconIndex(prev => (prev + 1) % workoutIcons.length);
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [generating, done]);
+
   if (generating || done) {
+    const CurrentIcon = workoutIcons[iconIndex];
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <motion.div
-          animate={done ? { scale: [1, 1.2, 1] } : { rotate: 360 }}
-          transition={done ? { duration: 0.5 } : { duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-20 h-20 flex items-center justify-center mb-6"
+        <div
+          className="w-20 h-20 flex items-center justify-center mb-6 relative overflow-hidden"
           style={{ borderRadius: "1.5rem", background: `linear-gradient(135deg, ${S.orange}20, ${S.amber}20)` }}
         >
-          {done ? <Check size={40} style={{ color: S.orange }} /> : <Sparkles size={40} style={{ color: S.orange }} />}
-        </motion.div>
+          {done ? (
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 12 }}
+            >
+              <Check size={40} style={{ color: S.orange }} />
+            </motion.div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={iconIndex}
+                initial={{ y: 40, opacity: 0, scale: 0.5 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -40, opacity: 0, scale: 0.5 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+              >
+                <CurrentIcon size={36} style={{ color: S.orange }} />
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </div>
         <p className="font-display text-base mb-2" style={{ fontWeight: 700, color: S.text }}>
           {done ? "Treino pronto!" : "Gerando seu treino..."}
         </p>
