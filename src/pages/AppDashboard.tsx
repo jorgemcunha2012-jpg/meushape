@@ -5,9 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
   Bell, Sparkles, ChevronRight, Trophy, Flame,
-  Target, Calendar, Zap, Dumbbell, TrendingUp, Users
+  Clock, Calendar, Zap, Dumbbell, TrendingUp, Users
 } from "lucide-react";
-import MuscleMap from "@/components/MuscleMap";
 import { SolarBottomNav, useSolar } from "@/components/SolarLayout";
 import OnboardingDrawer from "@/components/OnboardingDrawer";
 import illustrationTreino from "@/assets/illustration-treino.png";
