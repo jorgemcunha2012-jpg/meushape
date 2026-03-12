@@ -70,7 +70,7 @@ const AppWarmup = () => {
 
   const current = routine?.exercises[currentIndex];
   const exerciseNames = useMemo(() => routine?.exercises.map(e => e.name) || [], [routine]);
-  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
   const currentMedia = current ? mwMedia[current.name] : undefined;
 
   const tick = useCallback(() => {
