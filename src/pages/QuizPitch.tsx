@@ -278,11 +278,6 @@ const QuizPitch = () => {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center"
             >
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold mb-4"
-                style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444" }}>
-                <Clock size={12} /> Oferta válida por 48h
-              </motion.div>
 
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1 }}
