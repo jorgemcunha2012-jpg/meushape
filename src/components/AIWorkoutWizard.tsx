@@ -124,18 +124,6 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
     );
   }
 
-  // Generating/done state
-  const workoutIcons = [Dumbbell, Flame, Heart, Zap, Target, Timer, Trophy, Sparkles];
-  const [iconIndex, setIconIndex] = useState(0);
-
-  useEffect(() => {
-    if (generating && !done) {
-      const interval = setInterval(() => {
-        setIconIndex(prev => (prev + 1) % workoutIcons.length);
-      }, 800);
-      return () => clearInterval(interval);
-    }
-  }, [generating, done]);
 
   if (generating || done) {
     const CurrentIcon = workoutIcons[iconIndex];
