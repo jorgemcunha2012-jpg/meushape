@@ -28,6 +28,8 @@ import AppWarmup from "./pages/AppWarmup";
 import AppHomeWorkout from "./pages/AppHomeWorkout";
 import AppProfile from "./pages/AppProfile";
 import AppProgramDetail from "./pages/AppProgramDetail";
+import AppExploreExercises from "./pages/AppExploreExercises";
+import AppWgerExerciseDetail from "./pages/AppWgerExerciseDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
