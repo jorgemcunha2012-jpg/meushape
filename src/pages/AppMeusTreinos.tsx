@@ -238,12 +238,12 @@ const AppMeusTreinos = () => {
                 </div>
 
                 {/* Action footer */}
-                <div className="px-4 pb-4 flex gap-2">
+                <div className="px-4 pb-4">
                   <Button
                     size="sm"
-                    className="flex-1 rounded-xl text-xs h-9"
+                    className="w-full rounded-xl text-xs h-9"
                     onClick={() => handleGenerateNew(type)}
-                    disabled={!limit.canGenerate && type !== "plan"}
+                    disabled={!limit.canGenerate}
                     style={
                       limit.canGenerate
                         ? { background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }
@@ -258,23 +258,11 @@ const AppMeusTreinos = () => {
                       </>
                     ) : (
                       <>
-                        <Lock size={12} className="mr-1" />
-                        Em {limit.daysUntilNext} dias
+                        <Clock size={12} className="mr-1" />
+                        Disponível em {limit.daysUntilNext} dias
                       </>
                     )}
                   </Button>
-
-                  {!limit.canGenerate && type !== "plan" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl text-xs h-9"
-                      onClick={() => setPurchaseModal(type)}
-                    >
-                      <ShoppingCart size={12} className="mr-1" />
-                      R$ 9,90
-                    </Button>
-                  )}
                 </div>
 
                 {/* Renewal info */}
