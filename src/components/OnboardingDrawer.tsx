@@ -270,10 +270,10 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
               {current.type === "biometrics" && (
                 <div className="space-y-4">
                   {[
-                    { label: "Altura (cm)", value: height, set: setHeight, placeholder: "165" },
-                    { label: "Peso atual (kg)", value: weight, set: setWeight, placeholder: "70" },
-                    { label: "Peso meta (kg)", value: goalWeight, set: setGoalWeight, placeholder: "60" },
-                    { label: "Idade", value: age, set: setAge, placeholder: "28" },
+                    { label: "Altura (cm)", value: height, set: setHeight, placeholder: "165", errorKey: "height" },
+                    { label: "Peso atual (kg)", value: weight, set: setWeight, placeholder: "70", errorKey: "weight" },
+                    { label: "Peso meta (kg)", value: goalWeight, set: setGoalWeight, placeholder: "60", errorKey: "goalWeight" },
+                    { label: "Idade", value: age, set: setAge, placeholder: "28", errorKey: "age" },
                   ].map((field, i) => (
                     <div key={i}>
                       <label className="text-xs font-semibold mb-1.5 block" style={{ color: S.textMuted }}>
@@ -281,10 +281,17 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
                       </label>
                       <input
                         type="number" inputMode="numeric"
-                        value={field.value} onChange={(e) => field.set(e.target.value)}
+                        value={field.value}
+                        onChange={(e) => { field.set(e.target.value); setBioErrors(prev => ({ ...prev, [field.errorKey]: "" })); }}
                         placeholder={field.placeholder}
-                        style={inputStyle}
+                        style={{
+                          ...inputStyle,
+                          ...(bioErrors[field.errorKey] ? { borderColor: "hsl(0, 84%, 60%)" } : {}),
+                        }}
                       />
+                      {bioErrors[field.errorKey] && (
+                        <p className="text-xs mt-1 text-destructive">{bioErrors[field.errorKey]}</p>
+                      )}
                     </div>
                   ))}
                   <motion.button whileTap={{ scale: 0.97 }}
