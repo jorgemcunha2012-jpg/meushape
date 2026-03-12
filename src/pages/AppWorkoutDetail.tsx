@@ -6,6 +6,16 @@ import { motion } from "framer-motion";
 import { Play, Clock, Dumbbell, Flame, ChevronRight, Zap } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import { getProxiedMediaUrl } from "@/services/muscleWikiService";
+
+/** Proxy MuscleWiki stream URLs through our edge function for auth */
+function proxyImageUrl(url: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith("https://api.musclewiki.com/stream/")) {
+    return getProxiedMediaUrl(url);
+  }
+  return url;
+}
 
 interface Exercise {
   id: string;
