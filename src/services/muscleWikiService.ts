@@ -113,15 +113,20 @@ export const listExercises = async (params: {
 };
 
 export const fetchExerciseDetail = async (id: number): Promise<MWExerciseDetail> => {
-  const res = await fetch(`${BASE}/exercises/${id}`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki exercise detail error: ${res.status}`);
-  return res.json();
+  return cache.fetchWithCache(`mw:exercise:${id}`, async () => {
+    const res = await fetch(`${BASE}/exercises/${id}`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki exercise detail error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const searchExercisesMW = async (query: string, limit = 20): Promise<MWExerciseDetail[]> => {
-  const res = await fetch(`${BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki search error: ${res.status}`);
-  return res.json();
+  const cacheKey = `mw:search:${query.toLowerCase().trim()}:${limit}`;
+  return cache.fetchWithCache(cacheKey, async () => {
+    const res = await fetch(`${BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki search error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.SHORT);
 };
 
 // ─── Media URL helper ───
