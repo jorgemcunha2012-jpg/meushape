@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Plus, Minus, RotateCcw, Clock,
-  Info, Flame, Save, Target, AlertTriangle
+  Info, Save, AlertTriangle, Weight
 } from "lucide-react";
 import { SolarPage, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface Exercise {
   id: string;
@@ -30,6 +31,13 @@ interface CuratedExercise {
   body_part: string;
 }
 
+interface WeightLog {
+  weight_kg: number;
+  created_at: string;
+}
+
+const stripParentheses = (name: string) => name.replace(/\s*\(.*\)$/, "");
+
 const AppExerciseDetail = () => {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
@@ -40,10 +48,14 @@ const AppExerciseDetail = () => {
   const [curatedExercise, setCuratedExercise] = useState<CuratedExercise | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [sets, setSets] = useState(3);
   const [reps, setReps] = useState("12");
   const [restSeconds, setRestSeconds] = useState(60);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Weight tracking
+  const [currentWeight, setCurrentWeight] = useState<string>("");
+  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+  const [weightSaved, setWeightSaved] = useState(true);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) {
@@ -63,11 +75,10 @@ const AppExerciseDetail = () => {
 
     if (exerciseData) {
       setExercise(exerciseData);
-      setSets(exerciseData.sets);
       setReps(exerciseData.reps);
       setRestSeconds(exerciseData.rest_seconds);
 
-      const baseName = exerciseData.name.replace(/\s*\(.*\)$/, "");
+      const baseName = stripParentheses(exerciseData.name);
       let { data: curatedData } = await supabase
         .from("curated_exercises")
         .select("name_pt, simple_instruction_pt, common_mistakes_pt, gif_url, target, body_part")
@@ -84,6 +95,23 @@ const AppExerciseDetail = () => {
       }
 
       if (curatedData) setCuratedExercise(curatedData);
+
+      // Fetch weight logs
+      if (user) {
+        const exerciseName = baseName;
+        const { data: logs } = await supabase
+          .from("exercise_weight_logs")
+          .select("weight_kg, created_at")
+          .eq("user_id", user.id)
+          .eq("exercise_name", exerciseName)
+          .order("created_at", { ascending: true });
+
+        if (logs && logs.length > 0) {
+          setWeightLogs(logs);
+          setCurrentWeight(String(logs[logs.length - 1].weight_kg));
+          setWeightSaved(true);
+        }
+      }
     }
     setLoading(false);
   };
@@ -92,35 +120,67 @@ const AppExerciseDetail = () => {
     if (!exercise || !user) return;
     const { error } = await supabase
       .from("exercises")
-      .update({ sets, reps, rest_seconds: restSeconds })
+      .update({ reps, rest_seconds: restSeconds })
       .eq("id", exercise.id);
 
     if (error) { toast.error("Erro ao salvar"); return; }
     toast.success("Alterações salvas!");
     setHasChanges(false);
-    setExercise({ ...exercise, sets, reps, rest_seconds: restSeconds });
+    setExercise({ ...exercise, reps, rest_seconds: restSeconds });
   };
 
   const handleResetValues = () => {
     if (!exercise) return;
-    setSets(exercise.sets);
     setReps(exercise.reps);
     setRestSeconds(exercise.rest_seconds);
     setHasChanges(false);
   };
 
+  const handleSaveWeight = async () => {
+    if (!exercise || !user || !currentWeight) return;
+    const weightNum = parseFloat(currentWeight);
+    if (isNaN(weightNum) || weightNum <= 0) {
+      toast.error("Insira um peso válido");
+      return;
+    }
+
+    const exerciseName = stripParentheses(exercise.name);
+    const { error } = await supabase
+      .from("exercise_weight_logs")
+      .insert({ user_id: user.id, exercise_name: exerciseName, weight_kg: weightNum });
+
+    if (error) { toast.error("Erro ao salvar peso"); return; }
+    toast.success("Peso registrado!");
+    setWeightSaved(true);
+
+    // Refresh logs
+    const { data: logs } = await supabase
+      .from("exercise_weight_logs")
+      .select("weight_kg, created_at")
+      .eq("user_id", user.id)
+      .eq("exercise_name", exerciseName)
+      .order("created_at", { ascending: true });
+    if (logs) setWeightLogs(logs);
+  };
+
   useEffect(() => {
     if (!exercise) return;
-    setHasChanges(
-      sets !== exercise.sets || reps !== exercise.reps || restSeconds !== exercise.rest_seconds
-    );
-  }, [sets, reps, restSeconds, exercise]);
+    setHasChanges(reps !== exercise.reps || restSeconds !== exercise.rest_seconds);
+  }, [reps, restSeconds, exercise]);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return m > 0 ? `${m}:${sec.toString().padStart(2, '0')}` : `${sec}s`;
   };
+
+  const chartData = useMemo(() =>
+    weightLogs.map(l => ({
+      date: new Date(l.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+      peso: l.weight_kg,
+    })),
+    [weightLogs]
+  );
 
   if (loading) {
     return (
@@ -131,6 +191,7 @@ const AppExerciseDetail = () => {
   }
 
   const mediaUrl = curatedExercise?.gif_url || exercise?.image_url;
+  const displayName = exercise ? stripParentheses(exercise.name) : "";
 
   return (
     <SolarPage>
@@ -150,7 +211,7 @@ const AppExerciseDetail = () => {
             {mediaUrl && (
               <img
                 src={mediaUrl}
-                alt={exercise?.name || "Exercício"}
+                alt={displayName}
                 className="w-full h-full object-contain"
                 style={{ background: S.card }}
               />
@@ -162,16 +223,10 @@ const AppExerciseDetail = () => {
       {/* Stats bar below GIF */}
       <div className="px-5 -mt-1 mb-2">
         <div className="max-w-lg mx-auto flex items-center justify-center gap-3">
-          {curatedExercise?.target && (
-            <span className="px-3 py-1.5 rounded-full text-xs font-bold"
-              style={{ background: `${S.orange}18`, color: S.orange }}>
-              {curatedExercise.target}
-            </span>
-          )}
           <div className="px-4 py-2 rounded-2xl flex items-center gap-3"
             style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
             <div className="text-center">
-              <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{sets}</p>
+              <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{exercise?.sets}</p>
               <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>séries</p>
             </div>
             <span className="text-sm font-bold" style={{ color: S.textMuted }}>×</span>
@@ -194,7 +249,7 @@ const AppExerciseDetail = () => {
       <div className="px-5 pt-5 pb-2">
         <div className="max-w-lg mx-auto">
           <h1 className="font-display text-xl" style={{ fontWeight: 800, color: S.text }}>
-            {exercise?.name}
+            {displayName}
           </h1>
           {exercise?.description && (
             <p className="text-sm mt-1" style={{ color: S.textMuted }}>{exercise.description}</p>
@@ -224,37 +279,77 @@ const AppExerciseDetail = () => {
         </section>
       )}
 
+      {/* Weight Input */}
+      <section className="px-5 pb-3">
+        <div className="max-w-lg mx-auto">
+          <h2 className="font-display text-sm mb-3" style={{ fontWeight: 700, color: S.text }}>Carga</h2>
+          <div className="rounded-2xl p-4 flex items-center justify-between"
+            style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: `${S.orange}12` }}>
+                <Weight className="w-4 h-4" style={{ color: S.orange }} />
+              </div>
+              <p className="font-display text-sm" style={{ fontWeight: 600, color: S.text }}>Peso (kg)</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={currentWeight}
+                placeholder="0"
+                onChange={(e) => { setCurrentWeight(e.target.value); setWeightSaved(false); }}
+                className="w-20 h-10 rounded-xl px-3 text-center font-bold text-sm focus:outline-none focus:ring-2"
+                style={{
+                  background: S.card, border: `1px solid ${S.cardBorder}`,
+                  color: S.text, "--tw-ring-color": S.orange,
+                } as any}
+              />
+              {!weightSaved && currentWeight && (
+                <motion.button
+                  onClick={handleSaveWeight}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})` }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Save className="w-4 h-4 text-white" />
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Weight Chart */}
+      {chartData.length >= 2 && (
+        <section className="px-5 pb-3">
+          <div className="max-w-lg mx-auto">
+            <h2 className="font-display text-sm mb-3" style={{ fontWeight: 700, color: S.text }}>Evolução de Carga</h2>
+            <div className="rounded-2xl p-4" style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={chartData}>
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: S.textMuted }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: S.textMuted }} axisLine={false} tickLine={false} width={35}
+                    domain={['dataMin - 2', 'dataMax + 2']} />
+                  <Tooltip
+                    contentStyle={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: 12, fontSize: 12 }}
+                    labelStyle={{ color: S.textMuted }}
+                    formatter={(value: number) => [`${value} kg`, "Peso"]}
+                  />
+                  <Line type="monotone" dataKey="peso" stroke={S.orange} strokeWidth={2.5} dot={{ r: 3, fill: S.orange }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Configuration */}
       <section className="px-5 pb-3">
         <div className="max-w-lg mx-auto">
           <h2 className="font-display text-sm mb-3" style={{ fontWeight: 700, color: S.text }}>Ajustar</h2>
 
           <div className="space-y-2">
-            {/* Sets */}
-            <div className="rounded-2xl p-4 flex items-center justify-between"
-              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: `${S.orange}12` }}>
-                  <Target className="w-4 h-4" style={{ color: S.orange }} />
-                </div>
-                <p className="font-display text-sm" style={{ fontWeight: 600, color: S.text }}>Séries</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setSets(Math.max(1, sets - 1))}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-                  <Minus className="w-3.5 h-3.5" style={{ color: S.textMuted }} />
-                </button>
-                <span className="font-bold text-lg min-w-[2ch] text-center" style={{ color: S.text }}>{sets}</span>
-                <button onClick={() => setSets(Math.min(10, sets + 1))}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-                  <Plus className="w-3.5 h-3.5" style={{ color: S.textMuted }} />
-                </button>
-              </div>
-            </div>
-
             {/* Reps */}
             <div className="rounded-2xl p-4 flex items-center justify-between"
               style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
