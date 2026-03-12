@@ -103,19 +103,8 @@ const AppCommunity = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="px-5 pt-10 pb-2">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={() => navigate("/app")} className="text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Comunidade</h1>
-            <p className="text-xs text-muted-foreground">Mulheres treinando juntas 💪</p>
-          </div>
-        </div>
-      </header>
+    <SolarPage>
+      <SolarHeader title="Comunidade" showBack />
 
       {/* New Post */}
       <section className="px-5 py-4">

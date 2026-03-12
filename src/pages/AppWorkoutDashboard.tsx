@@ -125,33 +125,7 @@ const AppWorkoutDashboard = () => {
 
   return (
     <SolarPage>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-20 px-5 pt-4 pb-3"
-        style={{
-          backgroundColor: "rgba(253,252,251,0.8)",
-          backdropFilter: "blur(20px) saturate(1.6)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
-        }}
-      >
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button
-            onClick={() => navigate("/app")}
-            className="w-9 h-9 flex items-center justify-center transition-all active:scale-95"
-            style={{
-              borderRadius: "0.75rem",
-              backgroundColor: S.card,
-              border: `1px solid ${S.cardBorder}`,
-              boxShadow: `0 2px 8px rgba(234,88,12,0.06)`,
-            }}
-          >
-            <ArrowLeft size={16} style={{ color: S.textSub }} />
-          </button>
-          <h1 className="font-display text-xl" style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}>
-            Treinos
-          </h1>
-        </div>
-      </header>
+      <SolarHeader title="Treinos" showBack />
 
       {/* Tab Bar */}
       <section className="px-5 py-3">
