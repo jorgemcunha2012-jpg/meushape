@@ -10,8 +10,9 @@ import type { ExerciseDB } from "@/types/exercise";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Plus, Trash2, Search, Dumbbell, ChevronRight, Pencil, Check, X,
+  Plus, Trash2, Search, Dumbbell, ChevronRight, Pencil, Check, X, Sparkles,
 } from "lucide-react";
+import AIWorkoutWizard from "@/components/AIWorkoutWizard";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose,
