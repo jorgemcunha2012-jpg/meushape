@@ -26,6 +26,15 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
     checkOnboarding();
   }, []);
 
+  useEffect(() => {
+    if (generating && !done) {
+      const interval = setInterval(() => {
+        setIconIndex(prev => (prev + 1) % workoutIcons.length);
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [generating, done]);
+
   const checkOnboarding = async () => {
     const { data } = await supabase
       .from("profiles")
