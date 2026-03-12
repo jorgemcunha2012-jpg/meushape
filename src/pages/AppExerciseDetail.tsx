@@ -7,6 +7,7 @@ import {
   ArrowLeft, Plus, Minus, RotateCcw, Clock,
   Info, Flame, Save, Target, AlertTriangle
 } from "lucide-react";
+import { SolarPage, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
 
 interface Exercise {
@@ -120,7 +121,7 @@ const AppExerciseDetail = () => {
   const mediaUrl = curatedExercise?.gif_url || exercise?.image_url;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <SolarPage>
       {/* GIF/Image Hero */}
       <div className="relative">
         <div className="aspect-[4/3] max-h-[340px] bg-card overflow-hidden">
@@ -319,7 +320,7 @@ const AppExerciseDetail = () => {
           </div>
         </motion.section>
       )}
-    </div>
+    </SolarPage>
   );
 };
 

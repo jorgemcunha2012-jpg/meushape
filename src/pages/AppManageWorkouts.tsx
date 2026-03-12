@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Search, Dumbbell, ChevronDown, ChevronUp,
 } from "lucide-react";
+import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface Program {
   id: string;
@@ -170,16 +171,8 @@ const AppManageWorkouts = () => {
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Carregando...</p></div>;
 
   return (
-    <div className="min-h-screen bg-background pb-8">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate("/app")} className="text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="font-display text-lg font-bold text-foreground">Gerenciar Treinos</h1>
-        </div>
-      </header>
+    <SolarPage>
+      <SolarHeader title="Gerenciar Treinos" showBack />
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
         {/* Programs Section */}
@@ -367,7 +360,7 @@ const AppManageWorkouts = () => {
           onClose={() => setShowBrowser(false)}
         />
       )}
-    </div>
+    </SolarPage>
   );
 };
 

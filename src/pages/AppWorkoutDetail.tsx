@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, Clock, Dumbbell, Flame, ChevronRight, Zap } from "lucide-react";
+import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface Exercise {
   id: string;
@@ -90,28 +91,8 @@ const AppWorkoutDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      {/* Header */}
-      <header className="px-5 pt-10 pb-2">
-        <div className="max-w-lg mx-auto">
-          <button
-            onClick={() => navigate("/app/workouts")}
-            className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors mb-5"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
-            {new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(new Date())}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-            {workout?.title}
-          </h1>
-          {workout?.description && (
-            <p className="text-sm text-muted-foreground">{workout.description}</p>
-          )}
-        </div>
-      </header>
+    <SolarPage>
+      <SolarHeader title={workout?.title || "Treino"} showBack />
 
       {/* Stats Row */}
       <section className="px-5 py-4">
@@ -233,7 +214,7 @@ const AppWorkoutDetail = () => {
           </motion.button>
         </div>
       </div>
-    </div>
+    </SolarPage>
   );
 };
 
