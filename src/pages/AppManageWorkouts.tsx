@@ -320,6 +320,7 @@ const AppManageWorkouts = () => {
             <motion.div key="ai-wizard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <AIWorkoutWizard
                 userId={user!.id}
+                isAdmin={isAdmin}
                 onComplete={() => { setShowAIWizard(false); fetchPrograms(); }}
                 onCancel={() => setShowAIWizard(false)}
               />

@@ -12,6 +12,7 @@ interface AIGenerationWizardProps {
   type: "challenge" | "project";
   onComplete: () => void;
   onCancel: () => void;
+  isAdmin?: boolean;
 }
 
 const TYPE_CONFIG = {
@@ -33,9 +34,9 @@ const TYPE_CONFIG = {
   },
 };
 
-const AIGenerationWizard = ({ userId, type, onComplete, onCancel }: AIGenerationWizardProps) => {
+const AIGenerationWizard = ({ userId, type, onComplete, onCancel, isAdmin = false }: AIGenerationWizardProps) => {
   const S = useSolar();
-  const limits = useGenerationLimits(userId);
+  const limits = useGenerationLimits(userId, isAdmin);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const config = TYPE_CONFIG[type];

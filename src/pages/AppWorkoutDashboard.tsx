@@ -52,7 +52,7 @@ const levelColor = (l: string | number) => {
 
 const AppWorkoutDashboard = () => {
   const S = useSolar();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const { user, subscribed, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [tab, setTab] = useState<TabId>("meus");
@@ -331,6 +331,7 @@ const AppWorkoutDashboard = () => {
           <div className="max-w-lg mx-auto">
             <AIWorkoutWizard
               userId={user!.id}
+              isAdmin={isAdmin}
               onComplete={() => { setShowAIWizard(false); fetchAllData(); }}
               onCancel={() => setShowAIWizard(false)}
             />

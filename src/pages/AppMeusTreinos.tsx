@@ -42,9 +42,9 @@ const typeConfig: Record<GenerationType, { label: string; icon: typeof Dumbbell;
 
 const AppMeusTreinos = () => {
   const S = useSolar();
-  const { user, subscriptionLoading } = useAuth();
+  const { user, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const limits = useGenerationLimits(user?.id);
+  const limits = useGenerationLimits(user?.id, isAdmin);
 
   const [activePrograms, setActivePrograms] = useState<Record<GenerationType, ActiveProgram | null>>({
     plan: null, challenge: null, project: null,
@@ -332,6 +332,7 @@ const AppMeusTreinos = () => {
             <AIGenerationWizard
               userId={user!.id}
               type={generatingType}
+              isAdmin={isAdmin}
               onComplete={() => {
                 setGeneratingType(null);
                 limits.refresh();
