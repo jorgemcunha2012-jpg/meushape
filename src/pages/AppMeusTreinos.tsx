@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGenerationLimits, type GenerationType } from "@/hooks/useGenerationLimits";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { motion } from "framer-motion";
-import { Dumbbell, Zap, Trophy, Lock, ShoppingCart, Sparkles, ChevronRight, Clock } from "lucide-react";
+import { Dumbbell, Zap, Trophy, Sparkles, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -195,14 +195,14 @@ const AppMeusTreinos = () => {
                         1 por {config.period}
                       </p>
                     </div>
-                    {!limit.canGenerate && (
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: `${S.orange}12` }}>
-                        <Clock size={10} style={{ color: S.orange }} />
-                        <span className="text-[10px] font-semibold" style={{ color: S.orange }}>
-                          {limit.daysUntilNext}d
-                        </span>
-                      </div>
-                    )}
+                    <div
+                      className="flex items-center gap-1 px-2 py-1 rounded-full"
+                      style={{ background: limit.canGenerate ? `${S.orange}15` : `${S.orange}12` }}
+                    >
+                      <span className="text-[10px] font-semibold" style={{ color: S.orange }}>
+                        {limit.canGenerate ? "Disponível" : `Em ${limit.daysUntilNext}d`}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Active program */}
@@ -238,12 +238,12 @@ const AppMeusTreinos = () => {
                 </div>
 
                 {/* Action footer */}
-                <div className="px-4 pb-4 flex gap-2">
+                <div className="px-4 pb-4">
                   <Button
                     size="sm"
-                    className="flex-1 rounded-xl text-xs h-9"
+                    className="w-full rounded-xl text-xs h-9"
                     onClick={() => handleGenerateNew(type)}
-                    disabled={!limit.canGenerate && type !== "plan"}
+                    disabled={!limit.canGenerate}
                     style={
                       limit.canGenerate
                         ? { background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }
@@ -258,23 +258,11 @@ const AppMeusTreinos = () => {
                       </>
                     ) : (
                       <>
-                        <Lock size={12} className="mr-1" />
-                        Em {limit.daysUntilNext} dias
+                        <Clock size={12} className="mr-1" />
+                        Disponível em {limit.daysUntilNext} dias
                       </>
                     )}
                   </Button>
-
-                  {!limit.canGenerate && type !== "plan" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl text-xs h-9"
-                      onClick={() => setPurchaseModal(type)}
-                    >
-                      <ShoppingCart size={12} className="mr-1" />
-                      R$ 9,90
-                    </Button>
-                  )}
                 </div>
 
                 {/* Renewal info */}
