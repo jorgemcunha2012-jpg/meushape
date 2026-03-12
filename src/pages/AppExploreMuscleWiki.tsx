@@ -44,6 +44,7 @@ const AppExploreMuscleWiki = () => {
   const [searchResults, setSearchResults] = useState<MWExerciseDetail[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const { guard: clickGuard, blocked: clickBlocked } = useClickGuard(2000);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) {
