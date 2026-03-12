@@ -59,7 +59,7 @@ const Paywall = () => {
 
         <div className="bg-card border-2 border-primary rounded-2xl p-6 mb-6">
           <div className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-3">
-            <Star className="w-3 h-3" /> 7 DIAS GRÁTIS
+            <Star className="w-3 h-3" /> ACESSO IMEDIATO
           </div>
           <p className="text-2xl font-bold text-foreground">R$ 19,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
           <p className="text-xs text-muted-foreground mt-1">Após o período de teste</p>
