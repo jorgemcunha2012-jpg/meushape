@@ -183,33 +183,7 @@ const AppCommunity = () => {
         </div>
       </section>
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-border z-20">
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 pb-6">
-          <button onClick={() => navigate("/app")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">🏠</span>
-            <span className="text-[10px] text-muted-foreground">Home</span>
-          </button>
-          <button onClick={() => navigate("/app/workouts")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">🏋️‍♀️</span>
-            <span className="text-[10px] text-muted-foreground">Treinos</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg">👥</span>
-            <span className="text-[10px] font-semibold text-primary">Social</span>
-            <div className="w-1 h-1 rounded-full bg-primary" />
-          </button>
-          <button onClick={() => navigate("/app/history")} className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">📊</span>
-            <span className="text-[10px] text-muted-foreground">Progresso</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 py-1 px-3">
-            <span className="text-lg opacity-50 grayscale">👤</span>
-            <span className="text-[10px] text-muted-foreground">Perfil</span>
-          </button>
-        </div>
-      </nav>
-    </div>
+    </SolarPage>
   );
 };
 
