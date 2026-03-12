@@ -75,8 +75,8 @@ const AppWorkoutDashboard = () => {
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
-    if (user && subscribed) fetchAllData();
-  }, [user, subscribed, subscriptionLoading]);
+    if (user) fetchAllData();
+  }, [user, subscriptionLoading]);
 
   const fetchAllData = async () => {
     if (!user) return;

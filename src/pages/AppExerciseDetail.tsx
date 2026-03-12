@@ -33,7 +33,8 @@ interface CuratedExercise {
 const AppExerciseDetail = () => {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const S = useSolar();
+  const { user, subscriptionLoading } = useAuth();
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [curatedExercise, setCuratedExercise] = useState<CuratedExercise | null>(null);
@@ -50,7 +51,7 @@ const AppExerciseDetail = () => {
       return;
     }
     if (exerciseId) fetchExercise();
-  }, [exerciseId, user, subscribed, subscriptionLoading, navigate]);
+  }, [exerciseId, user, subscriptionLoading, navigate]);
 
   const fetchExercise = async () => {
     setLoading(true);
@@ -87,6 +88,7 @@ const AppExerciseDetail = () => {
     if (error) { toast.error("Erro ao salvar"); return; }
     toast.success("Alterações salvas!");
     setHasChanges(false);
+    setExercise({ ...exercise, sets, reps, rest_seconds: restSeconds });
   };
 
   const handleResetValues = () => {
@@ -122,18 +124,19 @@ const AppExerciseDetail = () => {
 
   return (
     <SolarPage>
-      {/* GIF/Image Hero */}
+      {/* GIF Hero with overlay stats */}
       <div className="relative">
-        <div className="aspect-[4/3] max-h-[340px] bg-card overflow-hidden">
+        <div className="aspect-square max-h-[380px] overflow-hidden" style={{ background: S.card }}>
           {mediaUrl ? (
             <img
               src={mediaUrl}
               alt={exercise?.name || "Exercício"}
-              className="w-full h-full object-contain bg-card"
+              className="w-full h-full object-contain"
+              style={{ background: S.card }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-card">
-              <Flame className="w-16 h-16 text-muted-foreground/20" />
+            <div className="w-full h-full flex items-center justify-center">
+              <Flame className="w-16 h-16" style={{ color: `${S.cardBorder}` }} />
             </div>
           )}
         </div>
@@ -141,29 +144,55 @@ const AppExerciseDetail = () => {
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-10 left-5 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-foreground"
+          className="absolute top-10 left-5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center"
+          style={{ background: `${S.bg}cc`, border: `1px solid ${S.cardBorder}` }}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" style={{ color: S.text }} />
         </button>
 
-        {/* Muscle badge */}
-        {curatedExercise?.target && (
-          <div className="absolute bottom-3 left-5">
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary backdrop-blur-sm border border-primary/20">
+        {/* Overlay: Sets × Reps + Rest badge */}
+        <div className="absolute bottom-3 left-5 right-5 flex items-end justify-between">
+          {/* Muscle badge */}
+          {curatedExercise?.target && (
+            <span className="px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md"
+              style={{ background: `${S.orange}dd`, color: "#fff" }}>
               {curatedExercise.target}
             </span>
+          )}
+
+          {/* Sets × Reps pill */}
+          <div className="flex items-center gap-2">
+            <div className="px-4 py-2 rounded-2xl backdrop-blur-md flex items-center gap-3"
+              style={{ background: `${S.bg}ee`, border: `1px solid ${S.cardBorder}` }}>
+              <div className="text-center">
+                <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{sets}</p>
+                <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>séries</p>
+              </div>
+              <span className="text-sm font-bold" style={{ color: S.textMuted }}>×</span>
+              <div className="text-center">
+                <p className="text-lg font-bold leading-none" style={{ color: S.orange }}>{reps}</p>
+                <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>reps</p>
+              </div>
+              <div className="w-px h-6" style={{ background: S.cardBorder }} />
+              <div className="text-center">
+                <p className="text-sm font-bold leading-none" style={{ color: S.textMuted }}>
+                  <Clock className="w-3 h-3 inline mr-0.5 -mt-0.5" />{formatTime(restSeconds)}
+                </p>
+                <p className="text-[9px] mt-0.5" style={{ color: S.textMuted }}>descanso</p>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Title */}
       <div className="px-5 pt-5 pb-2">
         <div className="max-w-lg mx-auto">
-          <h1 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h1 className="font-display text-xl" style={{ fontWeight: 800, color: S.text }}>
             {exercise?.name}
           </h1>
           {exercise?.description && (
-            <p className="text-sm text-muted-foreground">{exercise.description}</p>
+            <p className="text-sm mt-1" style={{ color: S.textMuted }}>{exercise.description}</p>
           )}
         </div>
       </div>
@@ -172,14 +201,15 @@ const AppExerciseDetail = () => {
       {curatedExercise?.simple_instruction_pt && (
         <section className="px-5 pb-3">
           <div className="max-w-lg mx-auto">
-            <div className="bg-card border border-border rounded-2xl p-4">
+            <div className="rounded-2xl p-4" style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-info/15 flex items-center justify-center shrink-0">
-                  <Info className="w-3.5 h-3.5 text-info" />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${S.orange}15` }}>
+                  <Info className="w-3.5 h-3.5" style={{ color: S.orange }} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm mb-1.5 font-sans">Como executar</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="font-display text-sm mb-1.5" style={{ fontWeight: 700, color: S.text }}>Como executar</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: S.textMuted }}>
                     {curatedExercise.simple_instruction_pt}
                   </p>
                 </div>
@@ -192,80 +222,79 @@ const AppExerciseDetail = () => {
       {/* Configuration */}
       <section className="px-5 pb-3">
         <div className="max-w-lg mx-auto">
-          <h2 className="font-semibold text-sm mb-3 font-sans">Configuração</h2>
+          <h2 className="font-display text-sm mb-3" style={{ fontWeight: 700, color: S.text }}>Ajustar</h2>
 
           <div className="space-y-2">
             {/* Sets */}
-            <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+            <div className="rounded-2xl p-4 flex items-center justify-between"
+              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Target className="w-4 h-4 text-primary" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: `${S.orange}12` }}>
+                  <Target className="w-4 h-4" style={{ color: S.orange }} />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm font-sans">Séries</p>
-                  <p className="text-xs text-muted-foreground">Número de séries</p>
-                </div>
+                <p className="font-display text-sm" style={{ fontWeight: 600, color: S.text }}>Séries</p>
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSets(Math.max(1, sets - 1))}
-                  className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-muted transition-colors"
-                >
-                  <Minus className="w-3.5 h-3.5" />
+                <button onClick={() => setSets(Math.max(1, sets - 1))}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+                  <Minus className="w-3.5 h-3.5" style={{ color: S.textMuted }} />
                 </button>
-                <span className="font-bold text-lg min-w-[2ch] text-center">{sets}</span>
-                <button
-                  onClick={() => setSets(Math.min(10, sets + 1))}
-                  className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-muted transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
+                <span className="font-bold text-lg min-w-[2ch] text-center" style={{ color: S.text }}>{sets}</span>
+                <button onClick={() => setSets(Math.min(10, sets + 1))}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+                  <Plus className="w-3.5 h-3.5" style={{ color: S.textMuted }} />
                 </button>
               </div>
             </div>
 
             {/* Reps */}
-            <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+            <div className="rounded-2xl p-4 flex items-center justify-between"
+              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
-                  <RotateCcw className="w-4 h-4 text-success" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(22,163,74,0.1)" }}>
+                  <RotateCcw className="w-4 h-4" style={{ color: "#16a34a" }} />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm font-sans">Repetições</p>
-                  <p className="text-xs text-muted-foreground">Reps por série</p>
-                </div>
+                <p className="font-display text-sm" style={{ fontWeight: 600, color: S.text }}>Repetições</p>
               </div>
               <input
                 type="text"
                 value={reps}
                 onChange={(e) => setReps(e.target.value)}
-                className="w-20 h-10 bg-secondary border border-border rounded-xl px-3 text-center font-bold text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-20 h-10 rounded-xl px-3 text-center font-bold text-sm focus:outline-none focus:ring-2"
+                style={{
+                  background: S.card, border: `1px solid ${S.cardBorder}`,
+                  color: S.text, "--tw-ring-color": S.orange,
+                } as any}
               />
             </div>
 
             {/* Rest */}
-            <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+            <div className="rounded-2xl p-4 flex items-center justify-between"
+              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-warning" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(245,158,11,0.1)" }}>
+                  <Clock className="w-4 h-4" style={{ color: "#F59E0B" }} />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm font-sans">Descanso</p>
-                  <p className="text-xs text-muted-foreground">Entre séries</p>
-                </div>
+                <p className="font-display text-sm" style={{ fontWeight: 600, color: S.text }}>Descanso</p>
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setRestSeconds(Math.max(15, restSeconds - 15))}
-                  className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-muted transition-colors"
-                >
-                  <Minus className="w-3.5 h-3.5" />
+                <button onClick={() => setRestSeconds(Math.max(15, restSeconds - 15))}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+                  <Minus className="w-3.5 h-3.5" style={{ color: S.textMuted }} />
                 </button>
-                <span className="font-bold text-sm min-w-[4ch] text-center">{formatTime(restSeconds)}</span>
-                <button
-                  onClick={() => setRestSeconds(Math.min(300, restSeconds + 15))}
-                  className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-muted transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
+                <span className="font-bold text-sm min-w-[4ch] text-center" style={{ color: S.text }}>
+                  {formatTime(restSeconds)}
+                </span>
+                <button onClick={() => setRestSeconds(Math.min(300, restSeconds + 15))}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+                  <Plus className="w-3.5 h-3.5" style={{ color: S.textMuted }} />
                 </button>
               </div>
             </div>
@@ -277,14 +306,16 @@ const AppExerciseDetail = () => {
       {curatedExercise?.common_mistakes_pt && (
         <section className="px-5 pb-4">
           <div className="max-w-lg mx-auto">
-            <div className="bg-warning/5 border border-warning/20 rounded-2xl p-4">
+            <div className="rounded-2xl p-4"
+              style={{ background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)" }}>
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: "rgba(245,158,11,0.15)" }}>
+                  <AlertTriangle className="w-3.5 h-3.5" style={{ color: "#F59E0B" }} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm mb-1.5 font-sans">Erros Comuns</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="font-display text-sm mb-1.5" style={{ fontWeight: 700, color: S.text }}>Erros Comuns</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: S.textMuted }}>
                     {curatedExercise.common_mistakes_pt}
                   </p>
                 </div>
@@ -296,29 +327,35 @@ const AppExerciseDetail = () => {
 
       {/* Save Actions */}
       {hasChanges && (
-        <motion.section
-          className="px-5 pb-6"
+        <motion.div
+          className="fixed bottom-20 left-0 right-0 px-5 z-10"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="max-w-lg mx-auto flex gap-3">
             <button
               onClick={handleResetValues}
-              className="flex-1 h-12 rounded-2xl border border-border bg-card flex items-center justify-center gap-2 font-semibold text-sm text-muted-foreground hover:text-foreground transition-colors font-sans"
+              className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 font-display text-sm"
+              style={{ fontWeight: 600, background: S.card, border: `1px solid ${S.cardBorder}`, color: S.textMuted }}
             >
               <RotateCcw className="w-4 h-4" />
               Resetar
             </button>
             <motion.button
               onClick={handleSaveChanges}
-              className="flex-1 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 font-semibold text-sm shadow-lg shadow-primary/25 font-sans"
+              className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 font-display text-sm"
+              style={{
+                fontWeight: 700, color: "#fff",
+                background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+                boxShadow: `0 4px 16px ${S.glowStrong}`,
+              }}
               whileTap={{ scale: 0.97 }}
             >
               <Save className="w-4 h-4" />
               Salvar
             </motion.button>
           </div>
-        </motion.section>
+        </motion.div>
       )}
     </SolarPage>
   );
