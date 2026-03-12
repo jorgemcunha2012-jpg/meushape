@@ -285,10 +285,9 @@ const QuizPitch = () => {
                 style={{ background: "linear-gradient(180deg, rgba(255,107,43,0.08) 0%, rgba(255,107,43,0.02) 100%)", border: "1px solid rgba(255,107,43,0.2)" }}
               >
 
-                <h3 className="text-2xl font-black text-white mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>7 dias grátis</h3>
+                <h3 className="text-2xl font-black text-white mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>Acesso Imediato</h3>
 
-
-                <p className="text-xs text-white/40 mb-5">Cancele quando quiser. Sem compromisso.</p>
+                <p className="text-xs text-white/40 mb-5">R$ 19,90/mês • Garantia de 30 dias ou seu dinheiro de volta.</p>
 
                 <div className="space-y-2 text-left mb-5">
                   {["Treinos personalizados por IA", "Progressão automática semanal", "Comunidade exclusiva", "Suporte 24/7", "Garantia de 30 dias"].map((item, i) => (
