@@ -118,21 +118,15 @@ const AppWorkoutDetail = () => {
 
       {/* Stats Strip */}
       <section className="px-5 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between p-3 gap-1" style={cardStyle}>
+        <div className="max-w-lg mx-auto grid grid-cols-4 gap-2">
           {stats.map((stat, i) => (
-            <div key={i} className="flex items-center gap-1.5">
-              <stat.icon className="w-4 h-4 shrink-0" style={{ color: stat.color }} />
-              <div className="flex items-baseline gap-0.5">
-                <span className="font-display text-sm" style={{ fontWeight: 800, color: S.text }}>
-                  {stat.value}
-                </span>
-                {stat.unit && (
-                  <span className="text-[10px]" style={{ fontWeight: 600, color: S.textMuted }}>{stat.unit}</span>
-                )}
-              </div>
-              {i < stats.length - 1 && (
-                <div className="w-px h-4 ml-1" style={{ background: S.cardBorder }} />
-              )}
+            <div key={i} className="flex flex-col items-center py-2.5 px-1 rounded-xl"
+              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+              <stat.icon className="w-4 h-4 mb-1" style={{ color: stat.color }} />
+              <span className="font-display text-sm leading-none" style={{ fontWeight: 800, color: S.text }}>
+                {stat.value}{stat.unit && <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}> {stat.unit}</span>}
+              </span>
+              <span className="text-[9px] mt-0.5 font-semibold" style={{ color: S.textMuted }}>{stat.label}</span>
             </div>
           ))}
         </div>
