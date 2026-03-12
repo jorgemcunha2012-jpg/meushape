@@ -27,7 +27,6 @@ interface CuratedExercise {
   name_pt: string;
   simple_instruction_pt: string | null;
   common_mistakes_pt: string | null;
-  gif_url: string | null;
   target: string;
   body_part: string;
 }
