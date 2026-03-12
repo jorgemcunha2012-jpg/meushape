@@ -258,6 +258,30 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_favorites: {
+        Row: {
+          created_at: string
+          exercise_name: string
+          id: string
+          musclewiki_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_name: string
+          id?: string
+          musclewiki_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          musclewiki_id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_logs: {
         Row: {
           completed: boolean
