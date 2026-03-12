@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,13 @@ const QuizResult = () => {
   const navigate = useNavigate();
   const { name, email, answers, bodyAnalysis } = (location.state as any) || {};
 
+  // Redirect if no quiz data
+  useEffect(() => {
+    if (!email && !answers) {
+      navigate("/quiz", { replace: true });
+    }
+  }, [email, answers, navigate]);
+
   const scores = calculateAxisScores(answers || {});
   const firstName = name?.split(" ")[0] || "linda";
   const dims = deriveSixDimensions(scores);
@@ -58,7 +65,11 @@ const QuizResult = () => {
   };
 
   const handleCheckout = async () => {
-    if (!email || !password || password.length < 6) {
+    if (!email) {
+      toast.error("Email não encontrado. Refaça o quiz.");
+      return;
+    }
+    if (!password || password.length < 6) {
       toast.error("Crie uma senha com pelo menos 6 caracteres.");
       return;
     }
