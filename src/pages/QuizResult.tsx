@@ -65,7 +65,11 @@ const QuizResult = () => {
   };
 
   const handleCheckout = async () => {
-    if (!email || !password || password.length < 6) {
+    if (!email) {
+      toast.error("Email não encontrado. Refaça o quiz.");
+      return;
+    }
+    if (!password || password.length < 6) {
       toast.error("Crie uma senha com pelo menos 6 caracteres.");
       return;
     }
