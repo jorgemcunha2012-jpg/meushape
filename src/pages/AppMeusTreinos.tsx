@@ -251,7 +251,7 @@ const AppMeusTreinos = () => {
                     ) : (
                       <>
                         <Sparkles size={12} className="mr-1" />
-                        Gerar Extra • R$ 9,90
+                        Gerar Extra • Grátis
                       </>
                     )}
                   </Button>
