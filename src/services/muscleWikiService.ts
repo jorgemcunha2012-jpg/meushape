@@ -1,9 +1,20 @@
 import { cache } from "./cacheService";
 
-const BASE = "https://api.musclewiki.com";
-const API_KEY = "mw_N952p5CPQqKkdUcCyE4dTrFIG2Hd6de0AVXgp1Oyjhs";
+// All MuscleWiki API calls are proxied through our edge function to avoid CORS issues
+const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+const PROXY_BASE = `https://${PROJECT_ID}.supabase.co/functions/v1/musclewiki-media`;
 
-const headers = { "X-API-Key": API_KEY };
+/** Build a proxied API URL for a given MuscleWiki endpoint */
+function proxyUrl(endpoint: string, params?: Record<string, string>): string {
+  const url = new URL(PROXY_BASE);
+  url.searchParams.set("endpoint", endpoint);
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (v) url.searchParams.set(k, v);
+    }
+  }
+  return url.toString();
+}
 
 // ─── Types ───
 
