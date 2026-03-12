@@ -39,6 +39,13 @@ interface CooldownStretch {
   instruction: string;
 }
 
+interface CuratedExercise {
+  name_pt: string;
+  gif_url: string | null;
+  target: string;
+  body_part: string;
+}
+
 type Phase = "warmup" | "exercise" | "rest" | "cooldown" | "feedback" | "complete";
 
 // ==========================================
@@ -82,20 +89,6 @@ function useTimer(initialSeconds: number, onComplete?: () => void) {
 }
 
 // ==========================================
-// COLORS
-// ==========================================
-const C = {
-  accent: "#E94560",
-  accentGlow: "rgba(233,69,96,0.25)",
-  green: "#16C79A",
-  greenGlow: "rgba(22,199,154,0.2)",
-  yellow: "#F5A623",
-  purple: "#6C63FF",
-  blue: "#3B82F6",
-  orange: "#FF6B35",
-};
-
-// ==========================================
 // DEFAULT WARMUP & COOLDOWN
 // ==========================================
 const DEFAULT_WARMUP: WarmupExercise[] = [
@@ -123,8 +116,9 @@ const AppWorkout = () => {
   // Data
   const [workout, setWorkout] = useState<WorkoutInfo | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [warmupExercises, setWarmupExercises] = useState<WarmupExercise[]>(DEFAULT_WARMUP);
-  const [cooldownStretches, setCooldownStretches] = useState<CooldownStretch[]>(DEFAULT_COOLDOWN);
+  const [curatedMap, setCuratedMap] = useState<Record<string, CuratedExercise>>({});
+  const [warmupExercises] = useState<WarmupExercise[]>(DEFAULT_WARMUP);
+  const [cooldownStretches] = useState<CooldownStretch[]>(DEFAULT_COOLDOWN);
 
   // Flow state
   const [phase, setPhase] = useState<Phase>("warmup");
@@ -148,7 +142,6 @@ const AppWorkout = () => {
     setWorkoutStartTime(new Date());
   }, [workoutId]);
 
-  // Workout elapsed time
   useEffect(() => {
     if (!workoutStartTime) return;
     const interval = setInterval(() => {
@@ -158,19 +151,27 @@ const AppWorkout = () => {
   }, [workoutStartTime]);
 
   const fetchWorkout = async () => {
-    const { data: wk } = await supabase
-      .from("workouts")
-      .select("id, title, description")
-      .eq("id", workoutId!)
-      .single();
-    if (wk) setWorkout(wk);
-
-    const { data: exs } = await supabase
-      .from("exercises")
-      .select("*")
-      .eq("workout_id", workoutId!)
-      .order("sort_order");
-    if (exs) setExercises(exs);
+    const [wkRes, exRes] = await Promise.all([
+      supabase.from("workouts").select("id, title, description").eq("id", workoutId!).single(),
+      supabase.from("exercises").select("*").eq("workout_id", workoutId!).order("sort_order"),
+    ]);
+    if (wkRes.data) setWorkout(wkRes.data);
+    if (exRes.data) {
+      setExercises(exRes.data);
+      // Fetch curated GIFs
+      const names = exRes.data.map((e) => e.name);
+      if (names.length > 0) {
+        const { data: curated } = await supabase
+          .from("curated_exercises")
+          .select("name_pt, gif_url, target, body_part")
+          .in("name_pt", names);
+        if (curated) {
+          const map: Record<string, CuratedExercise> = {};
+          curated.forEach((c) => { map[c.name_pt] = c; });
+          setCuratedMap(map);
+        }
+      }
+    }
   };
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -182,10 +183,7 @@ const AppWorkout = () => {
   // Save workout to database
   const saveWorkout = async () => {
     if ((!user && !isAdmin) || !workoutId) return;
-    if (isAdmin) {
-      setPhase("complete");
-      return;
-    }
+    if (isAdmin) { setPhase("complete"); return; }
 
     const durationMin = Math.round(workoutDuration / 60);
     const { data: log, error } = await supabase
@@ -200,10 +198,7 @@ const AppWorkout = () => {
       .select()
       .single();
 
-    if (error) {
-      toast.error("Erro ao salvar treino");
-      return;
-    }
+    if (error) { toast.error("Erro ao salvar treino"); return; }
 
     if (log) {
       const exerciseLogs = exercises.map((ex) => ({
@@ -220,18 +215,11 @@ const AppWorkout = () => {
         .select("id", { count: "exact", head: true })
         .eq("user_id", user!.id);
       const awarded = await checkAndAwardBadges(user!.id, count || 1, newStreak);
-      if (awarded.length > 0) {
-        toast.success(`Você ganhou ${awarded.length} nova(s) conquista(s)! 🏆`);
-      }
+      if (awarded.length > 0) toast.success(`Você ganhou ${awarded.length} nova(s) conquista(s)! 🏆`);
 
-      // Auto-post to community
       const summary = `Concluí o treino "${workout?.title}" em ${durationMin} minutos! 💪🔥`;
-      await supabase.from("community_posts").insert({
-        user_id: user!.id,
-        content: summary,
-      });
+      await supabase.from("community_posts").insert({ user_id: user!.id, content: summary });
     }
-
     setPhase("complete");
   };
 
@@ -241,22 +229,16 @@ const AppWorkout = () => {
   const WarmupPhase = () => {
     const current = warmupExercises[warmupStep];
     const timer = useTimer(current.duration, () => {
-      if (warmupStep < warmupExercises.length - 1) {
-        setWarmupStep((s) => s + 1);
-      } else {
-        setPhase("exercise");
-      }
+      if (warmupStep < warmupExercises.length - 1) setWarmupStep((s) => s + 1);
+      else setPhase("exercise");
     });
 
-    useEffect(() => {
-      timer.reset(current.duration);
-    }, [warmupStep]);
+    useEffect(() => { timer.reset(current.duration); }, [warmupStep]);
 
     return (
       <div className="min-h-screen bg-background px-5 pt-4 pb-8">
-        {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider" style={{ color: C.yellow }}>
+          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-warning">
             ☀️ Aquecimento
           </div>
           <span className="text-xs text-muted-foreground">
@@ -269,24 +251,14 @@ const AppWorkout = () => {
           {warmupExercises.map((_, i) => (
             <div
               key={i}
-              className="flex-1 h-1 rounded-full transition-colors"
-              style={{ backgroundColor: i <= warmupStep ? C.yellow : "hsl(var(--border))" }}
+              className={`flex-1 h-1 rounded-full transition-colors ${i <= warmupStep ? "bg-warning" : "bg-border"}`}
             />
           ))}
         </div>
 
         {/* Animation area */}
-        <div
-          className="w-full h-52 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${C.yellow}11, ${C.yellow}05)`,
-            border: `1px solid ${C.yellow}22`,
-          }}
-        >
-          <div
-            className="absolute -top-8 -right-8 w-28 h-28 rounded-full"
-            style={{ background: `${C.yellow}15`, filter: "blur(40px)" }}
-          />
+        <div className="w-full h-52 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden bg-warning/5 border border-warning/10">
+          <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-warning/10 blur-[40px]" />
           <div className="text-center relative z-10">
             <div className="text-5xl mb-2">🏃‍♀️</div>
             <div className="text-lg font-bold text-foreground">{current.name}</div>
@@ -300,17 +272,14 @@ const AppWorkout = () => {
 
         {/* Timer */}
         <div className="text-center mb-6">
-          <div className="text-5xl font-bold text-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>
-            {timer.formatted}
-          </div>
+          <div className="text-5xl font-bold text-foreground tabular-nums">{timer.formatted}</div>
         </div>
 
         {/* Buttons */}
         {!timer.running ? (
           <button
             onClick={timer.start}
-            className="w-full py-4 rounded-2xl font-bold text-base"
-            style={{ backgroundColor: C.yellow, color: "#0D0D12" }}
+            className="w-full py-4 rounded-2xl font-bold text-base bg-warning text-warning-foreground"
           >
             {warmupStep === 0 ? "Começar Aquecimento ▶" : "Iniciar ▶"}
           </button>
@@ -320,8 +289,7 @@ const AppWorkout = () => {
               if (warmupStep < warmupExercises.length - 1) setWarmupStep((s) => s + 1);
               else setPhase("exercise");
             }}
-            className="w-full py-4 rounded-2xl font-semibold text-sm"
-            style={{ background: "transparent", border: `1px solid ${C.yellow}66`, color: C.yellow }}
+            className="w-full py-4 rounded-2xl font-semibold text-sm border border-warning/40 text-warning bg-transparent"
           >
             Pular →
           </button>
@@ -336,20 +304,19 @@ const AppWorkout = () => {
   const ExercisePhase = () => {
     if (!currentEx) return null;
 
+    const curated = curatedMap[currentEx.name];
+    const gifUrl = curated?.gif_url || currentEx.image_url;
+
     const handleCompleteSet = () => {
-      // Mark set as completed
       const newCompleted = { ...setsCompleted };
       newCompleted[currentEx.id] = (newCompleted[currentEx.id] || 0) + 1;
       setSetsCompleted(newCompleted);
 
       if (currentSet < currentEx.sets - 1) {
-        // More sets → go to rest
         setPhase("rest");
       } else if (exIndex < totalExercises - 1) {
-        // Next exercise → go to rest
         setPhase("rest");
       } else {
-        // All exercises done → cooldown
         setPhase("cooldown");
       }
     };
@@ -365,31 +332,25 @@ const AppWorkout = () => {
             <span className="text-xs text-muted-foreground font-medium">
               {exIndex + 1}/{totalExercises} • {formatTime(workoutDuration)}
             </span>
-            <span className="text-sm font-bold" style={{ color: C.accent }}>
+            <span className="text-sm font-bold text-primary">
               {totalProgress}%
             </span>
           </div>
           <div className="h-1 bg-border">
             <div
-              className="h-1 transition-all duration-500"
-              style={{ width: `${totalProgress}%`, backgroundColor: C.accent }}
+              className="h-1 bg-primary transition-all duration-500"
+              style={{ width: `${totalProgress}%` }}
             />
           </div>
         </div>
 
         <div className="px-5 pb-8">
           {/* GIF Area */}
-          <div
-            className="w-full aspect-square max-h-60 rounded-2xl flex items-center justify-center mt-4 mb-4 relative overflow-hidden"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
-          >
-            <div
-              className="absolute -bottom-5 -left-5 w-24 h-24 rounded-full"
-              style={{ background: C.accentGlow, filter: "blur(40px)" }}
-            />
-            {currentEx.image_url ? (
+          <div className="w-full aspect-square max-h-60 rounded-2xl flex items-center justify-center mt-4 mb-4 relative overflow-hidden bg-card border border-border">
+            <div className="absolute -bottom-5 -left-5 w-24 h-24 rounded-full bg-primary/15 blur-[40px]" />
+            {gifUrl ? (
               <img
-                src={currentEx.image_url}
+                src={gifUrl}
                 alt={currentEx.name}
                 className="w-full h-full object-contain relative z-10"
               />
@@ -404,8 +365,8 @@ const AppWorkout = () => {
           {/* Exercise name + muscle */}
           <div className="mb-4">
             <h2 className="text-xl font-bold text-foreground tracking-tight mb-1">{currentEx.name}</h2>
-            {currentEx.description && (
-              <p className="text-sm text-muted-foreground">{currentEx.description}</p>
+            {(curated?.target || currentEx.description) && (
+              <p className="text-sm text-muted-foreground">{curated?.target || currentEx.description}</p>
             )}
           </div>
 
@@ -414,14 +375,13 @@ const AppWorkout = () => {
             {Array.from({ length: currentEx.sets }, (_, i) => (
               <div
                 key={i}
-                className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold transition-all"
-                style={{
-                  backgroundColor:
-                    i < currentSet ? C.green : i === currentSet ? C.accent : "hsl(var(--secondary))",
-                  border: i === currentSet ? `2px solid ${C.accent}` : "1px solid hsl(var(--border))",
-                  color:
-                    i < currentSet ? "#0D0D12" : i === currentSet ? "#fff" : "hsl(var(--muted-foreground))",
-                }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  i < currentSet
+                    ? "bg-success text-success-foreground"
+                    : i === currentSet
+                    ? "bg-primary text-primary-foreground border-2 border-primary"
+                    : "bg-secondary border border-border text-muted-foreground"
+                }`}
               >
                 {i < currentSet ? "✓" : i + 1}
               </div>
@@ -439,8 +399,7 @@ const AppWorkout = () => {
           {/* Complete set button */}
           <button
             onClick={handleCompleteSet}
-            className="w-full py-4 rounded-2xl font-bold text-base mb-3"
-            style={{ backgroundColor: C.accent, color: "#fff", boxShadow: `0 4px 20px ${C.accentGlow}` }}
+            className="w-full py-4 rounded-2xl font-bold text-base bg-primary text-primary-foreground shadow-lg shadow-primary/25 mb-3"
           >
             {currentSet < currentEx.sets - 1
               ? "Completei essa série ✓"
@@ -449,7 +408,7 @@ const AppWorkout = () => {
               : "Último exercício! Finalizar 🎉"}
           </button>
 
-          <button className="w-full py-3 text-sm font-medium" style={{ color: C.blue }}>
+          <button className="w-full py-3 text-sm font-medium text-info">
             Esse exercício tá difícil? Trocar por outro
           </button>
         </div>
@@ -464,9 +423,7 @@ const AppWorkout = () => {
     const restSeconds = currentEx?.rest_seconds || 45;
     const timer = useTimer(restSeconds, handleRestComplete);
 
-    useEffect(() => {
-      timer.start();
-    }, []);
+    useEffect(() => { timer.start(); }, []);
 
     function handleRestComplete() {
       if (currentSet < (currentEx?.sets || 1) - 1) {
@@ -479,8 +436,6 @@ const AppWorkout = () => {
     }
 
     const pct = restSeconds > 0 ? ((restSeconds - timer.seconds) / restSeconds) * 100 : 0;
-
-    // Determine next exercise info
     const nextEx = currentSet < (currentEx?.sets || 1) - 1 ? currentEx : exercises[exIndex + 1];
     const nextSetNum = currentSet < (currentEx?.sets || 1) - 1 ? currentSet + 2 : 1;
 
@@ -491,11 +446,8 @@ const AppWorkout = () => {
           <svg width="192" height="192" style={{ transform: "rotate(-90deg)" }}>
             <circle cx="96" cy="96" r="86" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
             <circle
-              cx="96"
-              cy="96"
-              r="86"
-              fill="none"
-              stroke={C.green}
+              cx="96" cy="96" r="86" fill="none"
+              stroke="hsl(var(--success))"
               strokeWidth="6"
               strokeDasharray={`${2 * Math.PI * 86}`}
               strokeDashoffset={`${2 * Math.PI * 86 * (1 - pct / 100)}`}
@@ -504,9 +456,7 @@ const AppWorkout = () => {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-bold text-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>
-              {timer.formatted}
-            </span>
+            <span className="text-4xl font-bold text-foreground tabular-nums">{timer.formatted}</span>
             <span className="text-sm text-muted-foreground">Descanse</span>
           </div>
         </div>
@@ -548,8 +498,7 @@ const AppWorkout = () => {
         {/* Skip button */}
         <button
           onClick={handleRestComplete}
-          className="py-3 px-8 rounded-2xl font-semibold text-sm"
-          style={{ background: "transparent", border: `1px solid ${C.green}44`, color: C.green }}
+          className="py-3 px-8 rounded-2xl font-semibold text-sm border border-success/30 text-success bg-transparent"
         >
           Pular descanso →
         </button>
@@ -563,21 +512,16 @@ const AppWorkout = () => {
   const CooldownPhase = () => {
     const current = cooldownStretches[cooldownStep];
     const timer = useTimer(current.duration, () => {
-      if (cooldownStep < cooldownStretches.length - 1) {
-        setCooldownStep((s) => s + 1);
-      } else {
-        setPhase("feedback");
-      }
+      if (cooldownStep < cooldownStretches.length - 1) setCooldownStep((s) => s + 1);
+      else setPhase("feedback");
     });
 
-    useEffect(() => {
-      timer.reset(current.duration);
-    }, [cooldownStep]);
+    useEffect(() => { timer.reset(current.duration); }, [cooldownStep]);
 
     return (
       <div className="min-h-screen bg-background px-5 pt-4 pb-8">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider" style={{ color: C.purple }}>
+          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-purple">
             🧘‍♀️ Volta à Calma
           </div>
           <span className="text-xs text-muted-foreground">
@@ -589,19 +533,12 @@ const AppWorkout = () => {
           {cooldownStretches.map((_, i) => (
             <div
               key={i}
-              className="flex-1 h-1 rounded-full transition-colors"
-              style={{ backgroundColor: i <= cooldownStep ? C.purple : "hsl(var(--border))" }}
+              className={`flex-1 h-1 rounded-full transition-colors ${i <= cooldownStep ? "bg-purple" : "bg-border"}`}
             />
           ))}
         </div>
 
-        <div
-          className="w-full h-48 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${C.purple}11, ${C.purple}05)`,
-            border: `1px solid ${C.purple}22`,
-          }}
-        >
+        <div className="w-full h-48 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden bg-purple/5 border border-purple/10">
           <div className="text-center">
             <div className="text-5xl mb-2">🧘‍♀️</div>
             <div className="text-lg font-bold text-foreground">{current.name}</div>
@@ -613,16 +550,13 @@ const AppWorkout = () => {
         </div>
 
         <div className="text-center mb-6">
-          <div className="text-5xl font-bold text-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>
-            {timer.formatted}
-          </div>
+          <div className="text-5xl font-bold text-foreground tabular-nums">{timer.formatted}</div>
         </div>
 
         {!timer.running ? (
           <button
             onClick={timer.start}
-            className="w-full py-4 rounded-2xl font-bold text-base"
-            style={{ backgroundColor: C.purple, color: "#fff" }}
+            className="w-full py-4 rounded-2xl font-bold text-base bg-purple text-primary-foreground"
           >
             Iniciar ▶
           </button>
@@ -632,8 +566,7 @@ const AppWorkout = () => {
               if (cooldownStep < cooldownStretches.length - 1) setCooldownStep((s) => s + 1);
               else setPhase("feedback");
             }}
-            className="w-full py-4 rounded-2xl font-semibold text-sm"
-            style={{ background: "transparent", border: `1px solid ${C.purple}44`, color: C.purple }}
+            className="w-full py-4 rounded-2xl font-semibold text-sm border border-purple/30 text-purple bg-transparent"
           >
             Pular →
           </button>
@@ -647,10 +580,10 @@ const AppWorkout = () => {
   // ==========================================
   const FeedbackPhase = () => {
     const options = [
-      { emoji: "😅", label: "Fácil", value: "too_easy", color: C.green },
-      { emoji: "💪", label: "Bom", value: "just_right", color: C.blue },
-      { emoji: "🥵", label: "Pesado", value: "too_hard", color: C.orange },
-      { emoji: "😣", label: "Senti dor", value: "felt_pain", color: C.accent },
+      { emoji: "😅", label: "Fácil", value: "too_easy", className: "border-success bg-success/10" },
+      { emoji: "💪", label: "Bom", value: "just_right", className: "border-info bg-info/10" },
+      { emoji: "🥵", label: "Pesado", value: "too_hard", className: "border-warning bg-warning/10" },
+      { emoji: "😣", label: "Senti dor", value: "felt_pain", className: "border-destructive bg-destructive/10" },
     ];
 
     return (
@@ -663,11 +596,9 @@ const AppWorkout = () => {
             <button
               key={opt.value}
               onClick={() => setFeedback(opt.value)}
-              className="p-3 rounded-2xl text-center transition-all"
-              style={{
-                background: feedback === opt.value ? `${opt.color}22` : "hsl(var(--card))",
-                border: feedback === opt.value ? `2px solid ${opt.color}` : "1px solid hsl(var(--border))",
-              }}
+              className={`p-3 rounded-2xl text-center transition-all border ${
+                feedback === opt.value ? opt.className + " border-2" : "bg-card border-border"
+              }`}
             >
               <div className="text-2xl mb-1">{opt.emoji}</div>
               <div className="text-xs text-muted-foreground">{opt.label}</div>
@@ -677,8 +608,7 @@ const AppWorkout = () => {
 
         <button
           onClick={saveWorkout}
-          className="w-full py-4 rounded-2xl font-bold text-base"
-          style={{ backgroundColor: C.accent, color: "#fff", boxShadow: `0 4px 20px ${C.accentGlow}` }}
+          className="w-full py-4 rounded-2xl font-bold text-base bg-primary text-primary-foreground shadow-lg shadow-primary/25"
         >
           Salvar e Concluir
         </button>
@@ -701,12 +631,11 @@ const AppWorkout = () => {
         <h2 className="text-2xl font-bold text-foreground mb-2">Treino Completo!</h2>
         <p className="text-sm text-muted-foreground mb-8">Você arrasou! 💪</p>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
             { icon: "⏱️", value: `${durationMin}`, label: "min" },
             { icon: "💪", value: `${totalExercises}`, label: "exercícios" },
-            { icon: "🔥", value: "~320", label: "kcal" },
+            { icon: "🔥", value: `~${Math.round(durationMin * 7)}`, label: "kcal" },
           ].map((s, i) => (
             <div key={i} className="p-4 rounded-2xl bg-card border border-border">
               <div className="text-xl mb-1">{s.icon}</div>
@@ -719,25 +648,16 @@ const AppWorkout = () => {
         {/* Volume */}
         <div className="p-4 rounded-2xl bg-card border border-border mb-6">
           <p className="text-sm font-semibold text-foreground mb-1">Volume Total</p>
-          <p className="text-2xl font-bold" style={{ color: C.green }}>
-            {totalSets} séries
-          </p>
+          <p className="text-2xl font-bold text-success">{totalSets} séries</p>
         </div>
 
         {/* Share card */}
-        <div
-          className="p-5 rounded-2xl mb-4 text-left"
-          style={{
-            background: `linear-gradient(135deg, ${C.accent}22, ${C.purple}22)`,
-            border: `1px solid ${C.accent}33`,
-          }}
-        >
+        <div className="p-5 rounded-2xl mb-4 text-left bg-gradient-to-br from-primary/10 to-purple/10 border border-primary/20">
           <p className="text-sm font-semibold text-foreground mb-1">Compartilhar na Comunidade</p>
           <p className="text-xs text-muted-foreground mb-3">Mostre que você treinou hoje!</p>
           <button
             onClick={() => navigate("/app/community")}
-            className="w-full py-3 rounded-xl font-semibold text-sm"
-            style={{ backgroundColor: C.accent, color: "#fff" }}
+            className="w-full py-3 rounded-xl font-semibold text-sm bg-primary text-primary-foreground"
           >
             <Share2 className="w-4 h-4 inline mr-2" />
             Postar na Comunidade

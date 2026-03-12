@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, CheckCircle2, Home, Dumbbell, Flame, Heart } from "lucide-react";
+import AnimatedExercise from "@/components/AnimatedExercise";
 
 interface HomeExercise {
   order: number;
@@ -108,19 +109,15 @@ const AppHomeWorkout = () => {
     if (!selected) return;
     setTimeLeft((prev) => {
       if (prev <= 1) {
-        // Determine next state
         if (phase === "work") {
-          // Is there a next exercise in this round?
           if (exerciseIndex < selected.exercises.length - 1) {
             setPhase("rest");
             return selected.rest_seconds || 15;
           }
-          // End of round
           if (round < selected.rounds) {
             setPhase("round_rest");
             return selected.rest_between_rounds || 60;
           }
-          // All done
           setIsRunning(false);
           setCompleted(true);
           return 0;
@@ -249,6 +246,8 @@ const AppHomeWorkout = () => {
   const totalExInRound = selected.exercises.length;
   const overallProgress = ((((round - 1) * totalExInRound + exerciseIndex) / (selected.rounds * totalExInRound)) * 100);
 
+  const maxTime = phase === "work" ? selected.work_seconds : phase === "rest" ? selected.rest_seconds : selected.rest_between_rounds;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -268,21 +267,28 @@ const AppHomeWorkout = () => {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
+        {/* Phase badge */}
         <span className={`text-xs font-semibold px-3 py-1 rounded-full mb-4 ${
-          phase === "work" ? "bg-green-500/10 text-green-600" :
-          phase === "rest" ? "bg-blue-500/10 text-blue-600" :
-          "bg-orange-500/10 text-orange-600"
+          phase === "work" ? "bg-success/10 text-success" :
+          phase === "rest" ? "bg-info/10 text-info" :
+          "bg-warning/10 text-warning"
         }`}>
           {phase === "work" ? "TRABALHO" : phase === "rest" ? "DESCANSO" : "DESCANSO ENTRE RODADAS"}
         </span>
 
+        {/* Animated illustration during work phase */}
         {phase === "work" && currentExercise && (
           <>
-            <h2 className="font-display text-2xl font-bold text-foreground text-center mb-2">
+            <AnimatedExercise
+              name={currentExercise.name}
+              focus={currentExercise.focus}
+              className="h-40 mb-4 max-w-sm"
+            />
+            <h2 className="font-display text-2xl font-bold text-foreground text-center mb-1">
               {currentExercise.name}
             </h2>
-            <p className="text-muted-foreground text-sm mb-6">{currentExercise.focus}</p>
+            <p className="text-muted-foreground text-sm mb-4">{currentExercise.focus}</p>
           </>
         )}
 
@@ -292,20 +298,20 @@ const AppHomeWorkout = () => {
           </h2>
         )}
 
-        {/* Timer */}
-        <div className="relative w-36 h-36 mb-8">
+        {/* Circular Timer */}
+        <div className="relative w-36 h-36 mb-6">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
             <circle cx="50" cy="50" r="45" fill="none"
-              stroke={phase === "work" ? "hsl(var(--primary))" : "hsl(210, 60%, 60%)"}
+              stroke={phase === "work" ? "hsl(var(--primary))" : "hsl(var(--info))"}
               strokeWidth="6" strokeLinecap="round"
               strokeDasharray={`${2 * Math.PI * 45}`}
-              strokeDashoffset={`${2 * Math.PI * 45 * (1 - timeLeft / (phase === "work" ? selected.work_seconds : phase === "rest" ? selected.rest_seconds : selected.rest_between_rounds))}`}
+              strokeDashoffset={`${2 * Math.PI * 45 * (1 - timeLeft / maxTime)}`}
               className="transition-all duration-1000"
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl font-bold text-foreground">{timeLeft}s</span>
+            <span className="text-4xl font-bold text-foreground tabular-nums">{timeLeft}s</span>
           </div>
         </div>
 
@@ -320,7 +326,7 @@ const AppHomeWorkout = () => {
 
         {/* Upcoming */}
         {phase === "work" && exerciseIndex < selected.exercises.length - 1 && (
-          <div className="mt-8 bg-card border border-border rounded-xl px-4 py-3 w-full max-w-sm">
+          <div className="mt-6 bg-card border border-border rounded-xl px-4 py-3 w-full max-w-sm">
             <p className="text-xs text-muted-foreground mb-1">Próximo:</p>
             <p className="text-sm font-medium text-foreground">{selected.exercises[exerciseIndex + 1].name}</p>
           </div>
