@@ -181,6 +181,17 @@ const AppDashboard = () => {
 
     const weekLogs = weekLogsRes.data;
     const prevWeekLogs = prevWeekLogsRes.data;
+    const calLogs = calLogsRes.data;
+
+    // Build completed dates set
+    const doneDates = new Set<string>();
+    calLogs?.forEach(l => {
+      doneDates.add(new Date(l.completed_at).toISOString().split("T")[0]);
+    });
+    weekLogs?.forEach(l => {
+      doneDates.add(new Date(l.completed_at).toISOString().split("T")[0]);
+    });
+    setCompletedDates(doneDates);
 
     if (prevWeekLogs && prevWeekLogs.length > 0) {
       const prevDone = prevWeekLogs.length;
