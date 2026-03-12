@@ -58,6 +58,7 @@ const AppManageWorkouts = () => {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [showBrowser, setShowBrowser] = useState(false);
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   // Drawer states
   const [drawerOpen, setDrawerOpen] = useState(false);
