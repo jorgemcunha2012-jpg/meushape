@@ -360,7 +360,7 @@ const AppManageWorkouts = () => {
           onClose={() => setShowBrowser(false)}
         />
       )}
-    </div>
+    </SolarPage>
   );
 };
 

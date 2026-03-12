@@ -320,7 +320,7 @@ const AppExerciseDetail = () => {
           </div>
         </motion.section>
       )}
-    </div>
+    </SolarPage>
   );
 };
 

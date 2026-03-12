@@ -214,7 +214,7 @@ const AppWorkoutDetail = () => {
           </motion.button>
         </div>
       </div>
-    </div>
+    </SolarPage>
   );
 };
 
