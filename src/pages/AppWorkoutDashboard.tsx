@@ -303,7 +303,7 @@ const AppWorkoutDashboard = () => {
                   </motion.button>
                 </div>
               </div>
-            )
+            )}
           </div>
         </section>
       )}
