@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { X, ArrowRight, Play, Pause, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateStreak, checkAndAwardBadges } from "@/lib/streaksAndBadges";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 // ==========================================
 // TYPES
