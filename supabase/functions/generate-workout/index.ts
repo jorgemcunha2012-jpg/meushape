@@ -482,10 +482,22 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
       curatedMap[ex.id] = ex;
     }
 
+    // Helper: validate a GIF/image URL with a HEAD request (timeout 5s)
+    async function validateGifUrl(url: string): Promise<boolean> {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(url, { method: "HEAD", signal: controller.signal });
+        clearTimeout(timeout);
+        return res.ok;
+      } catch {
+        return false;
+      }
+    }
+
     // Helper: fetch GIF from ExerciseDB API as fallback
     async function fetchGifFallback(namePt: string): Promise<string | null> {
       try {
-        // Normalize portuguese name to ASCII for better matching
         const normalized = namePt
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
@@ -500,6 +512,25 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
       } catch {
         return null;
       }
+    }
+
+    // Helper: get a validated GIF URL, trying curated first, then fallback
+    async function resolveValidGif(curated: any, name: string): Promise<string | null> {
+      // Try curated gif_url
+      if (curated?.gif_url) {
+        const valid = await validateGifUrl(curated.gif_url);
+        if (valid) return curated.gif_url;
+        // Curated URL is broken — deactivate it in background
+        console.warn(`Broken gif_url for curated exercise ${curated.id}: ${curated.gif_url}`);
+        supabase.from("curated_exercises").update({ gif_url: null }).eq("id", curated.id).then(() => {});
+      }
+      // Try ExerciseDB fallback
+      const fallback = await fetchGifFallback(name);
+      if (fallback) {
+        const valid = await validateGifUrl(fallback);
+        if (valid) return fallback;
+      }
+      return null;
     }
 
     // Create workouts and exercises
@@ -517,14 +548,11 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
 
       if (wkErr) throw wkErr;
 
-      // Resolve GIFs in parallel (with fallback to ExerciseDB API)
+      // Resolve and validate GIFs in parallel
       const exerciseInserts = await Promise.all(
         (wk.exercises || []).map(async (ex: any) => {
           const curated = curatedMap[ex.curated_exercise_id];
-          let gif_url = curated?.gif_url || null;
-          if (!gif_url) {
-            gif_url = await fetchGifFallback(ex.name);
-          }
+          const gif_url = await resolveValidGif(curated, ex.name);
           return {
             workout_id: workout.id,
             name: ex.name,
