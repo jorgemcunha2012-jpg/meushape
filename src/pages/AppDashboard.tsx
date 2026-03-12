@@ -378,149 +378,110 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ TRAINING CALENDAR ═══ */}
+      {/* ═══ WEEKLY CALENDAR STRIP ═══ */}
       <section className="px-5 mb-5">
         <div className="max-w-lg mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="relative overflow-hidden p-5"
+            className="p-4"
             style={{
-              borderRadius: "1.5rem",
+              borderRadius: "1.25rem",
               backgroundColor: S.card,
               border: `1px solid ${S.cardBorder}`,
-              boxShadow: `0 4px 24px rgba(0,0,0,0.08)`,
             }}
           >
-            <div className="relative z-10">
-              {/* Header with stats */}
-              <div className="flex items-center justify-between mb-4">
-                <h3
-                  className="font-display text-base"
-                  style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}
-                >
-                  Calendário
-                </h3>
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-bold" style={{ color: S.orange }}>
-                    {streak > 0 ? `🔥 ${streak} dias` : ""}
-                  </span>
-                  <span className="text-[11px] font-bold" style={{ color: S.textMuted }}>
-                    {weekStats.done}/{weekStats.goal} sem
-                  </span>
-                </div>
-              </div>
-
-              {/* Calendar grid - 5 weeks */}
-              {(() => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayStr = today.toISOString().split("T")[0];
-
-                // Build 35 days: 4 weeks back + this week
-                const startDate = new Date(today);
-                startDate.setDate(startDate.getDate() - startDate.getDay() - 28); // 4 weeks before this week's sunday
-
-                const dayLabels = ["D", "S", "T", "Q", "Q", "S", "S"];
-                const cells: { date: Date; dateStr: string }[] = [];
-                for (let i = 0; i < 35; i++) {
-                  const d = new Date(startDate);
-                  d.setDate(d.getDate() + i);
-                  cells.push({ date: d, dateStr: d.toISOString().split("T")[0] });
-                }
-
-                // Workout days pattern for future: Mon(1), Wed(3), Fri(5)
-                const plannedDays = [1, 3, 5];
-
-                return (
-                  <>
-                    {/* Day labels */}
-                    <div className="grid grid-cols-7 gap-1 mb-1">
-                      {dayLabels.map((label, i) => (
-                        <div key={i} className="text-center text-[9px] font-bold uppercase" style={{ color: S.textMuted }}>
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Calendar cells */}
-                    <div className="grid grid-cols-7 gap-1">
-                      {cells.map((cell, i) => {
-                        const isPast = cell.dateStr < todayStr;
-                        const isToday = cell.dateStr === todayStr;
-                        const isDone = completedDates.has(cell.dateStr);
-                        const isFuture = cell.dateStr > todayStr;
-                        const isPlanned = isFuture && plannedDays.includes(cell.date.getDay());
-                        const dayNum = cell.date.getDate();
-
-                        let bg = "transparent";
-                        let color = S.textMuted;
-                        let border = "none";
-                        let opacity = 1;
-
-                        if (isDone) {
-                          bg = S.orange;
-                          color = "#fff";
-                        } else if (isToday) {
-                          bg = "transparent";
-                          color = S.orange;
-                          border = `2px solid ${S.orange}`;
-                        } else if (isPlanned) {
-                          bg = `${S.orange}15`;
-                          color = S.orange;
-                          border = `1px dashed ${S.orange}40`;
-                        } else if (isPast) {
-                          opacity = 0.35;
-                        }
-
-                        return (
-                          <div
-                            key={i}
-                            className="aspect-square flex items-center justify-center rounded-lg text-[11px] font-bold"
-                            style={{ backgroundColor: bg, color, border, opacity }}
-                          >
-                            {dayNum}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Legend */}
-                    <div className="flex items-center justify-center gap-4 mt-3">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: S.orange }} />
-                        <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}>Feito</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-sm" style={{ border: `1px dashed ${S.orange}60`, backgroundColor: `${S.orange}15` }} />
-                        <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}>Planejado</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-sm" style={{ border: `2px solid ${S.orange}` }} />
-                        <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}>Hoje</span>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-
-              {/* Motivational message */}
-              <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${S.cardBorder}` }}>
-                <p className="text-[12px] text-center" style={{ color: S.textMuted }}>
-                  {recentLogs.length > 0
-                    ? `${recentLogs[0].workoutTitle} · ${relativeDay(recentLogs[0].completedAt)} · ${recentLogs[0].durationMin} min ✓`
-                    : prevWeekStats
-                      ? prevWeekStats.done >= 3
-                        ? `Semana passada: ${prevWeekStats.done} treinos em ${prevWeekStats.totalMin} min — bora superar! 🔥`
-                        : lastWorkoutTitle
-                          ? `Último treino: "${lastWorkoutTitle}" — hora de voltar! 💪`
-                          : `${prevWeekStats.done}x na semana passada — essa semana vai ser melhor! 🚀`
-                      : "Nova semana, novas conquistas — bora começar! 💪"
-                  }
-                </p>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-display text-sm" style={{ fontWeight: 800, color: S.text }}>
+                Sua Semana
+              </h3>
+              <div className="flex items-center gap-2">
+                {streak > 0 && (
+                  <span className="text-[11px] font-bold" style={{ color: S.orange }}>🔥 {streak}</span>
+                )}
+                <span className="text-[11px] font-bold" style={{ color: S.textMuted }}>
+                  {weekStats.done}/{weekStats.goal}
+                </span>
               </div>
             </div>
+
+            {/* 7-day linear strip */}
+            {(() => {
+              const today = new Date();
+              const todayDow = today.getDay();
+              const mondayOffset = todayDow === 0 ? -6 : 1 - todayDow;
+              const monday = new Date(today);
+              monday.setDate(today.getDate() + mondayOffset);
+              monday.setHours(0, 0, 0, 0);
+              const todayStr = today.toISOString().split("T")[0];
+
+              const labels = ["S", "T", "Q", "Q", "S", "S", "D"];
+              const plannedDows = [1, 3, 5]; // Mon, Wed, Fri
+
+              return (
+                <div className="flex items-center justify-between gap-1">
+                  {labels.map((label, i) => {
+                    const d = new Date(monday);
+                    d.setDate(d.getDate() + i);
+                    const dateStr = d.toISOString().split("T")[0];
+                    const isDone = completedDates.has(dateStr);
+                    const isToday = dateStr === todayStr;
+                    const isFuture = dateStr > todayStr;
+                    const isPlanned = isFuture && plannedDows.includes(d.getDay());
+                    const isPastMissed = dateStr < todayStr && !isDone && plannedDows.includes(d.getDay());
+
+                    return (
+                      <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                        <span className="text-[9px] font-bold" style={{ color: S.textMuted }}>{label}</span>
+                        <div
+                          className="w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold"
+                          style={{
+                            backgroundColor: isDone
+                              ? S.orange
+                              : isToday
+                                ? `${S.orange}18`
+                                : isPlanned
+                                  ? `${S.orange}0A`
+                                  : "transparent",
+                            color: isDone
+                              ? "#fff"
+                              : isToday
+                                ? S.orange
+                                : isPlanned
+                                  ? S.orange
+                                  : isPastMissed
+                                    ? `${S.textMuted}60`
+                                    : S.textMuted,
+                            border: isToday
+                              ? `2px solid ${S.orange}`
+                              : isPlanned
+                                ? `1px dashed ${S.orange}40`
+                                : "1px solid transparent",
+                            opacity: !isDone && !isToday && !isPlanned && dateStr < todayStr ? 0.4 : 1,
+                          }}
+                        >
+                          {isDone ? "✓" : d.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Motivational line */}
+            <p className="text-[11px] text-center mt-3" style={{ color: S.textMuted }}>
+              {recentLogs.length > 0
+                ? `${recentLogs[0].workoutTitle} · ${relativeDay(recentLogs[0].completedAt)} · ${recentLogs[0].durationMin} min ✓`
+                : prevWeekStats
+                  ? prevWeekStats.done >= 3
+                    ? `Semana passada: ${prevWeekStats.done} treinos — bora superar! 🔥`
+                    : `Bora começar a semana com tudo! 💪`
+                  : "Nova semana, novas conquistas! 💪"
+              }
+            </p>
           </motion.div>
         </div>
       </section>
