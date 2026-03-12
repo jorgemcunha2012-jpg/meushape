@@ -173,7 +173,7 @@ const AppManageWorkouts = () => {
   };
   const saveRename = async (table: string) => {
     if (!editingId || !editingValue.trim()) return;
-    await supabase.from(table).update({ title: editingValue }).eq("id", editingId);
+    await supabase.from(table as "workout_programs").update({ title: editingValue } as any).eq("id", editingId);
     setEditingId(null);
     if (table === "workout_programs") fetchPrograms();
     else if (selectedProgram) fetchWorkouts(selectedProgram.id);
