@@ -343,7 +343,7 @@ const AppMeusTreinos = () => {
             </DialogTitle>
             <DialogDescription>
               Você já gerou seu {purchaseModal === "challenge" ? "desafio" : "projeto"} deste mês.
-              Compre um extra por apenas <strong className="text-foreground">R$ 9,90</strong>!
+              Compre um extra — <strong className="text-foreground">Grátis</strong> por tempo limitado!
             </DialogDescription>
           </DialogHeader>
           <div className="p-4 rounded-xl bg-muted/50 text-center">
