@@ -270,22 +270,24 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
               {current.type === "biometrics" && (
                 <div className="space-y-4">
                   {[
-                    { label: "Altura (cm)", value: height, set: setHeight, placeholder: "165", errorKey: "height" },
-                    { label: "Peso atual (kg)", value: weight, set: setWeight, placeholder: "70", errorKey: "weight" },
-                    { label: "Peso meta (kg)", value: goalWeight, set: setGoalWeight, placeholder: "60", errorKey: "goalWeight" },
-                    { label: "Idade", value: age, set: setAge, placeholder: "28", errorKey: "age" },
+                    { label: "Altura (cm)", value: height, set: setHeight, placeholder: "165", errorKey: "height", readOnly: !!initialData },
+                    { label: "Peso atual (kg)", value: weight, set: setWeight, placeholder: "70", errorKey: "weight", readOnly: false },
+                    { label: "Peso meta (kg)", value: goalWeight, set: setGoalWeight, placeholder: "60", errorKey: "goalWeight", readOnly: false },
+                    { label: "Idade", value: age, set: setAge, placeholder: "28", errorKey: "age", readOnly: !!initialData },
                   ].map((field, i) => (
                     <div key={i}>
                       <label className="text-xs font-semibold mb-1.5 block" style={{ color: S.textMuted }}>
-                        {field.label}
+                        {field.label} {field.readOnly && <span className="text-[10px] opacity-60">(não editável)</span>}
                       </label>
                       <input
                         type="number" inputMode="numeric"
                         value={field.value}
-                        onChange={(e) => { field.set(e.target.value); setBioErrors(prev => ({ ...prev, [field.errorKey]: "" })); }}
+                        onChange={(e) => { if (!field.readOnly) { field.set(e.target.value); setBioErrors(prev => ({ ...prev, [field.errorKey]: "" })); } }}
                         placeholder={field.placeholder}
+                        readOnly={field.readOnly}
                         style={{
                           ...inputStyle,
+                          ...(field.readOnly ? { opacity: 0.5, cursor: "not-allowed" } : {}),
                           ...(bioErrors[field.errorKey] ? { borderColor: "hsl(0, 84%, 60%)" } : {}),
                         }}
                       />
