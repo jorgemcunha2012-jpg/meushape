@@ -2,11 +2,14 @@ import React, { useState } from "react";
 
 interface MuscleMapProps {
   trainedMuscles?: string[];
+  /** Optional per-muscle color override map (e.g. heatmap) */
+  muscleColors?: Record<string, string>;
   onMuscleClick?: (muscleName: string) => void;
 }
 
 const MuscleMap: React.FC<MuscleMapProps> = ({
   trainedMuscles = [],
+  muscleColors,
   onMuscleClick,
 }) => {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -15,8 +18,10 @@ const MuscleMap: React.FC<MuscleMapProps> = ({
   const trainedColor = "#ff4d4d";
   const hoverOpacity = 0.7;
 
-  const getColor = (id: string) =>
-    trainedMuscles.includes(id) ? trainedColor : defaultColor;
+  const getColor = (id: string) => {
+    if (muscleColors?.[id]) return muscleColors[id];
+    return trainedMuscles.includes(id) ? trainedColor : defaultColor;
+  };
 
   const common = (id: string) => ({
     id,
