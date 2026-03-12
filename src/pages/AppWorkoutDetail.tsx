@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Play, Clock, Dumbbell, Flame, ChevronRight, Zap } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 
 interface Exercise {
   id: string;
@@ -15,13 +16,6 @@ interface Exercise {
   rest_seconds: number;
   image_url: string | null;
   sort_order: number;
-}
-
-interface CuratedExercise {
-  name_pt: string;
-  gif_url: string | null;
-  target: string;
-  body_part: string;
 }
 
 interface WorkoutInfo {
