@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,9 +6,10 @@ import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   Bell, Sparkles, ChevronRight, Trophy, Flame,
-  Clock, Calendar, Zap, Dumbbell, TrendingUp, Users
+  Clock, Calendar, Zap, Dumbbell, TrendingUp, Users, Target, Heart
 } from "lucide-react";
 import { SolarBottomNav, useSolar } from "@/components/SolarLayout";
+import useEmblaCarousel from "embla-carousel-react";
 import OnboardingDrawer from "@/components/OnboardingDrawer";
 import illustrationTreino from "@/assets/illustration-treino.png";
 import illustrationEvolucao from "@/assets/illustration-evolucao.png";
