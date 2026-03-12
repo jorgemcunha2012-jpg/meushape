@@ -687,8 +687,8 @@ const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
           Voltar pro app
         </button>
       </div>
-    </div>
-  );
-});
+    );
+  });
+}
 
 export default AppWorkout;
