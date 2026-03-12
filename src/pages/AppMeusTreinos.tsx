@@ -195,14 +195,14 @@ const AppMeusTreinos = () => {
                         1 por {config.period}
                       </p>
                     </div>
-                    {!limit.canGenerate && (
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: `${S.orange}12` }}>
-                        <Clock size={10} style={{ color: S.orange }} />
-                        <span className="text-[10px] font-semibold" style={{ color: S.orange }}>
-                          {limit.daysUntilNext}d
-                        </span>
-                      </div>
-                    )}
+                    <div
+                      className="flex items-center gap-1 px-2 py-1 rounded-full"
+                      style={{ background: limit.canGenerate ? `${S.green}15` : `${S.orange}12` }}
+                    >
+                      <span className="text-[10px] font-semibold" style={{ color: limit.canGenerate ? S.green : S.orange }}>
+                        {limit.canGenerate ? "Disponível" : `Em ${limit.daysUntilNext}d`}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Active program */}
