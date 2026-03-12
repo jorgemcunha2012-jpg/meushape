@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Sparkles, Check, Dumbbell, Flame, Heart, Zap, Target, Timer, Trophy, Lock } from "lucide-react";
 import OnboardingDrawer from "@/components/OnboardingDrawer";
 import { canGeneratePlan, daysUntilNextPlan, setPlanGenerated } from "@/services/cacheService";
+import { useGenerationLimits } from "@/hooks/useGenerationLimits";
 
 interface AIWorkoutWizardProps {
   userId: string;
