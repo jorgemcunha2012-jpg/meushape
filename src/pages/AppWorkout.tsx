@@ -673,7 +673,7 @@ const AppWorkout = () => {
 
   // RENDER
   return (
-    <div ref={ref}>
+    <div>
       {phase === "warmup" && <WarmupPhase />}
       {phase === "exercise" && <ExercisePhase />}
       {phase === "rest" && <RestPhase />}
