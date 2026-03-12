@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ExerciseBrowser from "@/components/ExerciseBrowser";
-import type { ExerciseDB } from "@/types/exercise";
+import ExerciseBrowser, { type SelectedExercise } from "@/components/ExerciseBrowser";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import {
