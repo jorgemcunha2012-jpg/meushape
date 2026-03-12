@@ -717,6 +717,14 @@ const AppDashboard = () => {
       </section>
 
       <SolarBottomNav />
+
+      {user && (
+        <OnboardingDrawer
+          open={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          userId={user.id}
+        />
+      )}
     </div>
   );
 };
