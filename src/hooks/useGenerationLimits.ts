@@ -58,7 +58,7 @@ export function useGenerationLimits(userId: string | undefined, isAdmin = false)
   const [loading, setLoading] = useState(!isAdmin);
 
   const refresh = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || isAdmin) return;
 
     // Start with localStorage cache
     const localLimits: Record<GenerationType, LimitInfo> = {
