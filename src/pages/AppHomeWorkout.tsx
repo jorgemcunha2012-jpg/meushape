@@ -247,6 +247,9 @@ const AppHomeWorkout = () => {
   const totalExInRound = selected.exercises.length;
   const overallProgress = ((((round - 1) * totalExInRound + exerciseIndex) / (selected.rounds * totalExInRound)) * 100);
 
+  const allExerciseNames = useMemo(() => selected.exercises.map(e => e.name), [selected]);
+  const { media: mwMedia } = useMuscleWikiMedia(allExerciseNames);
+  const currentMedia = currentExercise ? mwMedia[currentExercise.name] : undefined;
   const maxTime = phase === "work" ? selected.work_seconds : phase === "rest" ? selected.rest_seconds : selected.rest_between_rounds;
 
   return (
