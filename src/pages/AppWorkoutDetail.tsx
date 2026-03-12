@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Play, Clock, Dumbbell, Flame, ChevronRight, Zap } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import { proxyImageUrl } from "@/lib/mediaUtils";
 
 interface Exercise {
   id: string;
@@ -112,8 +113,8 @@ const AppWorkoutDetail = () => {
           <div className="space-y-2">
             {exercises.map((exercise, index) => {
               const mw = mwMedia[exercise.name];
-              const thumbUrl = mw?.image || exercise.image_url;
-              const isMediaPending = mediaLoading && !mw;
+              const thumbUrl = mw?.image || proxyImageUrl(exercise.image_url);
+              const isMediaPending = mediaLoading && !mw && !exercise.image_url;
 
               return (
                 <motion.button

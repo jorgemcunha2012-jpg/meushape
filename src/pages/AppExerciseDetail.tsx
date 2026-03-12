@@ -11,6 +11,7 @@ import { SolarPage, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import { proxyImageUrl } from "@/lib/mediaUtils";
 
 interface Exercise {
   id: string;
@@ -196,7 +197,7 @@ const AppExerciseDetail = () => {
   const mw = exercise ? mwMedia[exercise.name] : undefined;
   const isMediaPending = mediaLoading && !mw;
   const videoUrl = mw?.video;
-  const mediaUrl = mw?.image || exercise?.image_url;
+  const mediaUrl = mw?.image || proxyImageUrl(exercise?.image_url);
   const displayName = exercise ? stripParentheses(exercise.name) : "";
 
   return (
