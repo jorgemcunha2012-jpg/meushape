@@ -7,6 +7,9 @@ const EXERCISE_PT_EN: Record<string, string> = {
   "agachamento": "squat",
   "agachamento livre": "barbell squat",
   "agachamento smith": "smith machine squat",
+  "agachamento sem peso": "bodyweight squat",
+  "agachamento bulgaro": "bulgarian split squat",
+  "agachamento búlgaro": "bulgarian split squat",
   "leg press": "leg press",
   "leg press 45": "leg press",
   "extensora": "leg extension",
@@ -17,10 +20,20 @@ const EXERCISE_PT_EN: Record<string, string> = {
   "levantamento terra": "deadlift",
   "hip thrust": "hip thrust",
   "elevação pélvica": "hip thrust",
+  "elevacao pelvica": "hip thrust",
+  "ponte de gluteo": "glute bridge",
   "ponte de glúteo": "glute bridge",
+  "ponte de gluteos": "glute bridge",
+  "ponte de glúteos": "glute bridge",
+  "ponte gluteo": "glute bridge",
   "abdutora": "hip abduction",
   "adutora": "hip adduction",
+  "cadeira abdutora": "hip abduction machine",
+  "cadeira adutora": "hip adduction machine",
   "panturrilha": "calf raise",
+  "panturrilha em pe": "standing calf raise",
+  "panturrilha em pé": "standing calf raise",
+  "panturrilha sentada": "seated calf raise",
   "supino reto": "bench press",
   "supino inclinado": "incline bench press",
   "supino declinado": "decline bench press",
@@ -32,49 +45,139 @@ const EXERCISE_PT_EN: Record<string, string> = {
   "remada cavaleiro": "t-bar row",
   "desenvolvimento": "overhead press",
   "elevação lateral": "lateral raise",
+  "elevacao lateral": "lateral raise",
   "elevação frontal": "front raise",
+  "elevacao frontal": "front raise",
   "rosca direta": "barbell curl",
   "rosca alternada": "dumbbell curl",
   "rosca martelo": "hammer curl",
   "rosca scott": "preacher curl",
   "tríceps pulley": "tricep pushdown",
+  "triceps pulley": "tricep pushdown",
   "tríceps testa": "skull crusher",
+  "triceps testa": "skull crusher",
   "tríceps corda": "tricep rope pushdown",
+  "triceps corda": "tricep rope pushdown",
   "abdominal": "crunch",
   "prancha": "plank",
   "prancha frontal": "plank",
   "afundo": "lunge",
   "avanço": "lunge",
+  "avanco": "lunge",
   "búlgaro": "bulgarian split squat",
-  "agachamento búlgaro": "bulgarian split squat",
+  "bulgaro": "bulgarian split squat",
   "kickback": "glute kickback",
   "glúteo kickback": "glute kickback",
-  "cadeira abdutora": "hip abduction machine",
-  "cadeira adutora": "hip adduction machine",
+  "gluteo kickback": "glute kickback",
   "marcha estacionária": "march",
+  "marcha estacionaria": "march",
   "rotação de quadril": "hip circle",
-  "agachamento sem peso": "bodyweight squat",
+  "rotacao de quadril": "hip circle",
   "alongamento de quadríceps": "quad stretch",
+  "alongamento de quadriceps": "quad stretch",
   "alongamento posterior": "hamstring stretch",
   "borboleta": "butterfly stretch",
   "polichinelo": "jumping jack",
   "flexão": "push up",
+  "flexao": "push up",
   "flexão de braço": "push up",
+  "flexao de braco": "push up",
   "mergulho": "dip",
   "pullover": "pullover",
   "face pull": "face pull",
   "encolhimento": "shrug",
+  "passada": "lunge",
+  "terra romeno": "romanian deadlift",
+  "bom dia": "good morning",
+  "good morning": "good morning",
+  "mesa flexora": "lying leg curl",
+  "hack squat": "hack squat",
+  "hack": "hack squat",
+  "leg curl": "leg curl",
+  "leg extension": "leg extension",
+  "smith": "smith machine squat",
+  "remada alta": "upright row",
+  "crucifixo inclinado": "incline dumbbell fly",
+  "voador": "pec deck fly",
+  "peck deck": "pec deck fly",
+  "cross over": "cable crossover",
+  "crossover": "cable crossover",
+  "rosca concentrada": "concentration curl",
+  "rosca inversa": "reverse curl",
+  "triceps banco": "bench dip",
+  "triceps frances": "overhead tricep extension",
+  "tríceps francês": "overhead tricep extension",
+  "abdominal infra": "reverse crunch",
+  "abdominal obliquo": "oblique crunch",
+  "abdominal oblíquo": "oblique crunch",
+  "elevacao de pernas": "leg raise",
+  "elevação de pernas": "leg raise",
+  "russian twist": "russian twist",
+  "superman": "superman",
+  "bird dog": "bird dog",
+  "dead bug": "dead bug",
+  "mountain climber": "mountain climber",
+  "burpee": "burpee",
+  "step up": "step up",
+  "calf raise": "calf raise",
 };
+
+/**
+ * Normalize a PT exercise name for lookup:
+ * - lowercase, trim, strip parenthetical, remove accents, remove trailing 's'
+ */
+function normalizeName(name: string): string {
+  return name
+    .replace(/\s*\(.*\)$/, "")
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // strip accents
+}
+
+/**
+ * Look up English name from PT name using multiple normalization strategies
+ */
+function findEnglishName(name: string): string | null {
+  const raw = name.replace(/\s*\(.*\)$/, "").toLowerCase().trim();
+  
+  // Try exact match first (with accents)
+  if (EXERCISE_PT_EN[raw]) return EXERCISE_PT_EN[raw];
+  
+  // Try without accents
+  const noAccents = normalizeName(name);
+  if (EXERCISE_PT_EN[noAccents]) return EXERCISE_PT_EN[noAccents];
+  
+  // Try without trailing 's' (plural)
+  const singular = noAccents.replace(/s$/, "");
+  if (EXERCISE_PT_EN[singular]) return EXERCISE_PT_EN[singular];
+  
+  // Try with trailing 's' (singular → plural)
+  if (EXERCISE_PT_EN[noAccents + "s"]) return EXERCISE_PT_EN[noAccents + "s"];
+  
+  // Try partial match (first 2+ words)
+  const words = noAccents.split(/\s+/);
+  if (words.length >= 2) {
+    for (let len = words.length; len >= 2; len--) {
+      const partial = words.slice(0, len).join(" ");
+      if (EXERCISE_PT_EN[partial]) return EXERCISE_PT_EN[partial];
+      const partialSingular = partial.replace(/s$/, "");
+      if (EXERCISE_PT_EN[partialSingular]) return EXERCISE_PT_EN[partialSingular];
+    }
+  }
+  
+  return null;
+}
 
 export async function resolveExerciseMedia(
   name: string
 ): Promise<{ video?: string; image?: string }> {
-  const key = name.toLowerCase().trim();
+  const key = normalizeName(name);
   const cacheKey = `mw:media:${key}`;
 
-  // Check persistent cache first
+  // Check persistent cache first — but skip empty cached results
   const cached = await cache.get<{ video?: string; image?: string }>(cacheKey);
-  if (cached !== null) return cached;
+  if (cached !== null && (cached.video || cached.image)) return cached;
 
   const trySearch = async (query: string): Promise<{ video?: string; image?: string } | null> => {
     try {
@@ -93,21 +196,31 @@ export async function resolveExerciseMedia(
     return null;
   };
 
-  // Try original name
-  let result = await trySearch(name);
+  // Strategy 1: Try English translation first (most reliable)
+  const enName = findEnglishName(name);
+  let result: { video?: string; image?: string } | null = null;
+  
+  if (enName) {
+    result = await trySearch(enName);
+  }
 
-  // Try English translation
+  // Strategy 2: Try original name
   if (!result) {
-    const baseName = name.replace(/\s*\(.*\)$/, "").toLowerCase().trim();
-    const enName = EXERCISE_PT_EN[baseName];
-    if (enName) {
-      result = await trySearch(enName);
+    result = await trySearch(name.replace(/\s*\(.*\)$/, "").trim());
+  }
+  
+  // Strategy 3: Try first 2 words of English name
+  if (!result && enName) {
+    const words = enName.split(/\s+/);
+    if (words.length >= 2) {
+      result = await trySearch(words.slice(0, 2).join(" "));
     }
   }
 
   const final = result || {};
-  // Persist in cache (24h for media URLs)
-  await cache.set(cacheKey, final, cache.TTL.LONG);
+  // Only cache for a long time if we found something; short cache for misses
+  const ttl = (final.video || final.image) ? cache.TTL.LONG : cache.TTL.SHORT;
+  await cache.set(cacheKey, final, ttl);
   return final;
 }
 
@@ -123,7 +236,7 @@ export function useMuscleWikiMedia(names: string[]) {
   useEffect(() => {
     if (names.length === 0) return;
 
-    const toResolve = names.filter((n) => !resolvedRef.current.has(n.toLowerCase().trim()));
+    const toResolve = names.filter((n) => !resolvedRef.current.has(normalizeName(n)));
     if (toResolve.length === 0) return;
 
     setLoading(true);
@@ -131,7 +244,7 @@ export function useMuscleWikiMedia(names: string[]) {
     Promise.allSettled(
       toResolve.map(async (name) => {
         const result = await resolveExerciseMedia(name);
-        resolvedRef.current.add(name.toLowerCase().trim());
+        resolvedRef.current.add(normalizeName(name));
         return { name, result };
       })
     ).then((results) => {
