@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   Bell, Sparkles, ChevronRight, Trophy, Flame,
@@ -50,12 +51,40 @@ const AppDashboard = () => {
   const [weekStats, setWeekStats] = useState({ done: 0, totalMin: 0, goal: 5 });
   const [recentLogs, setRecentLogs] = useState<WeekLog[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [challengeAccepted, setChallengeAccepted] = useState(false);
+
+  const CHALLENGE_PROGRAM_ID = "49665ed0-8124-4ec1-997e-5ec66b3e35a4";
+
+  const acceptChallenge = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("user_programs")
+      .upsert({ user_id: user.id, program_id: CHALLENGE_PROGRAM_ID }, { onConflict: "user_id,program_id" });
+    if (error) {
+      toast({ title: "Erro", description: "Não foi possível aceitar o desafio.", variant: "destructive" });
+      return;
+    }
+    setChallengeAccepted(true);
+    toast({ title: "🔥 Desafio aceito!", description: "LEG DAY INTENSO adicionado aos seus treinos." });
+    navigate(`/app/program/${CHALLENGE_PROGRAM_ID}`);
+  };
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
-    if (user && subscribed) { fetchData(); }
+    if (user && subscribed) { fetchData(); checkChallengeStatus(); }
     if (user) checkOnboarding();
   }, [user, subscribed, subscriptionLoading, navigate]);
+
+  const checkChallengeStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("user_programs")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("program_id", CHALLENGE_PROGRAM_ID)
+      .maybeSingle();
+    if (data) setChallengeAccepted(true);
+  };
 
   const checkOnboarding = async () => {
     if (!user) return;
@@ -574,7 +603,9 @@ const AppDashboard = () => {
                 Protocolo avançado de glúteos & posterior. 45 min de pura intensidade.
               </p>
               <button
-                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 transition-all active:scale-95"
+                onClick={acceptChallenge}
+                disabled={challengeAccepted}
+                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 transition-all active:scale-95 disabled:opacity-60"
                 style={{
                   borderRadius: "1.25rem",
                   background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
@@ -582,7 +613,7 @@ const AppDashboard = () => {
                   boxShadow: `0 4px 20px ${S.glowStrong}`,
                 }}
               >
-                Aceitar Desafio
+                {challengeAccepted ? "Desafio Aceito ✓" : "Aceitar Desafio"}
                 <Sparkles size={12} />
               </button>
             </div>
