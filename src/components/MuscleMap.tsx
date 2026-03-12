@@ -9,6 +9,7 @@ interface MuscleMapProps {
 
 const MuscleMap: React.FC<MuscleMapProps> = ({
   trainedMuscles = [],
+  muscleColors,
   onMuscleClick,
 }) => {
   const [hovered, setHovered] = useState<string | null>(null);
