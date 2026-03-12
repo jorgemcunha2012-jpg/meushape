@@ -52,6 +52,7 @@ const AppDashboard = () => {
   const [recentLogs, setRecentLogs] = useState<WeekLog[]>([]);
   const [prevWeekStats, setPrevWeekStats] = useState<{ done: number; totalMin: number } | null>(null);
   const [lastWorkoutTitle, setLastWorkoutTitle] = useState<string>("");
+  const [completedDates, setCompletedDates] = useState<Set<string>>(new Set());
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
 
@@ -155,7 +156,12 @@ const AppDashboard = () => {
     prevWeekStart.setDate(prevWeekStart.getDate() - 7);
     const prevWeekEnd = new Date(weekStart);
 
-    const [weekLogsRes, prevWeekLogsRes] = await Promise.all([
+    // Calendar: last 35 days of logs
+    const calStart = new Date();
+    calStart.setDate(calStart.getDate() - 35);
+    calStart.setHours(0, 0, 0, 0);
+
+    const [weekLogsRes, prevWeekLogsRes, calLogsRes] = await Promise.all([
       supabase
         .from("workout_logs").select("id, completed_at, duration_minutes, workout_id")
         .eq("user_id", user!.id)
@@ -167,10 +173,25 @@ const AppDashboard = () => {
         .gte("completed_at", prevWeekStart.toISOString())
         .lt("completed_at", prevWeekEnd.toISOString())
         .order("completed_at", { ascending: false }),
+      supabase
+        .from("workout_logs").select("completed_at")
+        .eq("user_id", user!.id)
+        .gte("completed_at", calStart.toISOString()),
     ]);
 
     const weekLogs = weekLogsRes.data;
     const prevWeekLogs = prevWeekLogsRes.data;
+    const calLogs = calLogsRes.data;
+
+    // Build completed dates set
+    const doneDates = new Set<string>();
+    calLogs?.forEach(l => {
+      doneDates.add(new Date(l.completed_at).toISOString().split("T")[0]);
+    });
+    weekLogs?.forEach(l => {
+      doneDates.add(new Date(l.completed_at).toISOString().split("T")[0]);
+    });
+    setCompletedDates(doneDates);
 
     if (prevWeekLogs && prevWeekLogs.length > 0) {
       const prevDone = prevWeekLogs.length;
@@ -357,7 +378,7 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ WEEKLY SUMMARY CARD ═══ */}
+      {/* ═══ TRAINING CALENDAR ═══ */}
       <section className="px-5 mb-5">
         <div className="max-w-lg mx-auto">
           <motion.div
@@ -366,117 +387,139 @@ const AppDashboard = () => {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="relative overflow-hidden p-5"
             style={{
-              borderRadius: "3rem",
+              borderRadius: "1.5rem",
               backgroundColor: S.card,
               border: `1px solid ${S.cardBorder}`,
               boxShadow: `0 4px 24px rgba(0,0,0,0.08)`,
             }}
           >
-            {/* Decorative blur orb */}
-            <div
-              className="absolute -top-10 -right-10 w-40 h-40 rounded-full"
-              style={{
-                background: `radial-gradient(circle, ${S.glow} 0%, transparent 70%)`,
-                filter: "blur(30px)",
-              }}
-            />
-
             <div className="relative z-10">
-              <h3
-                className="font-display text-base mb-4"
-                style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}
-              >
-                Sua Semana
-              </h3>
-
-              {/* 3 Stats row */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                {[
-                  { value: weekStats.done, label: "treinos", icon: Dumbbell },
-                  { value: weekStats.totalMin, label: "min", icon: Clock },
-                  { value: streak, label: "dias 🔥", icon: Flame },
-                ].map((stat, i) => (
-                  <div
-                    key={i}
-                    className="text-center py-3 px-2"
-                    style={{
-                      borderRadius: "1.25rem",
-                      backgroundColor: `${S.orange}0D`,
-                      border: `1px solid ${S.orange}1A`,
-                    }}
-                  >
-                    <div
-                      className="font-display text-2xl mb-0.5"
-                      style={{ fontWeight: 900, color: S.orange }}
-                    >
-                      {stat.value}
-                    </div>
-                    <div
-                      className="text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ color: S.textMuted }}
-                    >
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Progress bar */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider" style={{ color: S.textMuted }}>
-                    Meta Semanal
+              {/* Header with stats */}
+              <div className="flex items-center justify-between mb-4">
+                <h3
+                  className="font-display text-base"
+                  style={{ fontWeight: 800, color: S.text, letterSpacing: "-0.02em" }}
+                >
+                  Calendário
+                </h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] font-bold" style={{ color: S.orange }}>
+                    {streak > 0 ? `🔥 ${streak} dias` : ""}
                   </span>
-                  <span className="text-[12px] font-extrabold" style={{ color: S.orange }}>
-                    {weekStats.done}/{weekStats.goal} treinos
+                  <span className="text-[11px] font-bold" style={{ color: S.textMuted }}>
+                    {weekStats.done}/{weekStats.goal} sem
                   </span>
-                </div>
-                <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: `${S.orange}1A` }}>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${weekProgressPct}%` }}
-                    transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
-                    className="h-full rounded-full"
-                    style={{
-                      background: `linear-gradient(90deg, ${S.amber}, ${S.orange})`,
-                      boxShadow: `0 0 10px ${S.glowStrong}`,
-                    }}
-                  />
                 </div>
               </div>
 
-              {/* Recent workouts list */}
-              {recentLogs.length > 0 && (
-                <div className="space-y-2">
-                  {recentLogs.map((log, i) => (
-                    <div key={i} className="flex items-center gap-2.5">
-                      <div
-                        className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: S.orange, boxShadow: `0 0 6px ${S.orange}60` }}
-                      />
-                      <span className="text-[13px] font-semibold flex-1" style={{ color: S.text }}>
-                        {log.workoutTitle}
-                      </span>
-                      <span className="text-[11px] font-medium" style={{ color: S.textMuted }}>
-                        {relativeDay(log.completedAt)} · {log.durationMin} min
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Calendar grid - 5 weeks */}
+              {(() => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayStr = today.toISOString().split("T")[0];
 
-              {recentLogs.length === 0 && (
-                <p className="text-[12px] text-center py-2" style={{ color: S.textMuted }}>
-                  {prevWeekStats
-                    ? prevWeekStats.done >= 3
-                      ? `Semana passada você mandou ${prevWeekStats.done} treinos em ${prevWeekStats.totalMin} min — bora superar! 🔥`
-                      : lastWorkoutTitle
-                        ? `Seu último treino foi "${lastWorkoutTitle}" — hora de voltar com tudo! 💪`
-                        : `Você treinou ${prevWeekStats.done}x na semana passada — essa semana vai ser melhor! 🚀`
-                    : "Nova semana, novas conquistas — bora começar! 💪"
+                // Build 35 days: 4 weeks back + this week
+                const startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - startDate.getDay() - 28); // 4 weeks before this week's sunday
+
+                const dayLabels = ["D", "S", "T", "Q", "Q", "S", "S"];
+                const cells: { date: Date; dateStr: string }[] = [];
+                for (let i = 0; i < 35; i++) {
+                  const d = new Date(startDate);
+                  d.setDate(d.getDate() + i);
+                  cells.push({ date: d, dateStr: d.toISOString().split("T")[0] });
+                }
+
+                // Workout days pattern for future: Mon(1), Wed(3), Fri(5)
+                const plannedDays = [1, 3, 5];
+
+                return (
+                  <>
+                    {/* Day labels */}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {dayLabels.map((label, i) => (
+                        <div key={i} className="text-center text-[9px] font-bold uppercase" style={{ color: S.textMuted }}>
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calendar cells */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {cells.map((cell, i) => {
+                        const isPast = cell.dateStr < todayStr;
+                        const isToday = cell.dateStr === todayStr;
+                        const isDone = completedDates.has(cell.dateStr);
+                        const isFuture = cell.dateStr > todayStr;
+                        const isPlanned = isFuture && plannedDays.includes(cell.date.getDay());
+                        const dayNum = cell.date.getDate();
+
+                        let bg = "transparent";
+                        let color = S.textMuted;
+                        let border = "none";
+                        let opacity = 1;
+
+                        if (isDone) {
+                          bg = S.orange;
+                          color = "#fff";
+                        } else if (isToday) {
+                          bg = "transparent";
+                          color = S.orange;
+                          border = `2px solid ${S.orange}`;
+                        } else if (isPlanned) {
+                          bg = `${S.orange}15`;
+                          color = S.orange;
+                          border = `1px dashed ${S.orange}40`;
+                        } else if (isPast) {
+                          opacity = 0.35;
+                        }
+
+                        return (
+                          <div
+                            key={i}
+                            className="aspect-square flex items-center justify-center rounded-lg text-[11px] font-bold"
+                            style={{ backgroundColor: bg, color, border, opacity }}
+                          >
+                            {dayNum}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex items-center justify-center gap-4 mt-3">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: S.orange }} />
+                        <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}>Feito</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ border: `1px dashed ${S.orange}60`, backgroundColor: `${S.orange}15` }} />
+                        <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}>Planejado</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ border: `2px solid ${S.orange}` }} />
+                        <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}>Hoje</span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* Motivational message */}
+              <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${S.cardBorder}` }}>
+                <p className="text-[12px] text-center" style={{ color: S.textMuted }}>
+                  {recentLogs.length > 0
+                    ? `${recentLogs[0].workoutTitle} · ${relativeDay(recentLogs[0].completedAt)} · ${recentLogs[0].durationMin} min ✓`
+                    : prevWeekStats
+                      ? prevWeekStats.done >= 3
+                        ? `Semana passada: ${prevWeekStats.done} treinos em ${prevWeekStats.totalMin} min — bora superar! 🔥`
+                        : lastWorkoutTitle
+                          ? `Último treino: "${lastWorkoutTitle}" — hora de voltar! 💪`
+                          : `${prevWeekStats.done}x na semana passada — essa semana vai ser melhor! 🚀`
+                      : "Nova semana, novas conquistas — bora começar! 💪"
                   }
                 </p>
-              )}
+              </div>
             </div>
           </motion.div>
         </div>
