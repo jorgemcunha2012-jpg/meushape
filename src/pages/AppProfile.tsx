@@ -6,11 +6,12 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Camera, LogOut, ChevronRight,
   Flame, Dumbbell, Clock, Trophy, Medal, Target,
-  Bell, HelpCircle, Shield
+  Bell, HelpCircle, Shield, Pencil
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
+import OnboardingDrawer from "@/components/OnboardingDrawer";
 
 interface ProfileData {
   name: string;
@@ -39,6 +40,8 @@ const AppProfile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [onboardingData, setOnboardingData] = useState<Record<string, any> | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
@@ -56,7 +59,11 @@ const AppProfile = () => {
       supabase.from("user_badges").select("id").eq("user_id", user.id),
     ]);
 
-    if (profileRes.data) setProfile(profileRes.data);
+    if (profileRes.data) {
+      setProfile(profileRes.data);
+      const oa = profileRes.data.onboarding_answers as Record<string, any> | undefined;
+      if (oa && Object.keys(oa).length > 0) setOnboardingData(oa);
+    }
 
     const { data: avatarData } = await supabase.storage
       .from("body-photos")
@@ -221,7 +228,45 @@ const AppProfile = () => {
         </div>
       </section>
 
-      {/* Badges */}
+      {/* Training Data */}
+      <section className="px-5 pb-5">
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>
+              Meus Dados de Treino
+            </h3>
+            <button onClick={() => setShowOnboarding(true)}
+              className="flex items-center gap-1 text-xs font-semibold" style={{ color: S.orange }}>
+              <Pencil size={12} /> Editar
+            </button>
+          </div>
+          {onboardingData ? (
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { label: "Objetivo", value: { lose_weight: "Emagrecer", tone_up: "Definir", lose_and_tone: "Emagrecer e definir", start_training: "Começar" }[onboardingData.goal as string] || "—" },
+                { label: "Dias/semana", value: onboardingData.days_per_week ? `${onboardingData.days_per_week}x` : "—" },
+                { label: "Local", value: { gym: "Academia", home: "Em casa", hybrid: "Ambos" }[onboardingData.workout_location as string] || "—" },
+                { label: "Peso", value: onboardingData.current_weight_kg ? `${onboardingData.current_weight_kg} kg` : "—" },
+                { label: "Altura", value: onboardingData.height_cm ? `${onboardingData.height_cm} cm` : "—" },
+                { label: "Idade", value: onboardingData.age ? `${onboardingData.age} anos` : "—" },
+              ].map((item, i) => (
+                <div key={i} className="p-3" style={cardStyle}>
+                  <p className="text-[11px] mb-0.5" style={{ color: S.textMuted }}>{item.label}</p>
+                  <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <button onClick={() => setShowOnboarding(true)}
+              className="w-full p-4 text-center transition-all active:scale-[0.98]"
+              style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}` }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: S.orange }}>Preencher perfil de treino</p>
+              <p className="text-[11px]" style={{ color: S.textMuted }}>Dados usados para gerar treinos personalizados</p>
+            </button>
+          )}
+        </div>
+      </section>
+
       <section className="px-5 pb-5">
         <div className="max-w-lg mx-auto">
           <button
@@ -299,6 +344,15 @@ const AppProfile = () => {
           </motion.button>
         </div>
       </section>
+
+      {user && (
+        <OnboardingDrawer
+          open={showOnboarding}
+          onClose={() => { setShowOnboarding(false); fetchAll(); }}
+          userId={user.id}
+          initialData={onboardingData || undefined}
+        />
+      )}
     </SolarPage>
   );
 };

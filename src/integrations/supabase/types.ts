@@ -488,6 +488,7 @@ export type Database = {
           id: string
           lead_id: string | null
           name: string
+          onboarding_answers: Json | null
           profile_scores: Json
           subscription_status: string
         }
@@ -497,6 +498,7 @@ export type Database = {
           id: string
           lead_id?: string | null
           name?: string
+          onboarding_answers?: Json | null
           profile_scores?: Json
           subscription_status?: string
         }
@@ -506,6 +508,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           name?: string
+          onboarding_answers?: Json | null
           profile_scores?: Json
           subscription_status?: string
         }
