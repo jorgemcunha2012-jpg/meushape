@@ -9,6 +9,10 @@ import {
 } from "lucide-react";
 import { BodyMap } from "@/components/BodyMap";
 import { SolarBottomNav, useSolar } from "@/components/SolarLayout";
+import illustrationTreino from "@/assets/illustration-treino.png";
+import illustrationEvolucao from "@/assets/illustration-evolucao.png";
+import illustrationComunidade from "@/assets/illustration-comunidade.png";
+import illustrationConquistas from "@/assets/illustration-conquistas.png";
 
 /* ─── Types ─── */
 interface WeekDay {
