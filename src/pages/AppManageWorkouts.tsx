@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Search, Dumbbell, ChevronDown, ChevronUp,
 } from "lucide-react";
+import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface Program {
   id: string;
