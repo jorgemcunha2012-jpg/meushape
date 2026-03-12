@@ -32,8 +32,10 @@ const AppWorkoutDetail = () => {
 
   const [workout, setWorkout] = useState<WorkoutInfo | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [curatedMap, setCuratedMap] = useState<Record<string, CuratedExercise>>({});
   const [loading, setLoading] = useState(true);
+
+  const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
+  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) {
@@ -51,31 +53,7 @@ const AppWorkoutDetail = () => {
     ]);
 
     if (workoutRes.data) setWorkout(workoutRes.data);
-    if (exerciseRes.data) {
-      setExercises(exerciseRes.data);
-      // Strip parenthetical suffix for matching: "Leg press (leverage machine)" -> "Leg press"
-      const baseNames = [...new Set(exerciseRes.data.map(e => e.name.replace(/\s*\(.*\)$/, "")))];
-      const fullNames = exerciseRes.data.map(e => e.name);
-      const allNames = [...new Set([...fullNames, ...baseNames])];
-      if (allNames.length > 0) {
-        const { data: curated } = await supabase
-          .from("curated_exercises")
-          .select("name_pt, gif_url, target, body_part")
-          .in("name_pt", allNames);
-        if (curated) {
-          const map: Record<string, CuratedExercise> = {};
-          curated.forEach(c => { map[c.name_pt] = c; });
-          // Also map full names to their base-name match
-          exerciseRes.data.forEach(e => {
-            const baseName = e.name.replace(/\s*\(.*\)$/, "");
-            if (!map[e.name] && map[baseName]) {
-              map[e.name] = map[baseName];
-            }
-          });
-          setCuratedMap(map);
-        }
-      }
-    }
+    if (exerciseRes.data) setExercises(exerciseRes.data);
     setLoading(false);
   };
 
