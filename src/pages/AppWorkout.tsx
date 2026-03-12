@@ -7,6 +7,7 @@ import { X, ArrowRight, Play, Pause, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateStreak, checkAndAwardBadges } from "@/lib/streaksAndBadges";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import { setHasNewWorkout } from "@/services/cacheService";
 
 // ==========================================
 // TYPES
@@ -222,6 +223,7 @@ const AppWorkout = () => {
       const summary = `Concluí o treino "${workout?.title}" em ${durationMin} minutos! 💪🔥`;
       await supabase.from("community_posts").insert({ user_id: user!.id, content: summary });
     }
+    setHasNewWorkout(true);
     setPhase("complete");
   };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useClickGuard } from "@/hooks/useThrottle";
 import { useAuth } from "@/hooks/useAuth";
 import { SolarPage, useSolar } from "@/components/SolarLayout";
 import {
@@ -43,6 +44,7 @@ const AppExploreMuscleWiki = () => {
   const [searchResults, setSearchResults] = useState<MWExerciseDetail[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const { guard: clickGuard, blocked: clickBlocked } = useClickGuard(2000);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) {
@@ -165,7 +167,7 @@ const AppExploreMuscleWiki = () => {
     const timer = setTimeout(() => {
       if (searchQuery.trim()) handleSearch();
       else setSearchResults(null);
-    }, 500);
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -365,8 +367,8 @@ const AppExploreMuscleWiki = () => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <div
-                        onClick={() => navigate(`/app/musclewiki/${item.id}`)}
-                        className="flex items-center gap-3 flex-1 min-w-0"
+                        onClick={() => clickGuard(() => navigate(`/app/musclewiki/${item.id}`))}
+                        className={`flex items-center gap-3 flex-1 min-w-0 ${clickBlocked ? 'pointer-events-none opacity-70' : ''}`}
                       >
                         {thumbnail ? (
                           <img

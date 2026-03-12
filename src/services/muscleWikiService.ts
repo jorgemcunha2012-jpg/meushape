@@ -1,3 +1,5 @@
+import { cache } from "./cacheService";
+
 const BASE = "https://api.musclewiki.com";
 const API_KEY = "mw_N952p5CPQqKkdUcCyE4dTrFIG2Hd6de0AVXgp1Oyjhs";
 
@@ -58,35 +60,30 @@ interface MWListResponse {
   results: MWExerciseMinimal[];
 }
 
-// ─── Caches ───
-let musclesCache: MWMuscle[] | null = null;
-let categoriesCache: MWCategory[] | null = null;
-let filtersCache: MWFilters | null = null;
-
-// ─── API Functions ───
+// ─── API Functions (with cache) ───
 
 export const fetchMuscles = async (): Promise<MWMuscle[]> => {
-  if (musclesCache) return musclesCache;
-  const res = await fetch(`${BASE}/muscles`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki muscles error: ${res.status}`);
-  musclesCache = await res.json();
-  return musclesCache!;
+  return cache.fetchWithCache("mw:muscles", async () => {
+    const res = await fetch(`${BASE}/muscles`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki muscles error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const fetchCategories = async (): Promise<MWCategory[]> => {
-  if (categoriesCache) return categoriesCache;
-  const res = await fetch(`${BASE}/categories`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki categories error: ${res.status}`);
-  categoriesCache = await res.json();
-  return categoriesCache!;
+  return cache.fetchWithCache("mw:categories", async () => {
+    const res = await fetch(`${BASE}/categories`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki categories error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const fetchFilters = async (): Promise<MWFilters> => {
-  if (filtersCache) return filtersCache;
-  const res = await fetch(`${BASE}/filters`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki filters error: ${res.status}`);
-  filtersCache = await res.json();
-  return filtersCache!;
+  return cache.fetchWithCache("mw:filters", async () => {
+    const res = await fetch(`${BASE}/filters`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki filters error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const listExercises = async (params: {
@@ -98,29 +95,38 @@ export const listExercises = async (params: {
   gender?: string;
 }): Promise<MWListResponse> => {
   const { limit = 20, offset = 0, category, muscles, difficulty, gender } = params;
-  const url = new URL(`${BASE}/exercises`);
-  url.searchParams.set("limit", String(limit));
-  url.searchParams.set("offset", String(offset));
-  if (category) url.searchParams.set("category", category);
-  if (muscles) url.searchParams.set("muscles", muscles);
-  if (difficulty) url.searchParams.set("difficulty", difficulty);
-  if (gender) url.searchParams.set("gender", gender);
+  const cacheKey = `mw:list:${limit}:${offset}:${category || ""}:${muscles || ""}:${difficulty || ""}:${gender || ""}`;
 
-  const res = await fetch(url.toString(), { headers });
-  if (!res.ok) throw new Error(`MuscleWiki exercises error: ${res.status}`);
-  return res.json();
+  return cache.fetchWithCache(cacheKey, async () => {
+    const url = new URL(`${BASE}/exercises`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
+    if (category) url.searchParams.set("category", category);
+    if (muscles) url.searchParams.set("muscles", muscles);
+    if (difficulty) url.searchParams.set("difficulty", difficulty);
+    if (gender) url.searchParams.set("gender", gender);
+
+    const res = await fetch(url.toString(), { headers });
+    if (!res.ok) throw new Error(`MuscleWiki exercises error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.MEDIUM);
 };
 
 export const fetchExerciseDetail = async (id: number): Promise<MWExerciseDetail> => {
-  const res = await fetch(`${BASE}/exercises/${id}`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki exercise detail error: ${res.status}`);
-  return res.json();
+  return cache.fetchWithCache(`mw:exercise:${id}`, async () => {
+    const res = await fetch(`${BASE}/exercises/${id}`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki exercise detail error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const searchExercisesMW = async (query: string, limit = 20): Promise<MWExerciseDetail[]> => {
-  const res = await fetch(`${BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki search error: ${res.status}`);
-  return res.json();
+  const cacheKey = `mw:search:${query.toLowerCase().trim()}:${limit}`;
+  return cache.fetchWithCache(cacheKey, async () => {
+    const res = await fetch(`${BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki search error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.SHORT);
 };
 
 // ─── Media URL helper ───
