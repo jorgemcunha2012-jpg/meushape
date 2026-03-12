@@ -56,10 +56,22 @@ const AppDashboard = () => {
   const CHALLENGE_PROGRAM_ID = "49665ed0-8124-4ec1-997e-5ec66b3e35a4";
 
   const acceptChallenge = async () => {
-    if (!user) return;
+    if (!user || challengeAccepted) return;
+    // Check if already added
+    const { data: existing } = await supabase
+      .from("user_programs")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("program_id", CHALLENGE_PROGRAM_ID)
+      .maybeSingle();
+    if (existing) {
+      setChallengeAccepted(true);
+      navigate(`/app/program/${CHALLENGE_PROGRAM_ID}`);
+      return;
+    }
     const { error } = await supabase
       .from("user_programs")
-      .upsert({ user_id: user.id, program_id: CHALLENGE_PROGRAM_ID }, { onConflict: "user_id,program_id" });
+      .insert({ user_id: user.id, program_id: CHALLENGE_PROGRAM_ID });
     if (error) {
       toast({ title: "Erro", description: "Não foi possível aceitar o desafio.", variant: "destructive" });
       return;
