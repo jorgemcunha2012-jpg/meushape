@@ -445,10 +445,10 @@ const AppDashboard = () => {
                 {/* Weekly Goal Progress */}
                 <div className="pt-2">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: S.textSub }}>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider" style={{ color: S.textMuted }}>
                       Meta Semanal
                     </span>
-                    <span className="text-[10px] font-bold" style={{ color: S.orange }}>
+                    <span className="text-[11px] font-extrabold" style={{ color: S.orange }}>
                       {weeklyProgress}%
                     </span>
                   </div>
