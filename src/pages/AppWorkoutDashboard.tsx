@@ -305,17 +305,36 @@ const AppWorkoutDashboard = () => {
                   );
                 })}
 
-                {/* Explorar button at bottom */}
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowExplorer(true)}
-                  className="w-full p-3.5 flex items-center justify-center gap-2 text-sm font-semibold transition-all"
-                  style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}
-                >
-                  <Compass size={16} /> Explorar mais programas
-                </motion.button>
+                {/* Bottom actions */}
+                <div className="flex gap-2">
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowAIWizard(true)}
+                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}>
+                    <Sparkles size={14} /> Gerar com IA
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowExplorer(true)}
+                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.textMuted }}>
+                    <Compass size={14} /> Explorar
+                  </motion.button>
+                </div>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── AI Wizard ─── */}
+      {tab === "meus" && showAIWizard && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            <AIWorkoutWizard
+              userId={user!.id}
+              onComplete={() => { setShowAIWizard(false); fetchAllData(); }}
+              onCancel={() => setShowAIWizard(false)}
+            />
           </div>
         </section>
       )}
