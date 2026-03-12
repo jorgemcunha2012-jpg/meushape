@@ -11,6 +11,7 @@ import { SolarPage, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import { proxyImageUrl } from "@/lib/mediaUtils";
 
 interface Exercise {
   id: string;
