@@ -52,6 +52,7 @@ const AppMeusTreinos = () => {
   const [extras, setExtras] = useState<ExtraPurchase[]>([]);
   const [purchaseModal, setPurchaseModal] = useState<GenerationType | null>(null);
   const [purchasing, setPurchasing] = useState(false);
+  const [generatingType, setGeneratingType] = useState<"challenge" | "project" | null>(null);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) navigate("/app/login");
