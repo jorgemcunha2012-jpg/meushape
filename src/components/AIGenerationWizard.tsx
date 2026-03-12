@@ -12,6 +12,7 @@ interface AIGenerationWizardProps {
   type: "challenge" | "project";
   onComplete: () => void;
   onCancel: () => void;
+  isAdmin?: boolean;
 }
 
 const TYPE_CONFIG = {
