@@ -206,36 +206,38 @@ const AppExerciseDetail = () => {
       <div className="relative">
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center z-10"
+          className="absolute top-4 left-4 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center z-10"
           style={{ background: `${S.bg}cc`, border: `1px solid ${S.cardBorder}` }}
         >
           <ArrowLeft className="w-4 h-4" style={{ color: S.text }} />
         </button>
 
-        <div className="flex items-center justify-center py-6" style={{ background: S.bg }}>
-          <div className="w-full max-w-md rounded-2xl overflow-hidden mx-auto aspect-video"
-            style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-            {isMediaPending ? (
-              <div className="w-full h-full"
-                style={{ background: `linear-gradient(90deg, ${S.cardBorder}00 0%, ${S.cardBorder}80 50%, ${S.cardBorder}00 100%)`, backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
-            ) : videoUrl ? (
-              <video
-                src={videoUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-contain"
-                style={{ background: S.card }}
-              />
-            ) : mediaUrl ? (
-              <img
-                src={mediaUrl}
-                alt={displayName}
-                className="w-full h-full object-contain"
-                style={{ background: S.card }}
-              />
-            ) : null}
+        <div className="px-4 py-4 sm:py-6" style={{ background: S.bg }}>
+          <div className="w-full max-w-md mx-auto">
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden"
+              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
+              {isMediaPending ? (
+                <div className="absolute inset-0"
+                  style={{ background: `linear-gradient(90deg, ${S.cardBorder}00 0%, ${S.cardBorder}80 50%, ${S.cardBorder}00 100%)`, backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
+              ) : videoUrl ? (
+                <video
+                  src={videoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain"
+                  style={{ background: S.card }}
+                />
+              ) : mediaUrl ? (
+                <img
+                  src={mediaUrl}
+                  alt={displayName}
+                  className="absolute inset-0 w-full h-full object-contain"
+                  style={{ background: S.card }}
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
