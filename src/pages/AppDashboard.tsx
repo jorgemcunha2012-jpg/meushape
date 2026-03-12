@@ -202,10 +202,10 @@ const AppDashboard = () => {
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Jorge";
 
   const menuItems = [
-    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", gradient: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", iconColor: S.orange },
-    { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", gradient: "linear-gradient(135deg, #FEF3C7, #FDE68A)", iconColor: S.amber },
-    { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirado", route: "/app/community", gradient: "linear-gradient(135deg, #FFF1F2, #FECDD3)", iconColor: S.coral },
-    { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", gradient: "linear-gradient(135deg, #FFF7ED, #FED7AA)", iconColor: S.terracotta },
+    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", illustration: illustrationTreino },
+    { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", illustration: illustrationEvolucao },
+    { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirado", route: "/app/community", illustration: illustrationComunidade },
+    { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", illustration: illustrationConquistas },
   ];
 
   // navItems removed — using shared SolarBottomNav
