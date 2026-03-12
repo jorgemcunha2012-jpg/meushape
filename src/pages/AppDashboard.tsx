@@ -467,7 +467,14 @@ const AppDashboard = () => {
 
               {recentLogs.length === 0 && (
                 <p className="text-[12px] text-center py-2" style={{ color: S.textMuted }}>
-                  Nenhum treino esta semana ainda — bora começar! 💪
+                  {prevWeekStats
+                    ? prevWeekStats.done >= 3
+                      ? `Semana passada você mandou ${prevWeekStats.done} treinos em ${prevWeekStats.totalMin} min — bora superar! 🔥`
+                      : lastWorkoutTitle
+                        ? `Seu último treino foi "${lastWorkoutTitle}" — hora de voltar com tudo! 💪`
+                        : `Você treinou ${prevWeekStats.done}x na semana passada — essa semana vai ser melhor! 🚀`
+                    : "Nova semana, novas conquistas — bora começar! 💪"
+                  }
                 </p>
               )}
             </div>
