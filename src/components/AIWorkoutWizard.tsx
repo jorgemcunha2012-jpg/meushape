@@ -17,6 +17,7 @@ interface AIWorkoutWizardProps {
 
 const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps) => {
   const S = useSolar();
+  const limits = useGenerationLimits(userId);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
