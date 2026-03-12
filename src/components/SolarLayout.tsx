@@ -120,6 +120,55 @@ export const SolarBottomNav = () => {
   );
 };
 
+/* ─── Shared Gradient Header ─── */
+interface SolarHeaderProps {
+  title: string;
+  showBack?: boolean;
+  rightContent?: React.ReactNode;
+}
+
+export const SolarHeader: React.FC<SolarHeaderProps> = ({ title, showBack = false, rightContent }) => {
+  const navigate = useNavigate();
+  const s = useSolar();
+
+  return (
+    <header
+      className="sticky top-0 z-20 px-5 pt-4 pb-3"
+      style={{
+        background: `linear-gradient(to bottom, ${s.orange}, ${s.bg})`,
+        backdropFilter: "blur(20px) saturate(1.6)",
+        WebkitBackdropFilter: "blur(20px) saturate(1.6)",
+      }}
+    >
+      <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {showBack && (
+            <button
+              onClick={() => navigate("/app")}
+              className="w-9 h-9 flex items-center justify-center transition-all active:scale-95"
+              style={{
+                borderRadius: "0.75rem",
+                backgroundColor: `${s.card}cc`,
+                border: `1px solid ${s.cardBorder}`,
+                boxShadow: `0 2px 8px rgba(0,0,0,0.1)`,
+              }}
+            >
+              <ArrowLeft size={16} style={{ color: s.text }} />
+            </button>
+          )}
+          <h1
+            className="font-display text-xl"
+            style={{ fontWeight: 800, color: s.text, letterSpacing: "-0.02em" }}
+          >
+            {title}
+          </h1>
+        </div>
+        {rightContent && <div>{rightContent}</div>}
+      </div>
+    </header>
+  );
+};
+
 interface SolarPageProps {
   children: React.ReactNode;
 }
