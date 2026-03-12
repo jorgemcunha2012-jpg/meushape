@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { searchExercisesMW, getProxiedMediaUrl } from "@/services/muscleWikiService";
+import { cache } from "@/services/cacheService";
 
 // ─── PT → EN exercise name map for common exercises ───
 const EXERCISE_PT_EN: Record<string, string> = {
@@ -65,14 +66,15 @@ const EXERCISE_PT_EN: Record<string, string> = {
   "encolhimento": "shrug",
 };
 
-// ─── In-memory cache ───
-const mediaCache = new Map<string, { video?: string; image?: string }>();
-
 export async function resolveExerciseMedia(
   name: string
 ): Promise<{ video?: string; image?: string }> {
   const key = name.toLowerCase().trim();
-  if (mediaCache.has(key)) return mediaCache.get(key)!;
+  const cacheKey = `mw:media:${key}`;
+
+  // Check persistent cache first
+  const cached = await cache.get<{ video?: string; image?: string }>(cacheKey);
+  if (cached !== null) return cached;
 
   const trySearch = async (query: string): Promise<{ video?: string; image?: string } | null> => {
     try {
@@ -104,7 +106,8 @@ export async function resolveExerciseMedia(
   }
 
   const final = result || {};
-  mediaCache.set(key, final);
+  // Persist in cache (24h for media URLs)
+  await cache.set(cacheKey, final, cache.TTL.LONG);
   return final;
 }
 
