@@ -124,6 +124,7 @@ export const SolarBottomNav = () => {
 interface SolarHeaderProps {
   title: string;
   showBack?: boolean;
+  onBack?: () => void;
   rightContent?: React.ReactNode;
 }
 
