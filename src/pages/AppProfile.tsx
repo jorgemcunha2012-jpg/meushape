@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Camera, LogOut, ChevronRight,
   Flame, Dumbbell, Clock, Trophy, Medal, Target,
-  Bell, HelpCircle, Shield, Pencil
+  Bell, HelpCircle, Shield, Pencil, Check
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
