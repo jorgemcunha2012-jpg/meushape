@@ -51,6 +51,23 @@ const AppDashboard = () => {
   const [weekStats, setWeekStats] = useState({ done: 0, totalMin: 0, goal: 5 });
   const [recentLogs, setRecentLogs] = useState<WeekLog[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [challengeAccepted, setChallengeAccepted] = useState(false);
+
+  const CHALLENGE_PROGRAM_ID = "49665ed0-8124-4ec1-997e-5ec66b3e35a4";
+
+  const acceptChallenge = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("user_programs")
+      .upsert({ user_id: user.id, program_id: CHALLENGE_PROGRAM_ID }, { onConflict: "user_id,program_id" });
+    if (error) {
+      toast({ title: "Erro", description: "Não foi possível aceitar o desafio.", variant: "destructive" });
+      return;
+    }
+    setChallengeAccepted(true);
+    toast({ title: "🔥 Desafio aceito!", description: "LEG DAY INTENSO adicionado aos seus treinos." });
+    navigate(`/app/program/${CHALLENGE_PROGRAM_ID}`);
+  };
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
