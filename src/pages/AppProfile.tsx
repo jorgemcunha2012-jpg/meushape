@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
-import { SolarPage, useSolar } from "@/components/SolarLayout";
+import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface ProfileData {
   name: string;
