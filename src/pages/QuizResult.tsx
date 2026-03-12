@@ -35,6 +35,13 @@ const QuizResult = () => {
   const navigate = useNavigate();
   const { name, email, answers, bodyAnalysis } = (location.state as any) || {};
 
+  // Redirect if no quiz data
+  useEffect(() => {
+    if (!email && !answers) {
+      navigate("/quiz", { replace: true });
+    }
+  }, [email, answers, navigate]);
+
   const scores = calculateAxisScores(answers || {});
   const firstName = name?.split(" ")[0] || "linda";
   const dims = deriveSixDimensions(scores);
