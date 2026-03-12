@@ -35,7 +35,7 @@ const AppWorkoutDetail = () => {
   const [loading, setLoading] = useState(true);
 
   const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
-  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) {
