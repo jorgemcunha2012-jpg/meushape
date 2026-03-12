@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronRight, Plus, ClipboardList, Zap, Home, StretchHorizontal,
-  Compass, Star, Dumbbell, BookmarkPlus,
+  ChevronRight, Plus, Zap, Home, StretchHorizontal,
+  Compass, Star, Dumbbell, BookmarkPlus, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
@@ -16,13 +16,9 @@ interface Program {
   id: string; title: string; description: string | null;
   level: string; days_per_week: number; duration_minutes: number; is_active: boolean;
 }
-interface UserProgram {
-  id: string; program_id: string; is_favorite: boolean;
-  program: Program;
-}
 interface Workout {
   id: string; title: string; description: string | null;
-  sort_order: number; day_of_week: number | null;
+  sort_order: number; day_of_week: number | null; program_id: string;
 }
 interface CardioProtocol {
   id: string; name_pt: string; protocol_type: string;
@@ -38,7 +34,7 @@ interface StretchSession {
   duration_seconds: number; target_muscles: string[];
 }
 
-type TabId = "meus" | "explorar" | "cardio" | "casa" | "along";
+type TabId = "meus" | "cardio" | "casa" | "along";
 
 const levelLabel = (l: string | number) => {
   const v = typeof l === "number" ? l : l === "beginner" ? 1 : l === "intermediate" ? 2 : 3;
@@ -59,13 +55,14 @@ const AppWorkoutDashboard = () => {
   const navigate = useNavigate();
 
   const [tab, setTab] = useState<TabId>("meus");
-  const [userPrograms, setUserPrograms] = useState<UserProgram[]>([]);
+  const [showExplorer, setShowExplorer] = useState(false);
+
+  // User's programs with their workouts
+  const [programsWithWorkouts, setProgramsWithWorkouts] = useState<
+    { program: Program; workouts: Workout[] }[]
+  >([]);
   const [allPrograms, setAllPrograms] = useState<Program[]>([]);
   const [addedProgramIds, setAddedProgramIds] = useState<Set<string>>(new Set());
-
-  // When user taps a program to see workouts inline
-  const [expandedProgramId, setExpandedProgramId] = useState<string | null>(null);
-  const [workouts, setWorkouts] = useState<Workout[]>([]);
 
   const [cardioProtocols, setCardioProtocols] = useState<CardioProtocol[]>([]);
   const [homeTemplates, setHomeTemplates] = useState<HomeTemplate[]>([]);
@@ -92,28 +89,39 @@ const AppWorkoutDashboard = () => {
     const programs: Program[] = allProgRes.data || [];
     setAllPrograms(programs);
 
-    if (upRes.data) {
+    if (upRes.data && upRes.data.length > 0) {
       const ids = new Set(upRes.data.map(up => up.program_id));
       setAddedProgramIds(ids);
-      const mapped: UserProgram[] = upRes.data
+
+      // Fetch all workouts for all user programs at once
+      const programIds = upRes.data.map(up => up.program_id);
+      const { data: allWorkouts } = await supabase
+        .from("workouts").select("*")
+        .in("program_id", programIds)
+        .order("sort_order");
+
+      const grouped = upRes.data
         .map(up => {
           const prog = programs.find(p => p.id === up.program_id);
           if (!prog) return null;
-          return { ...up, program: prog };
+          const wks = (allWorkouts || []).filter(w => w.program_id === up.program_id);
+          return { program: prog, workouts: wks };
         })
-        .filter(Boolean) as UserProgram[];
-      setUserPrograms(mapped);
+        .filter(Boolean) as { program: Program; workouts: Workout[] }[];
+
+      setProgramsWithWorkouts(grouped);
 
       // Load cycle for first program
-      if (mapped.length > 0) {
-        const { data: cycleData } = await supabase
-          .from("progression_cycles")
-          .select("phase, current_week")
-          .eq("user_id", user.id)
-          .eq("program_id", mapped[0].program_id)
-          .single();
-        if (cycleData) { setCyclePhase(cycleData.phase); setCycleWeek(cycleData.current_week); }
-      }
+      const { data: cycleData } = await supabase
+        .from("progression_cycles")
+        .select("phase, current_week")
+        .eq("user_id", user.id)
+        .eq("program_id", programIds[0])
+        .single();
+      if (cycleData) { setCyclePhase(cycleData.phase); setCycleWeek(cycleData.current_week); }
+    } else {
+      setAddedProgramIds(new Set());
+      setProgramsWithWorkouts([]);
     }
 
     if (cardioRes.data) setCardioProtocols(cardioRes.data);
@@ -136,18 +144,7 @@ const AppWorkoutDashboard = () => {
     await supabase.from("user_programs").delete()
       .eq("user_id", user.id).eq("program_id", programId);
     toast.success("Programa removido");
-    if (expandedProgramId === programId) { setExpandedProgramId(null); setWorkouts([]); }
     fetchAllData();
-  };
-
-  const toggleExpand = async (programId: string) => {
-    if (expandedProgramId === programId) {
-      setExpandedProgramId(null); setWorkouts([]);
-    } else {
-      setExpandedProgramId(programId);
-      const { data } = await supabase.from("workouts").select("*").eq("program_id", programId).order("sort_order");
-      if (data) setWorkouts(data);
-    }
   };
 
   const todayIndex = new Date().getDay();
@@ -163,15 +160,12 @@ const AppWorkoutDashboard = () => {
     boxShadow: `0 2px 12px rgba(234,88,12,0.04)`,
   };
 
-  const TABS: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
-    { id: "meus", label: "Meus", icon: Star },
-    { id: "explorar", label: "Explorar", icon: Compass },
+  const TABS: { id: TabId; label: string; icon: typeof Star }[] = [
+    { id: "meus", label: "Meus Treinos", icon: Star },
     { id: "cardio", label: "Cardio", icon: Zap },
     { id: "casa", label: "Em Casa", icon: Home },
     { id: "along", label: "Along.", icon: StretchHorizontal },
   ];
-
-  const explorablePrograms = allPrograms.filter(p => !addedProgramIds.has(p.id));
 
   return (
     <SolarPage>
@@ -192,7 +186,7 @@ const AppWorkoutDashboard = () => {
         <div className="max-w-lg mx-auto">
           <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
             {TABS.map(t => (
-              <motion.button key={t.id} onClick={() => setTab(t.id)} whileTap={{ scale: 0.95 }}
+              <motion.button key={t.id} onClick={() => { setTab(t.id); setShowExplorer(false); }} whileTap={{ scale: 0.95 }}
                 className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all"
                 style={{
                   borderRadius: "1rem",
@@ -209,134 +203,127 @@ const AppWorkoutDashboard = () => {
         </div>
       </section>
 
-      {/* ─── TAB: Meus Programas ─── */}
-      {tab === "meus" && (
+      {/* ─── TAB: Meus Treinos ─── */}
+      {tab === "meus" && !showExplorer && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            {cyclePhase && userPrograms.length > 0 && (
+            {cyclePhase && programsWithWorkouts.length > 0 && (
               <p className="text-xs mb-3" style={{ color: S.textMuted }}>
                 Semana {cycleWeek} — {phaseNames[cyclePhase] || cyclePhase}
               </p>
             )}
 
-            {userPrograms.length === 0 ? (
+            {programsWithWorkouts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-20 h-20 flex items-center justify-center mb-4"
                   style={{ borderRadius: "1.5rem", background: `linear-gradient(135deg, ${S.orange}12, ${S.amber}12)` }}>
                   <Dumbbell size={40} style={{ color: S.orange }} />
                 </div>
                 <p className="font-display text-base mb-1" style={{ fontWeight: 700, color: S.text }}>
-                  Nenhum programa adicionado
+                  Nenhum treino ainda
                 </p>
                 <p className="text-sm mb-6" style={{ color: S.textMuted, maxWidth: 260 }}>
                   Explore os programas disponíveis e adicione o primeiro ao seu plano
                 </p>
-                <Button onClick={() => setTab("explorar")} className="rounded-xl px-6"
+                <Button onClick={() => setShowExplorer(true)} className="rounded-xl px-6"
                   style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
                   <Compass size={16} className="mr-1" /> Explorar Programas
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2.5">
-                {userPrograms.map((up, i) => {
-                  const prog = up.program;
-                  const isExpanded = expandedProgramId === prog.id;
+              <div className="space-y-5">
+                {programsWithWorkouts.map((group, gi) => {
+                  const prog = group.program;
                   const lc = levelColor(prog.level);
                   return (
-                    <div key={up.id}>
-                      <motion.button
-                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => toggleExpand(prog.id)}
-                        className="w-full text-left p-4 flex items-center gap-3 transition-all"
-                        style={cardStyle}
-                      >
-                        <div className="w-11 h-11 flex items-center justify-center shrink-0"
-                          style={{ borderRadius: "0.75rem", background: `linear-gradient(135deg, ${S.orange}18, ${S.amber}18)` }}>
-                          <Dumbbell size={18} style={{ color: S.orange }} />
+                    <div key={prog.id}>
+                      {/* Program header */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <p className="font-display text-xs" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
+                          <span className="text-[9px] font-semibold px-1.5 py-0.5"
+                            style={{ color: lc.text, background: lc.bg, borderRadius: "0.4rem" }}>
+                            {levelLabel(prog.level)}
+                          </span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-semibold px-2 py-0.5"
-                              style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
-                              {levelLabel(prog.level)}
-                            </span>
-                            <span className="text-[11px]" style={{ color: S.textMuted }}>{prog.days_per_week}x/sem</span>
-                          </div>
-                        </div>
-                        <ChevronRight size={16}
-                          style={{ color: S.cardBorder, transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
-                      </motion.button>
+                        <span className="text-[10px]" style={{ color: S.textMuted }}>{prog.days_per_week}x/sem</span>
+                      </div>
 
-                      {/* Expanded workouts */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-6 pr-2 py-2 space-y-1.5">
-                              {workouts.map((wk, wi) => {
-                                const isToday = (wk.day_of_week ?? wk.sort_order) === todayIndex;
-                                return (
-                                  <motion.button key={wk.id}
-                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: wi * 0.03 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={() => navigate(`/app/workout-detail/${wk.id}`)}
-                                    className="w-full text-left p-3 flex items-center gap-2.5 transition-all"
-                                    style={{ ...cardStyle, borderRadius: "1rem" }}
-                                  >
-                                    <div className="w-8 h-8 flex items-center justify-center text-[10px] shrink-0 font-display"
-                                      style={{
-                                        borderRadius: "0.5rem", fontWeight: 800,
-                                        background: isToday ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : "#FFF7ED",
-                                        color: isToday ? "#fff" : S.orange,
-                                      }}>
-                                      {String.fromCharCode(65 + wi)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-display text-xs" style={{ fontWeight: 700, color: S.text }}>{wk.title}</p>
-                                    </div>
-                                    {isToday && (
-                                      <span className="text-[9px] font-bold px-2 py-0.5"
-                                        style={{ borderRadius: "0.5rem", background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }}>
-                                        HOJE
-                                      </span>
-                                    )}
-                                  </motion.button>
-                                );
-                              })}
-                              {workouts.length === 0 && (
-                                <p className="text-xs py-3 text-center" style={{ color: S.textMuted }}>
-                                  Nenhum treino neste programa
-                                </p>
+                      {/* Workouts list */}
+                      <div className="space-y-2">
+                        {group.workouts.map((wk, wi) => {
+                          const isToday = (wk.day_of_week ?? wk.sort_order) === todayIndex;
+                          return (
+                            <motion.button key={wk.id}
+                              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: (gi * 0.05) + (wi * 0.03) }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() => navigate(`/app/workout-detail/${wk.id}`)}
+                              className="w-full text-left p-3.5 flex items-center gap-3 transition-all"
+                              style={cardStyle}
+                            >
+                              <div className="w-10 h-10 flex items-center justify-center text-xs shrink-0 font-display"
+                                style={{
+                                  borderRadius: "0.75rem", fontWeight: 800,
+                                  background: isToday ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : `${S.orange}12`,
+                                  color: isToday ? "#fff" : S.orange,
+                                  boxShadow: isToday ? `0 4px 12px ${S.glowStrong}` : "none",
+                                }}>
+                                {String.fromCharCode(65 + wi)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{wk.title}</p>
+                                {wk.description && (
+                                  <p className="text-[11px] truncate" style={{ color: S.textMuted }}>{wk.description}</p>
+                                )}
+                              </div>
+                              {isToday ? (
+                                <span className="text-[9px] font-bold px-2.5 py-1"
+                                  style={{ borderRadius: "0.75rem", background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff", boxShadow: `0 2px 8px ${S.glow}` }}>
+                                  HOJE
+                                </span>
+                              ) : (
+                                <ChevronRight size={16} style={{ color: S.cardBorder }} />
                               )}
-                            </div>
-                          </motion.div>
+                            </motion.button>
+                          );
+                        })}
+                        {group.workouts.length === 0 && (
+                          <p className="text-xs py-3 text-center" style={{ color: S.textMuted }}>
+                            Nenhum treino neste programa ainda
+                          </p>
                         )}
-                      </AnimatePresence>
+                      </div>
                     </div>
                   );
                 })}
+
+                {/* Explorar button at bottom */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowExplorer(true)}
+                  className="w-full p-3.5 flex items-center justify-center gap-2 text-sm font-semibold transition-all"
+                  style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}
+                >
+                  <Compass size={16} /> Explorar mais programas
+                </motion.button>
               </div>
             )}
           </div>
         </section>
       )}
 
-      {/* ─── TAB: Explorar ─── */}
-      {tab === "explorar" && (
+      {/* ─── Inline Explorer ─── */}
+      {tab === "meus" && showExplorer && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            <p className="text-xs mb-4" style={{ color: S.textMuted }}>
-              Programas e desafios disponíveis para adicionar ao seu plano
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>Explorar Programas</p>
+              <button onClick={() => setShowExplorer(false)}
+                className="text-xs font-medium flex items-center gap-1" style={{ color: S.orange }}>
+                ← Voltar
+              </button>
+            </div>
 
             {allPrograms.length === 0 ? (
               <div className="text-center py-12" style={{ color: S.textMuted }}>
