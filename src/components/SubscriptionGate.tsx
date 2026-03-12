@@ -42,7 +42,7 @@ const SubscriptionGate = () => {
           Assinatura necessária
         </h2>
         <p className="text-muted-foreground text-sm mb-6">
-          Comece com 7 dias grátis e tenha acesso a todos os seus treinos personalizados.
+          Assine por R$ 19,90/mês e tenha acesso a todos os seus treinos personalizados.
         </p>
         <div className="inline-flex items-center gap-1 bg-rose-soft text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
           <Star className="w-3 h-3" /> R$ 19,90/mês após o teste
@@ -54,7 +54,7 @@ const SubscriptionGate = () => {
           className="w-full rounded-full py-6 text-base font-semibold shadow-lg"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-            <>Começar 7 dias grátis <ArrowRight className="w-5 h-5 ml-1" /></>
+            <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-5 h-5 ml-1" /></>
           )}
         </Button>
         <button

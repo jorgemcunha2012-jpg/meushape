@@ -308,10 +308,10 @@ const QuizResult = () => {
             className="text-xl font-black text-white mb-1"
             style={{ fontFamily: "'Montserrat', sans-serif" }}
           >
-            7 dias grátis
+            Acesso Imediato
           </h3>
           <p className="text-xs text-white/40 mb-5">
-            Depois, apenas R$ 19,90/mês. Cancele quando quiser.
+            R$ 19,90/mês • Garantia de 30 dias ou seu dinheiro de volta.
           </p>
 
           {/* Password */}
@@ -345,7 +345,7 @@ const QuizResult = () => {
             {checkingOut ? (
               <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
             ) : (
-              <>Começar meus 7 dias grátis <ArrowRight className="w-4 h-4 ml-1" /></>
+              <>Pagar R$ 19,90 e começar agora <ArrowRight className="w-4 h-4 ml-1" /></>
             )}
           </Button>
 
