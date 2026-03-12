@@ -529,11 +529,11 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
 
       if (wkErr) throw wkErr;
 
-      // Resolve and validate GIFs in parallel
+      // Resolve MuscleWiki media in parallel
       const exerciseInserts = await Promise.all(
         (wk.exercises || []).map(async (ex: any) => {
           const curated = curatedMap[ex.curated_exercise_id];
-          const gif_url = await resolveValidGif(curated, ex.name);
+          const mwMedia = await resolveMuscleWikiMedia(ex.name);
           return {
             workout_id: workout.id,
             name: ex.name,
@@ -541,7 +541,8 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
             reps: ex.reps,
             rest_seconds: ex.rest_seconds,
             sort_order: ex.sort_order,
-            image_url: gif_url,
+            image_url: mwMedia.image_url,
+            video_url: mwMedia.video_url,
             description: curated?.simple_instruction_pt || null,
           };
         })

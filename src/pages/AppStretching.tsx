@@ -174,6 +174,14 @@ const AppStretching = () => {
         <p className="text-xs text-primary font-medium uppercase tracking-wider mb-2">
           {current.per_side ? `Lado ${side === "left" ? "esquerdo" : "direito"}` : ""}
         </p>
+
+        {/* MuscleWiki media */}
+        {currentMedia?.video ? (
+          <video src={currentMedia.video} autoPlay loop muted playsInline className="h-36 rounded-2xl object-contain mb-4" />
+        ) : currentMedia?.image ? (
+          <img src={currentMedia.image} alt={current.name_pt} className="h-36 rounded-2xl object-contain mb-4" />
+        ) : null}
+
         <h2 className="font-display text-2xl font-bold text-foreground text-center mb-4">
           {current.name_pt}
         </h2>

@@ -284,11 +284,25 @@ const AppHomeWorkout = () => {
         {/* Animated illustration during work phase */}
         {phase === "work" && currentExercise && (
           <>
-            <AnimatedExercise
-              name={currentExercise.name}
-              focus={currentExercise.focus}
-              className="h-40 mb-4 max-w-sm"
-            />
+            {currentMedia?.video ? (
+              <video
+                src={currentMedia.video}
+                autoPlay loop muted playsInline
+                className="h-40 mb-4 max-w-sm rounded-2xl object-contain"
+              />
+            ) : currentMedia?.image ? (
+              <img
+                src={currentMedia.image}
+                alt={currentExercise.name}
+                className="h-40 mb-4 max-w-sm rounded-2xl object-contain"
+              />
+            ) : (
+              <AnimatedExercise
+                name={currentExercise.name}
+                focus={currentExercise.focus}
+                className="h-40 mb-4 max-w-sm"
+              />
+            )}
             <h2 className="font-display text-2xl font-bold text-foreground text-center mb-1">
               {currentExercise.name}
             </h2>

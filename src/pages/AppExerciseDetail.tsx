@@ -212,14 +212,24 @@ const AppExerciseDetail = () => {
         <div className="flex items-center justify-center py-6" style={{ background: S.bg }}>
           <div className="w-[55%] aspect-square rounded-2xl overflow-hidden"
             style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-            {mediaUrl && (
+            {videoUrl ? (
+              <video
+                src={videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-contain"
+                style={{ background: S.card }}
+              />
+            ) : mediaUrl ? (
               <img
                 src={mediaUrl}
                 alt={displayName}
                 className="w-full h-full object-contain"
                 style={{ background: S.card }}
               />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

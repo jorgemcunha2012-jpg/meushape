@@ -353,9 +353,18 @@ const AppWorkout = () => {
           {/* GIF Area */}
           <div className="w-full aspect-square max-h-60 rounded-2xl flex items-center justify-center mt-4 mb-4 relative overflow-hidden bg-card border border-border">
             <div className="absolute -bottom-5 -left-5 w-24 h-24 rounded-full bg-primary/15 blur-[40px]" />
-            {gifUrl ? (
+            {videoUrl ? (
+              <video
+                src={videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-contain relative z-10"
+              />
+            ) : imageUrl ? (
               <img
-                src={gifUrl}
+                src={imageUrl}
                 alt={currentEx.name}
                 className="w-full h-full object-contain relative z-10"
               />
