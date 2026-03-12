@@ -38,11 +38,8 @@ const AppDashboard = () => {
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [streak, setStreak] = useState(0);
   const [lastWorkoutDate, setLastWorkoutDate] = useState<string>("");
-  const [weeklyProgress, setWeeklyProgress] = useState(80);
-  const [muscleMap, setMuscleMap] = useState<MuscleData>({
-    chest: "none", shoulders: "none", arms: "none", back: "none",
-    abs: "none", glutes: "none", legs: "none", calves: "none",
-  });
+  const [weekStats, setWeekStats] = useState({ done: 0, totalMin: 0, goal: 5 });
+  const [recentLogs, setRecentLogs] = useState<WeekLog[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
