@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Send, MessageCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Heart, Send, MessageCircle, Loader2 } from "lucide-react";
+import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
