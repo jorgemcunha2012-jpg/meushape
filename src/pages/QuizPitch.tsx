@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { testimonials as allTestimonials } from "@/lib/quizResultUtils";
 import {
   ArrowRight,
+  ArrowLeft,
   Lock,
   Loader2,
-  Shield,
   ShieldCheck,
   Dumbbell,
   TrendingUp,
@@ -18,41 +18,23 @@ import {
   Star,
   Clock,
   Zap,
+  Shield,
+  PartyPopper,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import TestimonialCarousel from "@/components/quiz-result/TestimonialCarousel";
+import confetti from "canvas-confetti";
 
-type TabKey = "pitch" | "garantia" | "preco" | "provas";
+const TOTAL_STEPS = 4;
 
-const tabs: { key: TabKey; label: string }[] = [
-  { key: "pitch", label: "Pitch" },
-  { key: "garantia", label: "Garantia" },
-  { key: "preco", label: "Preço" },
-  { key: "provas", label: "Provas" },
-];
+const stepLabels = ["Seu Plano", "Garantia", "Oferta", "Provas"];
 
 const benefits = [
-  {
-    icon: Dumbbell,
-    title: "3 treinos/semana",
-    desc: "Treinos curtos e eficientes adaptados ao seu nível e equipamento disponível.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Progressão automática",
-    desc: "O app aumenta a intensidade conforme você evolui, sem platô.",
-  },
-  {
-    icon: BarChart3,
-    title: "Acompanhamento de resultados",
-    desc: "Gráficos e métricas para você ver sua evolução semana a semana.",
-  },
-  {
-    icon: Headphones,
-    title: "Suporte 24/7",
-    desc: "Comunidade ativa e suporte para tirar dúvidas a qualquer momento.",
-  },
+  { icon: Dumbbell, title: "3 treinos/semana", desc: "Treinos curtos e eficientes adaptados ao seu nível e equipamento disponível." },
+  { icon: TrendingUp, title: "Progressão automática", desc: "O app aumenta a intensidade conforme você evolui, sem platô." },
+  { icon: BarChart3, title: "Acompanhamento de resultados", desc: "Gráficos e métricas para ver sua evolução semana a semana." },
+  { icon: Headphones, title: "Suporte 24/7", desc: "Comunidade ativa e suporte para tirar dúvidas a qualquer momento." },
 ];
 
 const guaranteeSteps = [
@@ -61,19 +43,105 @@ const guaranteeSteps = [
   { step: "3", title: "Dinheiro de volta", desc: "Reembolso integral, sem perguntas." },
 ];
 
+/* ── Progress Ring ── */
+const ProgressRing = ({ step, total }: { step: number; total: number }) => {
+  const radius = 44;
+  const stroke = 5;
+  const circumference = 2 * Math.PI * radius;
+  const progress = ((step + 1) / total) * 100;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className="relative w-24 h-24 mx-auto">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+        <motion.circle
+          cx="50" cy="50" r={radius} fill="none"
+          stroke="url(#ringGrad)" strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#FF6B2B" />
+            <stop offset="100%" stopColor="#F59E0B" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-lg font-black text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          {step + 1}/{total}
+        </span>
+        <span className="text-[9px] text-white/40 mt-0.5">etapas</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── Step Dots ── */
+const StepDots = ({ step, total, labels }: { step: number; total: number; labels: string[] }) => (
+  <div className="flex items-center justify-center gap-2 mt-3">
+    {labels.map((label, i) => (
+      <div key={i} className="flex flex-col items-center gap-1">
+        <motion.div
+          className="w-2 h-2 rounded-full"
+          animate={{
+            background: i <= step ? "#FF6B2B" : "rgba(255,255,255,0.15)",
+            scale: i === step ? 1.3 : 1,
+          }}
+          transition={{ duration: 0.3 }}
+        />
+        <span className="text-[8px]" style={{ color: i <= step ? "#FF6B2B" : "rgba(255,255,255,0.25)" }}>
+          {label}
+        </span>
+      </div>
+    ))}
+  </div>
+);
+
+/* ── Main Component ── */
 const QuizPitch = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { name, email, answers } = (location.state as any) || {};
   const firstName = name?.split(" ")[0] || "linda";
 
-  const [activeTab, setActiveTab] = useState<TabKey>("pitch");
+  const [step, setStep] = useState(0);
   const [password, setPassword] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [direction, setDirection] = useState(1); // 1=forward, -1=back
 
-  const scrollToCTA = () => {
-    ctaRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Confetti on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.3 }, colors: ["#FF6B2B", "#F59E0B", "#10B981"] });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Mini confetti on step complete
+  const fireStepConfetti = useCallback(() => {
+    confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 }, colors: ["#FF6B2B", "#F59E0B"] });
+  }, []);
+
+  const goNext = () => {
+    if (step < TOTAL_STEPS - 1) {
+      setCompletedSteps((prev) => new Set(prev).add(step));
+      fireStepConfetti();
+      setDirection(1);
+      setStep(step + 1);
+    }
+  };
+
+  const goPrev = () => {
+    if (step > 0) {
+      setDirection(-1);
+      setStep(step - 1);
+    }
   };
 
   const handleCheckout = async () => {
@@ -84,8 +152,7 @@ const QuizPitch = () => {
     setCheckingOut(true);
     try {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+        email, password,
         options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
       });
       if (signUpError?.message?.includes("already registered")) {
@@ -106,185 +173,83 @@ const QuizPitch = () => {
     }
   };
 
-  const CTABlock = ({ showPassword = false }: { showPassword?: boolean }) => (
-    <div ref={showPassword ? ctaRef : undefined} className="mt-6">
-      {showPassword && (
-        <div className="mb-4 text-left">
-          <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha para acessar</label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-            <Input
-              type="password"
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
-              minLength={6}
-            />
-          </div>
-        </div>
-      )}
-      <Button
-        size="lg"
-        onClick={showPassword ? handleCheckout : scrollToCTA}
-        disabled={showPassword ? checkingOut || password.length < 6 : false}
-        className="w-full rounded-full py-6 text-sm font-bold shadow-lg"
-        style={{
-          background:
-            showPassword && password.length < 6
-              ? "rgba(255,255,255,0.1)"
-              : "linear-gradient(135deg, #FF6B2B, #F59E0B)",
-          color:
-            showPassword && password.length < 6 ? "rgba(255,255,255,0.3)" : "#fff",
-          boxShadow: "0 8px 30px rgba(255,107,43,0.3)",
-        }}
-      >
-        {checkingOut && showPassword ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...
-          </>
-        ) : (
-          <>
-            Começar Agora <ArrowRight className="w-4 h-4 ml-1" />
-          </>
-        )}
-      </Button>
-    </div>
-  );
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? 80 : -80, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? -80 : 80, opacity: 0 }),
+  };
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "#0a0a0a" }}>
       {/* Header */}
-      <section className="px-5 pt-10 pb-4">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <p
-            className="text-xs font-semibold tracking-widest uppercase mb-2"
-            style={{ color: "#FF6B2B" }}
-          >
-            Seu Plano Personalizado
-          </p>
-          <h1
-            className="text-2xl font-black text-white mb-1"
-            style={{ fontFamily: "'Montserrat', sans-serif" }}
-          >
-            {firstName}, tudo pronto
-          </h1>
-          <p className="text-sm text-white/50">
-            Veja o que preparamos pra você
-          </p>
+      <section className="px-5 pt-8 pb-2">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <PartyPopper size={16} style={{ color: "#FF6B2B" }} />
+            <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#FF6B2B" }}>
+              Missão em andamento
+            </p>
+          </div>
+          <ProgressRing step={step} total={TOTAL_STEPS} />
+          <StepDots step={step} total={TOTAL_STEPS} labels={stepLabels} />
         </motion.div>
       </section>
 
-      {/* Tabs */}
-      <nav className="px-5 mb-4">
-        <div
-          className="flex rounded-xl p-1 gap-1"
-          style={{ background: "rgba(255,255,255,0.05)" }}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
-              style={{
-                background: activeTab === tab.key ? "#FF6B2B" : "transparent",
-                color: activeTab === tab.key ? "#fff" : "rgba(255,255,255,0.4)",
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* Tab Content */}
-      <section className="px-5 pb-6">
-        <AnimatePresence mode="wait">
-          {/* ── PITCH ── */}
-          {activeTab === "pitch" && (
+      {/* Content */}
+      <section className="flex-1 px-5 pb-4 pt-4 overflow-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          {/* ── STEP 0: Pitch ── */}
+          {step === 0 && (
             <motion.div
               key="pitch"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
+              custom={direction}
+              variants={variants}
+              initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.3 }}
             >
+              <h2 className="text-lg font-black text-white mb-1 text-center" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {firstName}, seu plano inclui:
+              </h2>
+              <p className="text-xs text-white/40 text-center mb-4">Tudo personalizado pra você</p>
               <div className="space-y-3">
                 {benefits.map((b, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.08 }}
                     className="rounded-2xl p-4 flex gap-4 items-start"
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                    }}
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
                   >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: "rgba(255,107,43,0.12)" }}
-                    >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,107,43,0.12)" }}>
                       <b.icon size={20} style={{ color: "#FF6B2B" }} />
                     </div>
                     <div>
-                      <h3
-                        className="text-sm font-bold text-white mb-1"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      >
-                        {b.title}
-                      </h3>
-                      <p className="text-xs text-white/50 leading-relaxed">
-                        {b.desc}
-                      </p>
+                      <h3 className="text-sm font-bold text-white mb-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>{b.title}</h3>
+                      <p className="text-xs text-white/50 leading-relaxed">{b.desc}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-              <CTABlock />
             </motion.div>
           )}
 
-          {/* ── GARANTIA ── */}
-          {activeTab === "garantia" && (
+          {/* ── STEP 1: Garantia ── */}
+          {step === 1 && (
             <motion.div
               key="garantia"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
+              custom={direction}
+              variants={variants}
+              initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.3 }}
             >
-              {/* Badge */}
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="flex flex-col items-center mb-6"
-              >
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center mb-3"
-                  style={{ background: "rgba(16,185,129,0.12)", border: "2px solid rgba(16,185,129,0.3)" }}
-                >
+              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col items-center mb-6">
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3" style={{ background: "rgba(16,185,129,0.12)", border: "2px solid rgba(16,185,129,0.3)" }}>
                   <ShieldCheck size={40} style={{ color: "#10B981" }} />
                 </div>
-                <h3
-                  className="text-lg font-black text-white"
-                  style={{ fontFamily: "'Montserrat', sans-serif" }}
-                >
-                  Garantia de 30 dias
-                </h3>
-                <p className="text-xs text-white/40 mt-1 text-center">
-                  Seu dinheiro de volta se não gostar. Sem burocracia.
-                </p>
+                <h2 className="text-lg font-black text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>Garantia de 30 dias</h2>
+                <p className="text-xs text-white/40 mt-1 text-center">Seu dinheiro de volta se não gostar. Sem burocracia.</p>
               </motion.div>
-
-              {/* Steps */}
               <div className="space-y-3">
                 {guaranteeSteps.map((s, i) => (
                   <motion.div
@@ -293,15 +258,9 @@ const QuizPitch = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.1 }}
                     className="rounded-2xl p-4 flex gap-4 items-start"
-                    style={{
-                      background: "rgba(16,185,129,0.04)",
-                      border: "1px solid rgba(16,185,129,0.1)",
-                    }}
+                    style={{ background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.1)" }}
                   >
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-black"
-                      style={{ background: "rgba(16,185,129,0.15)", color: "#10B981" }}
-                    >
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-black" style={{ background: "rgba(16,185,129,0.15)", color: "#10B981" }}>
                       {s.step}
                     </div>
                     <div>
@@ -311,77 +270,47 @@ const QuizPitch = () => {
                   </motion.div>
                 ))}
               </div>
-              <CTABlock />
             </motion.div>
           )}
 
-          {/* ── PREÇO ── */}
-          {activeTab === "preco" && (
+          {/* ── STEP 2: Preço ── */}
+          {step === 2 && (
             <motion.div
               key="preco"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
+              custom={direction}
+              variants={variants}
+              initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.3 }}
               className="flex flex-col items-center"
             >
-              {/* Urgency badge */}
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold mb-6"
-                style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444" }}
-              >
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold mb-4"
+                style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444" }}>
                 <Clock size={12} /> Oferta válida por 48h
               </motion.div>
 
-              {/* Price card */}
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.1 }}
+                initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1 }}
                 className="w-full rounded-2xl p-6 text-center"
-                style={{
-                  background: "linear-gradient(180deg, rgba(255,107,43,0.08) 0%, rgba(255,107,43,0.02) 100%)",
-                  border: "1px solid rgba(255,107,43,0.2)",
-                }}
+                style={{ background: "linear-gradient(180deg, rgba(255,107,43,0.08) 0%, rgba(255,107,43,0.02) 100%)", border: "1px solid rgba(255,107,43,0.2)" }}
               >
                 <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold mb-4"
                   style={{ background: "rgba(255,107,43,0.15)", color: "#FF6B2B" }}>
                   <Star size={10} /> OFERTA DE BOAS-VINDAS
                 </div>
 
-                <h3
-                  className="text-2xl font-black text-white mb-1"
-                  style={{ fontFamily: "'Montserrat', sans-serif" }}
-                >
-                  7 dias grátis
-                </h3>
+                <h3 className="text-2xl font-black text-white mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>7 dias grátis</h3>
 
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <span className="text-white/30 line-through text-lg">R$ 99,90</span>
-                  <span
-                    className="text-3xl font-black"
-                    style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    R$ 19,90
-                  </span>
+                  <span className="text-3xl font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>R$ 19,90</span>
                   <span className="text-white/40 text-xs">/mês</span>
                 </div>
 
-                <p className="text-xs text-white/40 mb-5">
-                  Cancele quando quiser. Sem compromisso.
-                </p>
+                <p className="text-xs text-white/40 mb-5">Cancele quando quiser. Sem compromisso.</p>
 
-                {/* Included */}
                 <div className="space-y-2 text-left mb-5">
-                  {[
-                    "Treinos personalizados por IA",
-                    "Progressão automática semanal",
-                    "Comunidade exclusiva",
-                    "Suporte 24/7",
-                    "Garantia de 30 dias",
-                  ].map((item, i) => (
+                  {["Treinos personalizados por IA", "Progressão automática semanal", "Comunidade exclusiva", "Suporte 24/7", "Garantia de 30 dias"].map((item, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <CheckCircle2 size={14} style={{ color: "#10B981" }} />
                       <span className="text-xs text-white/70">{item}</span>
@@ -389,22 +318,34 @@ const QuizPitch = () => {
                   ))}
                 </div>
 
-                {/* Savings */}
-                <div
-                  className="rounded-xl py-2.5 px-4 mb-4 flex items-center justify-center gap-2"
-                  style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)" }}
-                >
+                <div className="rounded-xl py-2.5 px-4 mb-2 flex items-center justify-center gap-2"
+                  style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)" }}>
                   <Zap size={14} style={{ color: "#10B981" }} />
-                  <span className="text-xs font-bold" style={{ color: "#10B981" }}>
-                    Economia de R$ 80,00/mês
-                  </span>
+                  <span className="text-xs font-bold" style={{ color: "#10B981" }}>Economia de R$ 80,00/mês</span>
                 </div>
+              </motion.div>
+            </motion.div>
+          )}
 
-                {/* Password + CTA */}
+          {/* ── STEP 3: Provas ── */}
+          {step === 3 && (
+            <motion.div
+              key="provas"
+              custom={direction}
+              variants={variants}
+              initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-lg font-black text-white mb-1 text-center" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                Resultados reais
+              </h2>
+              <p className="text-xs text-white/40 text-center mb-4">Mulheres com perfil parecido com o seu</p>
+              <TestimonialCarousel testimonials={allTestimonials} />
+
+              {/* Final CTA with password */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
                 <div className="mb-4 text-left">
-                  <label className="text-[10px] text-white/30 mb-1 block">
-                    Crie uma senha para acessar
-                  </label>
+                  <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha para acessar</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <Input
@@ -419,60 +360,72 @@ const QuizPitch = () => {
                 </div>
 
                 <Button
-                  ref={ctaRef as any}
                   size="lg"
                   onClick={handleCheckout}
                   disabled={checkingOut || password.length < 6}
                   className="w-full rounded-full py-6 text-sm font-bold"
                   style={{
-                    background:
-                      password.length >= 6
-                        ? "linear-gradient(135deg, #FF6B2B, #F59E0B)"
-                        : "rgba(255,255,255,0.1)",
+                    background: password.length >= 6 ? "linear-gradient(135deg, #FF6B2B, #F59E0B)" : "rgba(255,255,255,0.1)",
                     color: password.length >= 6 ? "#fff" : "rgba(255,255,255,0.3)",
                     boxShadow: password.length >= 6 ? "0 8px 30px rgba(255,107,43,0.3)" : "none",
                   }}
                 >
                   {checkingOut ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...
-                    </>
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
                   ) : (
-                    <>
-                      Começar meus 7 dias grátis <ArrowRight className="w-4 h-4 ml-1" />
-                    </>
+                    <>Começar meus 7 dias grátis <ArrowRight className="w-4 h-4 ml-1" /></>
                   )}
                 </Button>
 
                 <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-white/30">
-                  <span className="flex items-center gap-1">
-                    <Shield className="w-3 h-3" /> Garantia 30 dias
-                  </span>
+                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Garantia 30 dias</span>
                   <span>•</span>
                   <span>Cancele a qualquer momento</span>
                 </div>
               </motion.div>
             </motion.div>
           )}
-
-          {/* ── PROVAS ── */}
-          {activeTab === "provas" && (
-            <motion.div
-              key="provas"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-            >
-              <p className="text-xs text-white/40 text-center mb-4">
-                Mulheres com perfil parecido com o seu
-              </p>
-              <TestimonialCarousel testimonials={allTestimonials} />
-              <CTABlock />
-            </motion.div>
-          )}
         </AnimatePresence>
       </section>
+
+      {/* Navigation Footer */}
+      <div className="sticky bottom-0 px-5 pb-6 pt-3" style={{ background: "linear-gradient(0deg, #0a0a0a 70%, transparent)" }}>
+        {step < TOTAL_STEPS - 1 ? (
+          <div className="flex gap-3">
+            {step > 0 && (
+              <Button
+                variant="outline"
+                onClick={goPrev}
+                className="flex-none px-4 rounded-full border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+            )}
+            <Button
+              size="lg"
+              onClick={goNext}
+              className="flex-1 rounded-full py-6 text-sm font-bold"
+              style={{ background: "linear-gradient(135deg, #FF6B2B, #F59E0B)", color: "#fff", boxShadow: "0 8px 30px rgba(255,107,43,0.3)" }}
+            >
+              Próximo <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        ) : (
+          step === TOTAL_STEPS - 1 && (
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={goPrev}
+                className="flex-none px-4 rounded-full border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              {/* spacer — main CTA is inline above */}
+              <div className="flex-1" />
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 };
