@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Shield, CreditCard, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Shield, CreditCard, Sparkles, Star } from "lucide-react";
 
 const ProgressRing = () => {
   const size = 64;
@@ -258,12 +258,54 @@ const QuizCheckout = () => {
         </div>
       </motion.div>
 
-      {/* Trust Signals */}
+      {/* Rating & Reviews */}
       <motion.div
-        className="w-full max-w-md mt-6 flex flex-col gap-2"
+        className="w-full max-w-md mt-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
+        transition={{ duration: 0.5, delay: 0.55 }}
+      >
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-4 h-4" fill="#F59E0B" color="#F59E0B" />
+            ))}
+          </div>
+          <span className="text-sm font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>4.8</span>
+          <span className="text-xs" style={{ color: "#888" }}>de 5</span>
+          <span className="text-xs" style={{ color: "#666" }}>(2.3k reviews)</span>
+        </div>
+
+        {/* Mini testimonials */}
+        <div className="space-y-2">
+          {[
+            { name: "Carolina S.", result: "Perdeu 5kg em 8 semanas" },
+            { name: "Juliana M.", result: "+40% de força em 12 semanas" },
+            { name: "Amanda R.", result: "Perdeu 8kg e manteve a rotina por 3 meses" },
+          ].map((t, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 + i * 0.08 }}
+              className="flex items-center gap-2 rounded-xl py-2.5 px-3"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#10B981" }} />
+              <span className="text-xs" style={{ color: "#ccc" }}>
+                <span className="font-bold text-white">{t.name}</span> — {t.result}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Trust Signals */}
+      <motion.div
+        className="w-full max-w-md mt-4 flex flex-col gap-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.7 }}
       >
         {[
           { icon: Shield, text: "Garantia de 30 dias — dinheiro de volta" },

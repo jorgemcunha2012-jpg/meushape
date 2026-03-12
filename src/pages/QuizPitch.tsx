@@ -205,7 +205,10 @@ const QuizPitch = () => {
               <h2 className="text-lg font-black text-white mb-1 text-center" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {firstName}, seu plano inclui:
               </h2>
-              <p className="text-xs text-white/40 text-center mb-4">Tudo personalizado pra você</p>
+              <p className="text-xs text-white/40 text-center mb-1">Tudo personalizado pra você</p>
+              <p className="text-[10px] text-center mb-4" style={{ color: "#10B981" }}>
+                ✓ Usado por mais de 12 mil mulheres • 87% viram resultados em 30 dias
+              </p>
               <div className="space-y-3">
                 {benefits.map((b, i) => (
                   <motion.div
@@ -320,6 +323,28 @@ const QuizPitch = () => {
                 Resultados reais
               </h2>
               <p className="text-xs text-white/40 text-center mb-4">Mulheres com perfil parecido com o seu</p>
+
+              {/* Social proof numbers */}
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                {[
+                  { value: "12 mil+", label: "mulheres ativas", color: "#FF6B2B" },
+                  { value: "87%", label: "resultados em 30d", color: "#10B981" },
+                  { value: "4.8 ⭐", label: "avaliação média", color: "#F59E0B" },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.08 }}
+                    className="rounded-xl py-3 text-center"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+                  >
+                    <p className="text-sm font-black" style={{ color: stat.color, fontFamily: "'Montserrat', sans-serif" }}>{stat.value}</p>
+                    <p className="text-[9px] text-white/40 mt-0.5">{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+
               <TestimonialCarousel testimonials={allTestimonials} />
 
               {/* Final CTA with password */}
