@@ -115,7 +115,7 @@ const QuizCheckout = () => {
       <motion.div className="text-center mt-2 mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
         <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Comece hoje por apenas</h1>
         <div className="flex items-baseline justify-center gap-1.5 mt-3">
-          <span className="text-4xl font-extrabold" style={{ color: "#FF6B2B", fontFamily: "'Manrope', sans-serif" }}>R$ 19,90</span>
+          <span className="text-4xl font-extrabold" style={{ color: "#FF6B2B", fontFamily: "'Manrope', sans-serif" }}>R$ 0,00</span>
           <span className="text-sm" style={{ color: "#888" }}>/mês</span>
         </div>
         <p className="text-xs mt-2" style={{ color: "#666" }}>Garantia de 30 dias • Dinheiro de volta</p>
