@@ -127,17 +127,13 @@ const AppExerciseDetail = () => {
       {/* GIF Hero with overlay stats */}
       <div className="relative">
         <div className="aspect-square max-h-[380px] overflow-hidden" style={{ background: S.card }}>
-          {mediaUrl ? (
+          {mediaUrl && (
             <img
               src={mediaUrl}
               alt={exercise?.name || "Exercício"}
               className="w-full h-full object-contain"
               style={{ background: S.card }}
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Flame className="w-16 h-16" style={{ color: `${S.cardBorder}` }} />
-            </div>
           )}
         </div>
 

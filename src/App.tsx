@@ -27,6 +27,7 @@ import AppCardio from "./pages/AppCardio";
 import AppWarmup from "./pages/AppWarmup";
 import AppHomeWorkout from "./pages/AppHomeWorkout";
 import AppProfile from "./pages/AppProfile";
+import AppProgramDetail from "./pages/AppProgramDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
