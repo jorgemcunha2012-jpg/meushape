@@ -128,7 +128,7 @@ interface SolarHeaderProps {
   rightContent?: React.ReactNode;
 }
 
-export const SolarHeader: React.FC<SolarHeaderProps> = ({ title, showBack = false, rightContent }) => {
+export const SolarHeader: React.FC<SolarHeaderProps> = ({ title, showBack = false, onBack, rightContent }) => {
   const navigate = useNavigate();
   const s = useSolar();
 
