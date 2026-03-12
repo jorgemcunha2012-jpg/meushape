@@ -116,19 +116,23 @@ const AppWorkoutDetail = () => {
     <SolarPage>
       <SolarHeader title={workout?.title || "Treino"} showBack />
 
-      {/* Stats Grid - 2x2 */}
-      <section className="px-5 py-4">
-        <div className="max-w-lg mx-auto grid grid-cols-4 gap-2">
+      {/* Stats Strip */}
+      <section className="px-5 py-3">
+        <div className="max-w-lg mx-auto flex items-center justify-between p-3 gap-1" style={cardStyle}>
           {stats.map((stat, i) => (
-            <div key={i} className="p-3 text-center" style={cardStyle}>
-              <stat.icon className="w-5 h-5 mx-auto mb-2" style={{ color: stat.color }} />
-              <p className="font-display text-lg leading-none" style={{ fontWeight: 800, color: S.text }}>
-                {stat.value}
-              </p>
-              {stat.unit && (
-                <p className="text-xs mt-0.5" style={{ fontWeight: 600, color: S.text }}>{stat.unit}</p>
+            <div key={i} className="flex items-center gap-1.5">
+              <stat.icon className="w-4 h-4 shrink-0" style={{ color: stat.color }} />
+              <div className="flex items-baseline gap-0.5">
+                <span className="font-display text-sm" style={{ fontWeight: 800, color: S.text }}>
+                  {stat.value}
+                </span>
+                {stat.unit && (
+                  <span className="text-[10px]" style={{ fontWeight: 600, color: S.textMuted }}>{stat.unit}</span>
+                )}
+              </div>
+              {i < stats.length - 1 && (
+                <div className="w-px h-4 ml-1" style={{ background: S.cardBorder }} />
               )}
-              <p className="text-[10px] mt-1" style={{ color: S.textMuted }}>{stat.label}</p>
             </div>
           ))}
         </div>
