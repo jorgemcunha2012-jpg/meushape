@@ -194,9 +194,33 @@ const AppProfile = () => {
             </label>
           </div>
 
-          <h2 className="font-display text-xl mb-0.5" style={{ fontWeight: 800, color: S.text }}>
-            {profile?.name || "Usuário"}
-          </h2>
+          {editingName ? (
+            <div className="flex items-center gap-2 mb-1">
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                maxLength={100}
+                autoFocus
+                className="font-display text-xl text-center bg-transparent border-b-2 outline-none"
+                style={{ fontWeight: 800, color: S.text, borderColor: S.orange, width: "12rem" }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setEditingName(false); }}
+              />
+              <button onClick={handleSaveName} disabled={savingName}
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})` }}>
+                <Check size={14} className="text-white" />
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => { setNameInput(profile?.name || ""); setEditingName(true); }}
+              className="flex items-center gap-2 group">
+              <h2 className="font-display text-xl" style={{ fontWeight: 800, color: S.text }}>
+                {profile?.name || "Usuário"}
+              </h2>
+              <Pencil size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: S.textMuted }} />
+            </button>
+          )}
           <p className="text-sm" style={{ color: S.textMuted }}>{profile?.email}</p>
           <div className="flex items-center gap-2 mt-2">
             <span
