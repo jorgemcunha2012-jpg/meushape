@@ -193,8 +193,6 @@ const AppExerciseDetail = () => {
     );
   }
 
-  const exerciseNames = useMemo(() => exercise ? [exercise.name] : [], [exercise]);
-  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
   const mw = exercise ? mwMedia[exercise.name] : undefined;
   const videoUrl = mw?.video;
   const mediaUrl = mw?.image || exercise?.image_url;
