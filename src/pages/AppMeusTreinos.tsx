@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGenerationLimits, type GenerationType } from "@/hooks/useGenerationLimits";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { motion } from "framer-motion";
-import { Dumbbell, Zap, Trophy, Lock, ShoppingCart, Sparkles, ChevronRight, Clock } from "lucide-react";
+import { Dumbbell, Zap, Trophy, Sparkles, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
