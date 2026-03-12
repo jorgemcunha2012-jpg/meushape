@@ -122,8 +122,8 @@ const AppWorkoutDetail = () => {
           <div className="space-y-2">
             {exercises.map((exercise, index) => {
               const mw = mwMedia[exercise.name];
-              const thumbUrl = mw?.image || exercise.image_url;
-              const isMediaPending = mediaLoading && !mw;
+              const thumbUrl = mw?.image || proxyImageUrl(exercise.image_url);
+              const isMediaPending = mediaLoading && !mw && !exercise.image_url;
 
               return (
                 <motion.button
