@@ -457,12 +457,8 @@ const AppWorkoutDashboard = () => {
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/app/home-workout/${template.id}`)}
                     className="w-full p-4 text-left" style={cardStyle} whileTap={{ scale: 0.97 }}>
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="mb-2">
                       <span className="text-2xl">💪</span>
-                      <span className="text-[10px] font-semibold px-2.5 py-1"
-                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
-                        {levelLabel(template.difficulty_level)}
-                      </span>
                     </div>
                     <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>{template.name_pt}</h3>
                     <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{template.category}</p>
