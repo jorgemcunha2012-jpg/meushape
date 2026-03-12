@@ -87,6 +87,7 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
   const [weight, setWeight] = useState(String(initialData?.current_weight_kg || "70"));
   const [goalWeight, setGoalWeight] = useState(String(initialData?.goal_weight_kg || "60"));
   const [age, setAge] = useState(String(initialData?.age || "28"));
+  const [bioErrors, setBioErrors] = useState<Record<string, string>>({});
 
   const current = STEPS[step];
 
