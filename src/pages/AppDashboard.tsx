@@ -902,30 +902,6 @@ const AppDashboard = () => {
         </div>
       </section>
 
-      {/* ═══ EXPLORAR EXERCÍCIOS CTA ═══ */}
-      <section className="px-5 mb-5">
-        <div className="max-w-lg mx-auto">
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/app/explore")}
-            className="w-full rounded-2xl p-4 flex items-center gap-4 text-left"
-            style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}
-          >
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: `linear-gradient(135deg, ${S.orange}20, ${S.amber}20)` }}>
-              <Search className="w-5 h-5" style={{ color: S.orange }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>Explorar Exercícios</p>
-              <p className="text-[11px]" style={{ color: S.textMuted }}>1.800+ exercícios com 7.300+ vídeos do MuscleWiki</p>
-            </div>
-            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: S.textMuted }} />
-          </motion.button>
-        </div>
-      </section>
 
       {/* ═══ DESAFIOS ESPECIAIS — Carrossel ═══ */}
       <ChallengeCarousel
