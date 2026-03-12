@@ -295,6 +295,41 @@ const QuizResult = () => {
         </AnimatePresence>
       </section>
 
+      {/* Social Proof Banner */}
+      <section className="px-5 pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="rounded-2xl p-4"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex -space-x-2">
+              {allTestimonials.slice(0, 4).map((t, i) => (
+                <img key={i} src={t.photo} alt={t.name} className="w-7 h-7 rounded-full border-2 object-cover" style={{ borderColor: "#0a0a0a" }} />
+              ))}
+            </div>
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={10} fill="#F59E0B" color="#F59E0B" />
+              ))}
+            </div>
+            <span className="text-[10px] font-bold text-white/60">4.8</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center">
+              <p className="text-lg font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>12 mil+</p>
+              <p className="text-[10px] text-white/40">mulheres ativas</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-black" style={{ color: "#10B981", fontFamily: "'Montserrat', sans-serif" }}>87%</p>
+              <p className="text-[10px] text-white/40">viram resultados em 30 dias</p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* CTA Section */}
       <section ref={ctaRef} className="px-5 pb-10">
         <div
