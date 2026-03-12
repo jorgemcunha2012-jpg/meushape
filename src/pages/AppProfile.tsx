@@ -6,11 +6,12 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Camera, LogOut, ChevronRight,
   Flame, Dumbbell, Clock, Trophy, Medal, Target,
-  Bell, HelpCircle, Shield
+  Bell, HelpCircle, Shield, Pencil
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
+import OnboardingDrawer from "@/components/OnboardingDrawer";
 
 interface ProfileData {
   name: string;
