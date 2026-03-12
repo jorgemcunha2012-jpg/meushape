@@ -49,7 +49,7 @@ const AppExerciseDetail = () => {
   const [loading, setLoading] = useState(true);
 
   const exerciseNames = useMemo(() => exercise ? [exercise.name] : [], [exercise]);
-  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
 
   const [reps, setReps] = useState("12");
   const [restSeconds, setRestSeconds] = useState(60);
