@@ -84,20 +84,16 @@ const ProgressRing = ({ step, total }: { step: number; total: number }) => {
 /* ── Step Dots ── */
 const StepDots = ({ step, total, labels }: { step: number; total: number; labels: string[] }) => (
   <div className="flex items-center justify-center gap-2 mt-3">
-    {labels.map((label, i) => (
-      <div key={i} className="flex flex-col items-center gap-1">
-        <motion.div
-          className="w-2 h-2 rounded-full"
-          animate={{
-            background: i <= step ? "#FF6B2B" : "rgba(255,255,255,0.15)",
-            scale: i === step ? 1.3 : 1,
-          }}
-          transition={{ duration: 0.3 }}
-        />
-        <span className="text-[8px]" style={{ color: i <= step ? "#FF6B2B" : "rgba(255,255,255,0.25)" }}>
-          {label}
-        </span>
-      </div>
+    {labels.map((_, i) => (
+      <motion.div
+        key={i}
+        className="w-2 h-2 rounded-full"
+        animate={{
+          background: i <= step ? "#FF6B2B" : "rgba(255,255,255,0.15)",
+          scale: i === step ? 1.3 : 1,
+        }}
+        transition={{ duration: 0.3 }}
+      />
     ))}
   </div>
 );
