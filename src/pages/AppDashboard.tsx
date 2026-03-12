@@ -377,16 +377,16 @@ const AppDashboard = () => {
             className="relative overflow-hidden p-5"
             style={{
               borderRadius: "3rem",
-              background: "linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 40%, #FED7AA 100%)",
-              border: "1px solid rgba(251,191,36,0.25)",
-              boxShadow: `0 8px 40px ${S.glow}, inset 0 1px 0 rgba(255,255,255,0.7)`,
+              backgroundColor: S.card,
+              border: `1px solid ${S.cardBorder}`,
+              boxShadow: `0 4px 24px rgba(0,0,0,0.08)`,
             }}
           >
             {/* Decorative blur orb */}
             <div
               className="absolute -top-10 -right-10 w-40 h-40 rounded-full"
               style={{
-                background: `radial-gradient(circle, ${S.glowStrong} 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${S.glow} 0%, transparent 70%)`,
                 filter: "blur(30px)",
               }}
             />
@@ -399,7 +399,7 @@ const AppDashboard = () => {
                 >
                   Mapa Muscular
                 </h3>
-                <p className="text-[11px]" style={{ color: S.textSub }}>
+                <p className="text-[12px] font-medium" style={{ color: S.textMuted }}>
                   Últimos 7 dias de atividade
                 </p>
               </div>
