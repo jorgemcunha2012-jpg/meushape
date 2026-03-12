@@ -40,7 +40,7 @@ const Paywall = () => {
           Assine para continuar
         </h1>
         <p className="text-muted-foreground text-sm mb-8">
-          Desbloqueie seus treinos personalizados com 7 dias grátis.
+          Desbloqueie seus treinos personalizados por apenas R$ 19,90/mês.
         </p>
 
         <div className="space-y-3 text-left mb-8">
