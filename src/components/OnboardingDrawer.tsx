@@ -87,6 +87,7 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
   const [weight, setWeight] = useState(String(initialData?.current_weight_kg || "70"));
   const [goalWeight, setGoalWeight] = useState(String(initialData?.goal_weight_kg || "60"));
   const [age, setAge] = useState(String(initialData?.age || "28"));
+  const [bioErrors, setBioErrors] = useState<Record<string, string>>({});
 
   const current = STEPS[step];
 
@@ -113,14 +114,29 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
     if (step < STEPS.length - 1) setStep(step + 1);
   };
 
+  const validateBiometrics = (): boolean => {
+    const errors: Record<string, string> = {};
+    const h = parseInt(height);
+    const w = parseInt(weight);
+    const gw = parseInt(goalWeight);
+    const a = parseInt(age);
+    if (!h || h < 100 || h > 220) errors.height = "Altura entre 100 e 220 cm";
+    if (!w || w < 30 || w > 200) errors.weight = "Peso entre 30 e 200 kg";
+    if (!gw || gw < 30 || gw > 200) errors.goalWeight = "Peso meta entre 30 e 200 kg";
+    if (!a || a < 12 || a > 80) errors.age = "Idade entre 12 e 80 anos";
+    setBioErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const saveAll = async () => {
+    if (!validateBiometrics()) return;
     setSaving(true);
     const finalAnswers = {
       ...answers,
-      height_cm: parseInt(height) || 165,
-      current_weight_kg: parseInt(weight) || 70,
-      goal_weight_kg: parseInt(goalWeight) || 60,
-      age: parseInt(age) || 28,
+      height_cm: parseInt(height),
+      current_weight_kg: parseInt(weight),
+      goal_weight_kg: parseInt(goalWeight),
+      age: parseInt(age),
     };
     const { error } = await supabase
       .from("profiles")
@@ -254,10 +270,10 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
               {current.type === "biometrics" && (
                 <div className="space-y-4">
                   {[
-                    { label: "Altura (cm)", value: height, set: setHeight, placeholder: "165" },
-                    { label: "Peso atual (kg)", value: weight, set: setWeight, placeholder: "70" },
-                    { label: "Peso meta (kg)", value: goalWeight, set: setGoalWeight, placeholder: "60" },
-                    { label: "Idade", value: age, set: setAge, placeholder: "28" },
+                    { label: "Altura (cm)", value: height, set: setHeight, placeholder: "165", errorKey: "height" },
+                    { label: "Peso atual (kg)", value: weight, set: setWeight, placeholder: "70", errorKey: "weight" },
+                    { label: "Peso meta (kg)", value: goalWeight, set: setGoalWeight, placeholder: "60", errorKey: "goalWeight" },
+                    { label: "Idade", value: age, set: setAge, placeholder: "28", errorKey: "age" },
                   ].map((field, i) => (
                     <div key={i}>
                       <label className="text-xs font-semibold mb-1.5 block" style={{ color: S.textMuted }}>
@@ -265,10 +281,17 @@ const OnboardingDrawer = ({ open, onClose, userId, initialData }: OnboardingDraw
                       </label>
                       <input
                         type="number" inputMode="numeric"
-                        value={field.value} onChange={(e) => field.set(e.target.value)}
+                        value={field.value}
+                        onChange={(e) => { field.set(e.target.value); setBioErrors(prev => ({ ...prev, [field.errorKey]: "" })); }}
                         placeholder={field.placeholder}
-                        style={inputStyle}
+                        style={{
+                          ...inputStyle,
+                          ...(bioErrors[field.errorKey] ? { borderColor: "hsl(0, 84%, 60%)" } : {}),
+                        }}
                       />
+                      {bioErrors[field.errorKey] && (
+                        <p className="text-xs mt-1 text-destructive">{bioErrors[field.errorKey]}</p>
+                      )}
                     </div>
                   ))}
                   <motion.button whileTap={{ scale: 0.97 }}
