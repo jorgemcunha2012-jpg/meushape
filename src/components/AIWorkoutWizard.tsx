@@ -103,6 +103,10 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
       if (data?.error) throw new Error(data.error);
 
       setPlanGenerated();
+      // Record generation in DB + localStorage via hook
+      if (data?.program_id) {
+        await limits.recordGeneration("plan", data.program_id);
+      }
       setDone(true);
       toast.success("Treino gerado com sucesso! 🎉");
       setTimeout(() => onComplete(), 1500);
