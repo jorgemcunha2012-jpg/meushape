@@ -111,8 +111,8 @@ const AppWorkoutDetail = () => {
 
           <div className="space-y-2">
             {exercises.map((exercise, index) => {
-              const curated = curatedMap[exercise.name];
-              const thumbUrl = curated?.gif_url || exercise.image_url;
+              const mw = mwMedia[exercise.name];
+              const thumbUrl = mw?.image || exercise.image_url;
 
               return (
                 <motion.button
