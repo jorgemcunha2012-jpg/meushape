@@ -168,7 +168,7 @@ const AppWorkoutDashboard = () => {
                   boxShadow: tab === t.id ? `0 4px 16px ${S.glowStrong}` : `0 1px 4px rgba(234,88,12,0.04)`,
                 }}
               >
-                <span className="text-sm">{t.icon}</span>
+                <t.icon size={14} strokeWidth={2.5} />
                 {t.label}
               </motion.button>
             ))}
