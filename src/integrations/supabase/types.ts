@@ -686,6 +686,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_generation_limits: {
+        Row: {
+          active_program_id: string | null
+          created_at: string
+          generation_type: string
+          id: string
+          last_generated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_program_id?: string | null
+          created_at?: string
+          generation_type: string
+          id?: string
+          last_generated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_program_id?: string | null
+          created_at?: string
+          generation_type?: string
+          id?: string
+          last_generated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_generation_limits_active_program_id_fkey"
+            columns: ["active_program_id"]
+            isOneToOne: false
+            referencedRelation: "workout_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_programs: {
         Row: {
           added_at: string
@@ -711,6 +746,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_programs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "workout_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_purchases: {
+        Row: {
+          expires_at: string | null
+          id: string
+          program_id: string | null
+          purchase_type: string
+          purchased_at: string
+          status: string
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          id?: string
+          program_id?: string | null
+          purchase_type: string
+          purchased_at?: string
+          status?: string
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          id?: string
+          program_id?: string | null
+          purchase_type?: string
+          purchased_at?: string
+          status?: string
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_purchases_program_id_fkey"
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "workout_programs"
@@ -822,6 +898,7 @@ export type Database = {
           id: string
           is_active: boolean
           level: string
+          program_type: string
           title: string
         }
         Insert: {
@@ -832,6 +909,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           level?: string
+          program_type?: string
           title: string
         }
         Update: {
@@ -842,6 +920,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           level?: string
+          program_type?: string
           title?: string
         }
         Relationships: []
