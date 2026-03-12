@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
+import AIGenerationWizard from "@/components/AIGenerationWizard";
 
 const EXTRA_PRICE_ID = "price_1TAEyoLKftklAHDET9mWGjee";
 
@@ -51,6 +52,7 @@ const AppMeusTreinos = () => {
   const [extras, setExtras] = useState<ExtraPurchase[]>([]);
   const [purchaseModal, setPurchaseModal] = useState<GenerationType | null>(null);
   const [purchasing, setPurchasing] = useState(false);
+  const [generatingType, setGeneratingType] = useState<"challenge" | "project" | null>(null);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) navigate("/app/login");
@@ -132,11 +134,10 @@ const AppMeusTreinos = () => {
       setPurchaseModal(type);
       return;
     }
-    // Navigate to appropriate generation flow
     if (type === "plan") {
       navigate("/app/workouts");
     } else {
-      toast.info("Em breve! Geração de " + typeConfig[type].label + " está sendo implementada.");
+      setGeneratingType(type);
     }
   };
 
@@ -323,6 +324,24 @@ const AppMeusTreinos = () => {
           )}
         </div>
       </section>
+
+      {/* Generation Wizard Dialog */}
+      <Dialog open={!!generatingType} onOpenChange={() => setGeneratingType(null)}>
+        <DialogContent className="max-w-sm mx-auto rounded-2xl p-0 overflow-hidden">
+          {generatingType && (
+            <AIGenerationWizard
+              userId={user!.id}
+              type={generatingType}
+              onComplete={() => {
+                setGeneratingType(null);
+                limits.refresh();
+                fetchData();
+              }}
+              onCancel={() => setGeneratingType(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Purchase Modal */}
       <Dialog open={!!purchaseModal} onOpenChange={() => setPurchaseModal(null)}>
