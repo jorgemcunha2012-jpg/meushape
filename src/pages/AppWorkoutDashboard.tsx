@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus, ClipboardList, Zap, Home, StretchHorizontal } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
+import illustrationTreino from "@/assets/illustration-treino.png";
+import illustrationCardio from "@/assets/illustration-cardio.png";
+import illustrationCasa from "@/assets/illustration-casa.png";
+import illustrationAlong from "@/assets/illustration-alongamento.png";
 
 interface Workout {
   id: string;
