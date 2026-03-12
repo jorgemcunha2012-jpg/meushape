@@ -91,13 +91,6 @@ const AppWorkoutDetail = () => {
 
   const totalSets = exercises.reduce((a, e) => a + e.sets, 0);
 
-  // Extract real muscle targets from curated data
-  const muscleTags = [...new Set(
-    exercises
-      .map(e => curatedMap[e.name]?.target || curatedMap[e.name]?.body_part)
-      .filter(Boolean) as string[]
-  )].slice(0, 5);
-
   const cardStyle = {
     backgroundColor: S.card,
     border: `1px solid ${S.cardBorder}`,
