@@ -332,6 +332,7 @@ const AppMeusTreinos = () => {
             <AIGenerationWizard
               userId={user!.id}
               type={generatingType}
+              isAdmin={isAdmin}
               onComplete={() => {
                 setGeneratingType(null);
                 limits.refresh();
