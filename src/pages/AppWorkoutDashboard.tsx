@@ -331,6 +331,7 @@ const AppWorkoutDashboard = () => {
           <div className="max-w-lg mx-auto">
             <AIWorkoutWizard
               userId={user!.id}
+              isAdmin={isAdmin}
               onComplete={() => { setShowAIWizard(false); fetchAllData(); }}
               onCancel={() => setShowAIWizard(false)}
             />
