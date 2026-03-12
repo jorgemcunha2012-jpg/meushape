@@ -134,6 +134,7 @@ const AppWorkout = () => {
   const [workoutDuration, setWorkoutDuration] = useState(0);
 
   // Current exercise data
+  const currentEx = exercises[exIndex];
   const totalExercises = exercises.length;
   const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
   const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
