@@ -19,6 +19,8 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
   const [done, setDone] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasOnboardingData, setHasOnboardingData] = useState<boolean | null>(null);
+  const workoutIcons = [Dumbbell, Flame, Heart, Zap, Target, Timer, Trophy, Sparkles];
+  const [iconIndex, setIconIndex] = useState(0);
 
   useEffect(() => {
     checkOnboarding();
