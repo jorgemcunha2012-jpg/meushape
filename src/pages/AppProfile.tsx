@@ -344,6 +344,15 @@ const AppProfile = () => {
           </motion.button>
         </div>
       </section>
+
+      {user && (
+        <OnboardingDrawer
+          open={showOnboarding}
+          onClose={() => { setShowOnboarding(false); fetchAll(); }}
+          userId={user.id}
+          initialData={onboardingData || undefined}
+        />
+      )}
     </SolarPage>
   );
 };
