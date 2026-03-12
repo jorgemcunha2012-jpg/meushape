@@ -289,10 +289,6 @@ const QuizPitch = () => {
                 className="w-full rounded-2xl p-6 text-center"
                 style={{ background: "linear-gradient(180deg, rgba(255,107,43,0.08) 0%, rgba(255,107,43,0.02) 100%)", border: "1px solid rgba(255,107,43,0.2)" }}
               >
-                <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold mb-4"
-                  style={{ background: "rgba(255,107,43,0.15)", color: "#FF6B2B" }}>
-                  <Star size={10} /> OFERTA DE BOAS-VINDAS
-                </div>
 
                 <h3 className="text-2xl font-black text-white mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>7 dias grátis</h3>
 
