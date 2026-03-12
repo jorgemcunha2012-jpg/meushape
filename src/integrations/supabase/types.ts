@@ -635,6 +635,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_programs: {
+        Row: {
+          added_at: string
+          id: string
+          is_favorite: boolean
+          program_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          is_favorite?: boolean
+          program_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          is_favorite?: boolean
+          program_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_programs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "workout_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_streaks: {
         Row: {
           created_at: string

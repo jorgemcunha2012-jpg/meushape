@@ -1,75 +1,56 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { motion } from "framer-motion";
-import { ChevronRight, Plus, ClipboardList, Zap, Home, StretchHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronRight, Plus, ClipboardList, Zap, Home, StretchHorizontal,
+  Compass, Star, Dumbbell, BookmarkPlus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
-import illustrationTreino from "@/assets/illustration-treino.png";
-import illustrationCardio from "@/assets/illustration-cardio.png";
-import illustrationCasa from "@/assets/illustration-casa.png";
-import illustrationAlong from "@/assets/illustration-alongamento.png";
+import { toast } from "sonner";
 
+/* ─── Types ─── */
+interface Program {
+  id: string; title: string; description: string | null;
+  level: string; days_per_week: number; duration_minutes: number; is_active: boolean;
+}
+interface UserProgram {
+  id: string; program_id: string; is_favorite: boolean;
+  program: Program;
+}
 interface Workout {
-  id: string;
-  title: string;
-  description: string | null;
-  sort_order: number;
-  day_of_week: number | null;
+  id: string; title: string; description: string | null;
+  sort_order: number; day_of_week: number | null;
 }
-
 interface CardioProtocol {
-  id: string;
-  name_pt: string;
-  protocol_type: string;
-  total_duration_min: number;
-  difficulty_level: number;
-  estimated_calories: number | null;
-  equipment: string;
+  id: string; name_pt: string; protocol_type: string;
+  total_duration_min: number; difficulty_level: number;
+  estimated_calories: number | null; equipment: string;
 }
-
 interface HomeTemplate {
-  id: string;
-  name_pt: string;
-  category: string;
-  duration_min: number;
-  difficulty_level: number;
-  equipment: string;
+  id: string; name_pt: string; category: string;
+  duration_min: number; difficulty_level: number; equipment: string;
 }
-
 interface StretchSession {
-  id: string;
-  name_pt: string;
-  type: string;
-  duration_seconds: number;
-  target_muscles: string[];
+  id: string; name_pt: string; type: string;
+  duration_seconds: number; target_muscles: string[];
 }
 
-type TabId = "plano" | "cardio" | "casa" | "along";
+type TabId = "meus" | "explorar" | "cardio" | "casa" | "along";
 
-const TABS: { id: TabId; label: string; icon: typeof ClipboardList; illustration: string }[] = [
-  { id: "plano", label: "Meu Plano", icon: ClipboardList, illustration: illustrationTreino },
-  { id: "cardio", label: "Cardio", icon: Zap, illustration: illustrationCardio },
-  { id: "casa", label: "Em Casa", icon: Home, illustration: illustrationCasa },
-  { id: "along", label: "Alongamento", icon: StretchHorizontal, illustration: illustrationAlong },
-];
-
-const levelLabel = (level: number) => {
-  if (level <= 1) return "Iniciante";
-  if (level <= 2) return "Intermediário";
+const levelLabel = (l: string | number) => {
+  const v = typeof l === "number" ? l : l === "beginner" ? 1 : l === "intermediate" ? 2 : 3;
+  if (v <= 1) return "Iniciante";
+  if (v <= 2) return "Intermediário";
   return "Avançado";
 };
-
-const levelColor = (level: number) => {
-  if (level <= 1) return { text: "#16a34a", bg: "rgba(22,163,74,0.1)" };
-  if (level <= 2) return { text: "#F59E0B", bg: "rgba(245,158,11,0.1)" };
+const levelColor = (l: string | number) => {
+  const v = typeof l === "number" ? l : l === "beginner" ? 1 : l === "intermediate" ? 2 : 3;
+  if (v <= 1) return { text: "#16a34a", bg: "rgba(22,163,74,0.1)" };
+  if (v <= 2) return { text: "#F59E0B", bg: "rgba(245,158,11,0.1)" };
   return { text: "#F87171", bg: "rgba(248,113,113,0.1)" };
-};
-
-const cardioIcon = (type: string) => {
-  if (type === "hiit") return "🔥";
-  if (type === "liss") return "🚶‍♀️";
-  return "🏃‍♀️";
 };
 
 const AppWorkoutDashboard = () => {
@@ -77,40 +58,96 @@ const AppWorkoutDashboard = () => {
   const { user, subscribed, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState<TabId>("plano");
+  const [tab, setTab] = useState<TabId>("meus");
+  const [userPrograms, setUserPrograms] = useState<UserProgram[]>([]);
+  const [allPrograms, setAllPrograms] = useState<Program[]>([]);
+  const [addedProgramIds, setAddedProgramIds] = useState<Set<string>>(new Set());
+
+  // When user taps a program to see workouts inline
+  const [expandedProgramId, setExpandedProgramId] = useState<string | null>(null);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+
   const [cardioProtocols, setCardioProtocols] = useState<CardioProtocol[]>([]);
   const [homeTemplates, setHomeTemplates] = useState<HomeTemplate[]>([]);
   const [stretches, setStretches] = useState<StretchSession[]>([]);
+
   const [cyclePhase, setCyclePhase] = useState("");
   const [cycleWeek, setCycleWeek] = useState(0);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
     if (user && subscribed) fetchAllData();
-  }, [user, subscribed, subscriptionLoading, navigate]);
+  }, [user, subscribed, subscriptionLoading]);
 
   const fetchAllData = async () => {
-    const [programRes, cardioRes, homeRes, stretchRes] = await Promise.all([
-      supabase.from("workout_programs").select("*").eq("is_active", true).limit(1),
+    if (!user) return;
+    const [upRes, allProgRes, cardioRes, homeRes, stretchRes] = await Promise.all([
+      supabase.from("user_programs").select("id, program_id, is_favorite").eq("user_id", user.id),
+      supabase.from("workout_programs").select("*").eq("is_active", true),
       supabase.from("cardio_protocols").select("*").eq("active", true),
       supabase.from("home_workout_templates").select("*").eq("active", true),
       supabase.from("stretches").select("*").eq("active", true).order("sort_order").limit(10),
     ]);
 
-    if (programRes.data && programRes.data.length > 0) {
-      const prog = programRes.data[0];
-      const [workoutRes, cycleRes] = await Promise.all([
-        supabase.from("workouts").select("*").eq("program_id", prog.id).order("sort_order"),
-        supabase.from("progression_cycles").select("phase, current_week").eq("user_id", user!.id).eq("program_id", prog.id).single(),
-      ]);
-      if (workoutRes.data) setWorkouts(workoutRes.data);
-      if (cycleRes.data) { setCyclePhase(cycleRes.data.phase); setCycleWeek(cycleRes.data.current_week); }
+    const programs: Program[] = allProgRes.data || [];
+    setAllPrograms(programs);
+
+    if (upRes.data) {
+      const ids = new Set(upRes.data.map(up => up.program_id));
+      setAddedProgramIds(ids);
+      const mapped: UserProgram[] = upRes.data
+        .map(up => {
+          const prog = programs.find(p => p.id === up.program_id);
+          if (!prog) return null;
+          return { ...up, program: prog };
+        })
+        .filter(Boolean) as UserProgram[];
+      setUserPrograms(mapped);
+
+      // Load cycle for first program
+      if (mapped.length > 0) {
+        const { data: cycleData } = await supabase
+          .from("progression_cycles")
+          .select("phase, current_week")
+          .eq("user_id", user.id)
+          .eq("program_id", mapped[0].program_id)
+          .single();
+        if (cycleData) { setCyclePhase(cycleData.phase); setCycleWeek(cycleData.current_week); }
+      }
     }
 
     if (cardioRes.data) setCardioProtocols(cardioRes.data);
     if (homeRes.data) setHomeTemplates(homeRes.data);
     if (stretchRes.data) setStretches(stretchRes.data);
+  };
+
+  const addProgram = async (programId: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("user_programs").insert({
+      user_id: user.id, program_id: programId,
+    });
+    if (error) { toast.error("Erro ao adicionar"); return; }
+    toast.success("Programa adicionado!");
+    fetchAllData();
+  };
+
+  const removeProgram = async (programId: string) => {
+    if (!user) return;
+    await supabase.from("user_programs").delete()
+      .eq("user_id", user.id).eq("program_id", programId);
+    toast.success("Programa removido");
+    if (expandedProgramId === programId) { setExpandedProgramId(null); setWorkouts([]); }
+    fetchAllData();
+  };
+
+  const toggleExpand = async (programId: string) => {
+    if (expandedProgramId === programId) {
+      setExpandedProgramId(null); setWorkouts([]);
+    } else {
+      setExpandedProgramId(programId);
+      const { data } = await supabase.from("workouts").select("*").eq("program_id", programId).order("sort_order");
+      if (data) setWorkouts(data);
+    }
   };
 
   const todayIndex = new Date().getDay();
@@ -119,13 +156,22 @@ const AppWorkoutDashboard = () => {
     intensify: "Intensificação", peak: "Pico", deload: "Deload",
   };
 
-  /* ─── Shared card style ─── */
   const cardStyle = {
     backgroundColor: S.card,
     border: `1px solid ${S.cardBorder}`,
-    borderRadius: "1.5rem",
+    borderRadius: "1.25rem",
     boxShadow: `0 2px 12px rgba(234,88,12,0.04)`,
   };
+
+  const TABS: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
+    { id: "meus", label: "Meus", icon: Star },
+    { id: "explorar", label: "Explorar", icon: Compass },
+    { id: "cardio", label: "Cardio", icon: Zap },
+    { id: "casa", label: "Em Casa", icon: Home },
+    { id: "along", label: "Along.", icon: StretchHorizontal },
+  ];
+
+  const explorablePrograms = allPrograms.filter(p => !addedProgramIds.has(p.id));
 
   return (
     <SolarPage>
@@ -133,16 +179,9 @@ const AppWorkoutDashboard = () => {
         title="Treinos"
         showBack
         rightContent={
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => navigate("/app/manage")}
-            className="w-9 h-9 flex items-center justify-center transition-all"
-            style={{
-              borderRadius: "0.75rem",
-              background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
-              boxShadow: `0 2px 12px ${S.glowStrong}`,
-            }}
-          >
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate("/app/manage")}
+            className="w-9 h-9 flex items-center justify-center"
+            style={{ borderRadius: "0.75rem", background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 2px 12px ${S.glowStrong}` }}>
             <Plus size={18} style={{ color: "#fff" }} strokeWidth={2.5} />
           </motion.button>
         }
@@ -151,24 +190,18 @@ const AppWorkoutDashboard = () => {
       {/* Tab Bar */}
       <section className="px-5 py-3">
         <div className="max-w-lg mx-auto">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
             {TABS.map(t => (
-              <motion.button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all"
+              <motion.button key={t.id} onClick={() => setTab(t.id)} whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all"
                 style={{
-                  borderRadius: "1.25rem",
-                  background: tab === t.id
-                    ? `linear-gradient(135deg, ${S.orange}, ${S.amber})`
-                    : S.card,
+                  borderRadius: "1rem",
+                  background: tab === t.id ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : S.card,
                   color: tab === t.id ? "#fff" : S.textMuted,
                   border: tab === t.id ? "none" : `1px solid ${S.cardBorder}`,
-                  boxShadow: tab === t.id ? `0 4px 16px ${S.glowStrong}` : `0 1px 4px rgba(234,88,12,0.04)`,
-                }}
-              >
-                <t.icon size={14} strokeWidth={2.5} />
+                  boxShadow: tab === t.id ? `0 4px 16px ${S.glowStrong}` : "none",
+                }}>
+                <t.icon size={13} strokeWidth={2.5} />
                 {t.label}
               </motion.button>
             ))}
@@ -176,79 +209,190 @@ const AppWorkoutDashboard = () => {
         </div>
       </section>
 
-      {/* TAB: Meu Plano */}
-      {tab === "plano" && (
+      {/* ─── TAB: Meus Programas ─── */}
+      {tab === "meus" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            {cyclePhase && (
-              <p className="text-xs mb-4" style={{ color: S.textMuted }}>
+            {cyclePhase && userPrograms.length > 0 && (
+              <p className="text-xs mb-3" style={{ color: S.textMuted }}>
                 Semana {cycleWeek} — {phaseNames[cyclePhase] || cyclePhase}
               </p>
             )}
-            <div className="space-y-2.5">
-              {workouts.map((workout, i) => {
-                const isToday = (workout.day_of_week ?? workout.sort_order) === todayIndex;
-                return (
-                  <motion.button
-                    key={workout.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate(`/app/workout-detail/${workout.id}`)}
-                    className="w-full flex items-center gap-3 p-4 text-left transition-all"
-                    style={cardStyle}
-                  >
-                    <div
-                      className="w-11 h-11 flex items-center justify-center text-xs shrink-0 font-display"
-                      style={{
-                        borderRadius: "0.75rem",
-                        fontWeight: 800,
-                        background: isToday ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : "#FFF7ED",
-                        color: isToday ? "#fff" : S.orange,
-                        boxShadow: isToday ? `0 4px 16px ${S.glowStrong}` : "none",
-                      }}
-                    >
-                      {String.fromCharCode(65 + i)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
-                        {workout.title}
-                      </p>
-                      {workout.description && (
-                        <p className="text-[11px] truncate" style={{ color: S.textMuted }}>{workout.description}</p>
-                      )}
-                    </div>
-                    {isToday ? (
-                      <span
-                        className="text-[10px] font-bold px-3 py-1"
-                        style={{
-                          borderRadius: "0.75rem",
-                          background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
-                          color: "#fff",
-                          boxShadow: `0 2px 8px ${S.glow}`,
-                        }}
-                      >
-                        HOJE
-                      </span>
-                    ) : (
-                      <ChevronRight size={16} style={{ color: S.cardBorder }} />
-                    )}
-                  </motion.button>
-                );
-              })}
-              {workouts.length === 0 && (
-                <div className="text-center py-12" style={{ color: S.textMuted }}>
-                  <span className="text-3xl mb-3 block">📋</span>
-                  <p className="text-sm">Nenhum plano de treino disponível</p>
+
+            {userPrograms.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-20 h-20 flex items-center justify-center mb-4"
+                  style={{ borderRadius: "1.5rem", background: `linear-gradient(135deg, ${S.orange}12, ${S.amber}12)` }}>
+                  <Dumbbell size={40} style={{ color: S.orange }} />
                 </div>
-              )}
-            </div>
+                <p className="font-display text-base mb-1" style={{ fontWeight: 700, color: S.text }}>
+                  Nenhum programa adicionado
+                </p>
+                <p className="text-sm mb-6" style={{ color: S.textMuted, maxWidth: 260 }}>
+                  Explore os programas disponíveis e adicione o primeiro ao seu plano
+                </p>
+                <Button onClick={() => setTab("explorar")} className="rounded-xl px-6"
+                  style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
+                  <Compass size={16} className="mr-1" /> Explorar Programas
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {userPrograms.map((up, i) => {
+                  const prog = up.program;
+                  const isExpanded = expandedProgramId === prog.id;
+                  const lc = levelColor(prog.level);
+                  return (
+                    <div key={up.id}>
+                      <motion.button
+                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => toggleExpand(prog.id)}
+                        className="w-full text-left p-4 flex items-center gap-3 transition-all"
+                        style={cardStyle}
+                      >
+                        <div className="w-11 h-11 flex items-center justify-center shrink-0"
+                          style={{ borderRadius: "0.75rem", background: `linear-gradient(135deg, ${S.orange}18, ${S.amber}18)` }}>
+                          <Dumbbell size={18} style={{ color: S.orange }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-semibold px-2 py-0.5"
+                              style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
+                              {levelLabel(prog.level)}
+                            </span>
+                            <span className="text-[11px]" style={{ color: S.textMuted }}>{prog.days_per_week}x/sem</span>
+                          </div>
+                        </div>
+                        <ChevronRight size={16}
+                          style={{ color: S.cardBorder, transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
+                      </motion.button>
+
+                      {/* Expanded workouts */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-6 pr-2 py-2 space-y-1.5">
+                              {workouts.map((wk, wi) => {
+                                const isToday = (wk.day_of_week ?? wk.sort_order) === todayIndex;
+                                return (
+                                  <motion.button key={wk.id}
+                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: wi * 0.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => navigate(`/app/workout-detail/${wk.id}`)}
+                                    className="w-full text-left p-3 flex items-center gap-2.5 transition-all"
+                                    style={{ ...cardStyle, borderRadius: "1rem" }}
+                                  >
+                                    <div className="w-8 h-8 flex items-center justify-center text-[10px] shrink-0 font-display"
+                                      style={{
+                                        borderRadius: "0.5rem", fontWeight: 800,
+                                        background: isToday ? `linear-gradient(135deg, ${S.orange}, ${S.amber})` : "#FFF7ED",
+                                        color: isToday ? "#fff" : S.orange,
+                                      }}>
+                                      {String.fromCharCode(65 + wi)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-display text-xs" style={{ fontWeight: 700, color: S.text }}>{wk.title}</p>
+                                    </div>
+                                    {isToday && (
+                                      <span className="text-[9px] font-bold px-2 py-0.5"
+                                        style={{ borderRadius: "0.5rem", background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, color: "#fff" }}>
+                                        HOJE
+                                      </span>
+                                    )}
+                                  </motion.button>
+                                );
+                              })}
+                              {workouts.length === 0 && (
+                                <p className="text-xs py-3 text-center" style={{ color: S.textMuted }}>
+                                  Nenhum treino neste programa
+                                </p>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* TAB: Cardio */}
+      {/* ─── TAB: Explorar ─── */}
+      {tab === "explorar" && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            <p className="text-xs mb-4" style={{ color: S.textMuted }}>
+              Programas e desafios disponíveis para adicionar ao seu plano
+            </p>
+
+            {allPrograms.length === 0 ? (
+              <div className="text-center py-12" style={{ color: S.textMuted }}>
+                <Compass size={32} className="mx-auto mb-3" style={{ color: S.cardBorder }} />
+                <p className="text-sm">Nenhum programa disponível no momento</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {allPrograms.map((prog, i) => {
+                  const isAdded = addedProgramIds.has(prog.id);
+                  const lc = levelColor(prog.level);
+                  return (
+                    <motion.div key={prog.id}
+                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="p-4" style={cardStyle}>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h3 className="font-display text-sm" style={{ fontWeight: 700, color: S.text }}>{prog.title}</h3>
+                          {prog.description && (
+                            <p className="text-[11px] mt-0.5" style={{ color: S.textMuted }}>{prog.description}</p>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-semibold px-2.5 py-1 shrink-0 ml-2"
+                          style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
+                          {levelLabel(prog.level)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
+                          <span>📅 {prog.days_per_week}x/sem</span>
+                          <span>⏱️ {prog.duration_minutes} min</span>
+                        </div>
+                        {isAdded ? (
+                          <Button size="sm" variant="outline" className="rounded-xl text-xs h-8 px-3"
+                            onClick={() => removeProgram(prog.id)}>
+                            ✓ Adicionado
+                          </Button>
+                        ) : (
+                          <Button size="sm" className="rounded-xl text-xs h-8 px-3"
+                            onClick={() => addProgram(prog.id)}
+                            style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})` }}>
+                            <BookmarkPlus size={13} className="mr-1" /> Adicionar
+                          </Button>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── TAB: Cardio ─── */}
       {tab === "cardio" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
@@ -259,28 +403,19 @@ const AppWorkoutDashboard = () => {
               {cardioProtocols.map((protocol, i) => {
                 const lc = levelColor(protocol.difficulty_level);
                 return (
-                  <motion.button
-                    key={protocol.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <motion.button key={protocol.id}
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/app/cardio/${protocol.id}`)}
-                    className="w-full p-4 text-left transition-all"
-                    style={cardStyle}
-                    whileTap={{ scale: 0.97 }}
-                  >
+                    className="w-full p-4 text-left" style={cardStyle} whileTap={{ scale: 0.97 }}>
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-2xl">{cardioIcon(protocol.protocol_type)}</span>
-                      <span
-                        className="text-[10px] font-semibold px-2.5 py-1"
-                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}
-                      >
+                      <span className="text-2xl">{protocol.protocol_type === "hiit" ? "🔥" : "🚶‍♀️"}</span>
+                      <span className="text-[10px] font-semibold px-2.5 py-1"
+                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
                         {levelLabel(protocol.difficulty_level)}
                       </span>
                     </div>
-                    <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
-                      {protocol.name_pt}
-                    </h3>
+                    <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>{protocol.name_pt}</h3>
                     <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{protocol.equipment}</p>
                     <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
                       <span>⏱️ {protocol.total_duration_min} min</span>
@@ -300,7 +435,7 @@ const AppWorkoutDashboard = () => {
         </section>
       )}
 
-      {/* TAB: Em Casa */}
+      {/* ─── TAB: Em Casa ─── */}
       {tab === "casa" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
@@ -309,28 +444,19 @@ const AppWorkoutDashboard = () => {
               {homeTemplates.map((template, i) => {
                 const lc = levelColor(template.difficulty_level);
                 return (
-                  <motion.button
-                    key={template.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <motion.button key={template.id}
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => navigate(`/app/home-workout/${template.id}`)}
-                    className="w-full p-4 text-left"
-                    style={cardStyle}
-                    whileTap={{ scale: 0.97 }}
-                  >
+                    className="w-full p-4 text-left" style={cardStyle} whileTap={{ scale: 0.97 }}>
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-2xl">💪</span>
-                      <span
-                        className="text-[10px] font-semibold px-2.5 py-1"
-                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}
-                      >
+                      <span className="text-[10px] font-semibold px-2.5 py-1"
+                        style={{ color: lc.text, background: lc.bg, borderRadius: "0.5rem" }}>
                         {levelLabel(template.difficulty_level)}
                       </span>
                     </div>
-                    <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
-                      {template.name_pt}
-                    </h3>
+                    <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>{template.name_pt}</h3>
                     <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{template.category}</p>
                     <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
                       <span>⏱️ {template.duration_min} min</span>
@@ -350,36 +476,26 @@ const AppWorkoutDashboard = () => {
         </section>
       )}
 
-      {/* TAB: Alongamento */}
+      {/* ─── TAB: Alongamento ─── */}
       {tab === "along" && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
-            <p className="text-xs mb-4" style={{ color: S.textMuted }}>Alongamento e mobilidade — baseado no seu treino</p>
+            <p className="text-xs mb-4" style={{ color: S.textMuted }}>Alongamento e mobilidade</p>
             <div className="space-y-3">
               {stretches.map((stretch, i) => (
-                <motion.div
-                  key={stretch.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <motion.div key={stretch.id}
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="p-4"
-                  style={cardStyle}
-                >
+                  className="p-4" style={cardStyle}>
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-2xl">🧘‍♀️</span>
-                    <span
-                      className="text-[10px] font-semibold px-2.5 py-1"
-                      style={{ color: "#7C3AED", background: "rgba(124,58,237,0.1)", borderRadius: "0.5rem" }}
-                    >
+                    <span className="text-[10px] font-semibold px-2.5 py-1"
+                      style={{ color: "#7C3AED", background: "rgba(124,58,237,0.1)", borderRadius: "0.5rem" }}>
                       {stretch.type}
                     </span>
                   </div>
-                  <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>
-                    {stretch.name_pt}
-                  </h3>
-                  <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>
-                    {stretch.target_muscles.join(", ")}
-                  </p>
+                  <h3 className="font-display text-sm mb-0.5" style={{ fontWeight: 700, color: S.text }}>{stretch.name_pt}</h3>
+                  <p className="text-[11px] mb-2" style={{ color: S.textMuted }}>{stretch.target_muscles.join(", ")}</p>
                   <div className="flex gap-3 text-[11px]" style={{ color: S.textSub }}>
                     <span>⏱️ {stretch.duration_seconds}s</span>
                   </div>
