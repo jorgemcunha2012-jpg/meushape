@@ -71,9 +71,20 @@ const AppDashboard = () => {
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
-    if (user && subscribed) { fetchData(); }
+    if (user && subscribed) { fetchData(); checkChallengeStatus(); }
     if (user) checkOnboarding();
   }, [user, subscribed, subscriptionLoading, navigate]);
+
+  const checkChallengeStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("user_programs")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("program_id", CHALLENGE_PROGRAM_ID)
+      .maybeSingle();
+    if (data) setChallengeAccepted(true);
+  };
 
   const checkOnboarding = async () => {
     if (!user) return;
