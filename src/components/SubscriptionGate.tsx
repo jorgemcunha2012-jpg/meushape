@@ -45,7 +45,7 @@ const SubscriptionGate = () => {
           Assine por R$ 0,00/mês e tenha acesso a todos os seus treinos personalizados.
         </p>
         <div className="inline-flex items-center gap-1 bg-rose-soft text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
-          <Star className="w-3 h-3" /> R$ 19,90/mês após o teste
+          <Star className="w-3 h-3" /> R$ 0,00/mês após o teste
         </div>
         <Button
           size="lg"
