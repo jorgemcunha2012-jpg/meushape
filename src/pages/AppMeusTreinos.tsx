@@ -197,9 +197,9 @@ const AppMeusTreinos = () => {
                     </div>
                     <div
                       className="flex items-center gap-1 px-2 py-1 rounded-full"
-                      style={{ background: limit.canGenerate ? `${S.green}15` : `${S.orange}12` }}
+                      style={{ background: limit.canGenerate ? `${S.orange}15` : `${S.orange}12` }}
                     >
-                      <span className="text-[10px] font-semibold" style={{ color: limit.canGenerate ? S.green : S.orange }}>
+                      <span className="text-[10px] font-semibold" style={{ color: S.orange }}>
                         {limit.canGenerate ? "Disponível" : `Em ${limit.daysUntilNext}d`}
                       </span>
                     </div>
