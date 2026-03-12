@@ -167,7 +167,7 @@ const AppExploreMuscleWiki = () => {
     const timer = setTimeout(() => {
       if (searchQuery.trim()) handleSearch();
       else setSearchResults(null);
-    }, 500);
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
