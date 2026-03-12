@@ -95,17 +95,21 @@ export const listExercises = async (params: {
   gender?: string;
 }): Promise<MWListResponse> => {
   const { limit = 20, offset = 0, category, muscles, difficulty, gender } = params;
-  const url = new URL(`${BASE}/exercises`);
-  url.searchParams.set("limit", String(limit));
-  url.searchParams.set("offset", String(offset));
-  if (category) url.searchParams.set("category", category);
-  if (muscles) url.searchParams.set("muscles", muscles);
-  if (difficulty) url.searchParams.set("difficulty", difficulty);
-  if (gender) url.searchParams.set("gender", gender);
+  const cacheKey = `mw:list:${limit}:${offset}:${category || ""}:${muscles || ""}:${difficulty || ""}:${gender || ""}`;
 
-  const res = await fetch(url.toString(), { headers });
-  if (!res.ok) throw new Error(`MuscleWiki exercises error: ${res.status}`);
-  return res.json();
+  return cache.fetchWithCache(cacheKey, async () => {
+    const url = new URL(`${BASE}/exercises`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
+    if (category) url.searchParams.set("category", category);
+    if (muscles) url.searchParams.set("muscles", muscles);
+    if (difficulty) url.searchParams.set("difficulty", difficulty);
+    if (gender) url.searchParams.set("gender", gender);
+
+    const res = await fetch(url.toString(), { headers });
+    if (!res.ok) throw new Error(`MuscleWiki exercises error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.MEDIUM);
 };
 
 export const fetchExerciseDetail = async (id: number): Promise<MWExerciseDetail> => {
