@@ -38,9 +38,8 @@ const benefits = [
 ];
 
 const guaranteeSteps = [
-  { step: "1", title: "Comece grátis", desc: "7 dias para testar tudo sem compromisso." },
-  { step: "2", title: "Teste sem risco", desc: "Se não gostar, cancele em até 30 dias." },
-  { step: "3", title: "Dinheiro de volta", desc: "Reembolso integral, sem perguntas." },
+  { step: "1", title: "Teste sem risco", desc: "Se não gostar, cancele em até 30 dias." },
+  { step: "2", title: "Dinheiro de volta", desc: "Reembolso integral, sem perguntas." },
 ];
 
 /* ── Progress Ring ── */
