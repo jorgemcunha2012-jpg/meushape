@@ -77,11 +77,26 @@ const AppDashboard = () => {
     chest: "none", shoulders: "none", arms: "none", back: "none",
     abs: "none", glutes: "none", legs: "none", calves: "none",
   });
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!subscriptionLoading && !user) { navigate("/app/login"); return; }
     if (user && subscribed) { fetchData(); fetchMuscleMap(); }
+    if (user) checkOnboarding();
   }, [user, subscribed, subscriptionLoading, navigate]);
+
+  const checkOnboarding = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("onboarding_answers")
+      .eq("id", user.id)
+      .single();
+    const answers = data?.onboarding_answers as Record<string, any> | null;
+    if (!answers || Object.keys(answers).length === 0 || !answers.goal) {
+      setShowOnboarding(true);
+    }
+  };
 
   /* ─── Data fetching (unchanged logic) ─── */
   const fetchMuscleMap = async () => {
