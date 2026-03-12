@@ -42,7 +42,6 @@ interface CooldownStretch {
 
 interface CuratedExercise {
   name_pt: string;
-  gif_url: string | null;
   target: string;
   body_part: string;
 }
