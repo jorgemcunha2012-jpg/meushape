@@ -304,11 +304,6 @@ const QuizResult = () => {
             border: "1px solid rgba(255,107,43,0.2)",
           }}
         >
-          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold mb-3"
-            style={{ background: "rgba(255,107,43,0.15)", color: "#FF6B2B" }}>
-            <Star size={10} /> OFERTA DE BOAS-VINDAS
-          </div>
-
           <h3
             className="text-xl font-black text-white mb-1"
             style={{ fontFamily: "'Montserrat', sans-serif" }}
