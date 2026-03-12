@@ -52,7 +52,7 @@ const levelColor = (l: string | number) => {
 
 const AppWorkoutDashboard = () => {
   const S = useSolar();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const { user, subscribed, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [tab, setTab] = useState<TabId>("meus");
