@@ -7,6 +7,7 @@ import {
   ArrowLeft, Plus, Minus, RotateCcw, Clock,
   Info, Flame, Save, Target, AlertTriangle
 } from "lucide-react";
+import { SolarPage, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
 
 interface Exercise {
