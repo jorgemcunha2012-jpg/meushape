@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
+import AIGenerationWizard from "@/components/AIGenerationWizard";
 
 const EXTRA_PRICE_ID = "price_1TAEyoLKftklAHDET9mWGjee";
 
