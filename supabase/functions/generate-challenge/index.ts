@@ -249,6 +249,85 @@ serve(async (req) => {
     const curatedMap: Record<string, any> = {};
     for (const ex of filtered) curatedMap[ex.id] = ex;
 
+    // ─── MuscleWiki media resolution ───
+    const MUSCLEWIKI_API_KEY = Deno.env.get("MUSCLEWIKI_API_KEY");
+    const projectId = Deno.env.get("SUPABASE_URL")?.replace("https://", "").replace(".supabase.co", "") || "";
+
+    const EXERCISE_PT_EN: Record<string, string> = {
+      "agachamento": "squat", "agachamento livre": "barbell squat", "agachamento smith": "smith machine squat",
+      "agachamento sem peso": "bodyweight squat", "agachamento bulgaro": "bulgarian split squat",
+      "leg press": "leg press", "leg press 45": "leg press", "extensora": "leg extension", "flexora": "leg curl",
+      "cadeira extensora": "leg extension", "cadeira flexora": "leg curl", "stiff": "romanian deadlift",
+      "levantamento terra": "deadlift", "hip thrust": "hip thrust", "elevacao pelvica": "hip thrust",
+      "ponte de gluteo": "glute bridge", "ponte de gluteos": "glute bridge", "abdutora": "hip abduction",
+      "adutora": "hip adduction", "cadeira abdutora": "hip abduction machine", "cadeira adutora": "hip adduction machine",
+      "panturrilha": "calf raise", "panturrilha em pe": "standing calf raise", "panturrilha sentada": "seated calf raise",
+      "supino reto": "bench press", "supino inclinado": "incline bench press", "supino declinado": "decline bench press",
+      "crucifixo": "dumbbell fly", "crucifixo inclinado": "incline dumbbell fly",
+      "puxada frontal": "lat pulldown", "puxada": "lat pulldown",
+      "remada curvada": "bent over row", "remada baixa": "seated cable row", "remada cavaleiro": "t-bar row",
+      "remada alta": "upright row", "desenvolvimento": "overhead press",
+      "elevacao lateral": "lateral raise", "elevacao frontal": "front raise",
+      "rosca direta": "barbell curl", "rosca alternada": "dumbbell curl", "rosca martelo": "hammer curl",
+      "rosca scott": "preacher curl", "rosca concentrada": "concentration curl",
+      "triceps pulley": "tricep pushdown", "triceps testa": "skull crusher", "triceps corda": "tricep rope pushdown",
+      "triceps frances": "overhead tricep extension",
+      "abdominal": "crunch", "abdominal infra": "reverse crunch", "abdominal obliquo": "oblique crunch",
+      "prancha": "plank", "prancha frontal": "plank",
+      "afundo": "lunge", "avanco": "lunge", "passada": "lunge",
+      "bulgaro": "bulgarian split squat", "kickback": "glute kickback", "gluteo kickback": "glute kickback",
+      "terra romeno": "romanian deadlift", "mesa flexora": "lying leg curl",
+      "hack squat": "hack squat", "voador": "pec deck fly", "cross over": "cable crossover",
+      "crossover": "cable crossover", "face pull": "face pull", "encolhimento": "shrug",
+      "flexao": "push up", "mergulho": "dip", "pullover": "pullover",
+      "elevacao de pernas": "leg raise", "superman": "superman", "bird dog": "bird dog",
+      "good morning": "good morning", "bom dia": "good morning",
+    };
+
+    function normalizeForLookup(name: string): string {
+      return name.replace(/\s*\(.*\)$/, "").toLowerCase().trim()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function findEnName(namePt: string): string | null {
+      const norm = normalizeForLookup(namePt);
+      if (EXERCISE_PT_EN[norm]) return EXERCISE_PT_EN[norm];
+      const singular = norm.replace(/s$/, "");
+      if (EXERCISE_PT_EN[singular]) return EXERCISE_PT_EN[singular];
+      return null;
+    }
+
+    async function resolveMuscleWikiMedia(namePt: string): Promise<{ image_url: string | null; video_url: string | null }> {
+      if (!MUSCLEWIKI_API_KEY) return { image_url: null, video_url: null };
+      try {
+        const enName = findEnName(namePt);
+        const queries = enName
+          ? [enName, namePt.replace(/\s*\(.*\)$/, "")]
+          : [namePt, namePt.replace(/\s*\(.*\)$/, "")];
+
+        for (const q of queries) {
+          const res = await fetch(
+            `https://api.musclewiki.com/search?q=${encodeURIComponent(q)}&limit=1`,
+            { headers: { "X-API-Key": MUSCLEWIKI_API_KEY } }
+          );
+          if (!res.ok) continue;
+          const results = await res.json();
+          if (results.length > 0) {
+            const ex = results[0];
+            const video = ex.videos?.find((v: any) => v.gender === "female") || ex.videos?.[0];
+            const videoUrl = video?.url
+              ? `https://${projectId}.supabase.co/functions/v1/musclewiki-media?url=${encodeURIComponent(video.url)}`
+              : null;
+            const imageUrl = video?.og_image || null;
+            if (videoUrl || imageUrl) return { image_url: imageUrl, video_url: videoUrl };
+          }
+        }
+      } catch (e) {
+        console.warn("MuscleWiki search failed for:", namePt, e);
+      }
+      return { image_url: null, video_url: null };
+    }
+
     // Create workouts and exercises
     for (const wk of plan.workouts) {
       const { data: workout, error: wkErr } = await supabase
@@ -264,15 +343,24 @@ serve(async (req) => {
 
       if (wkErr) throw wkErr;
 
-      const exerciseInserts = (wk.exercises || []).map((ex: any) => ({
-        workout_id: workout.id,
-        name: ex.name,
-        sets: ex.sets,
-        reps: ex.reps,
-        rest_seconds: ex.rest_seconds,
-        sort_order: ex.sort_order,
-        description: curatedMap[ex.curated_exercise_id]?.simple_instruction_pt || null,
-      }));
+      // Resolve MuscleWiki media in parallel
+      const exerciseInserts = await Promise.all(
+        (wk.exercises || []).map(async (ex: any) => {
+          const curated = curatedMap[ex.curated_exercise_id];
+          const mwMedia = await resolveMuscleWikiMedia(ex.name);
+          return {
+            workout_id: workout.id,
+            name: ex.name,
+            sets: ex.sets,
+            reps: ex.reps,
+            rest_seconds: ex.rest_seconds,
+            sort_order: ex.sort_order,
+            image_url: mwMedia.image_url,
+            video_url: mwMedia.video_url,
+            description: curated?.simple_instruction_pt || null,
+          };
+        })
+      );
 
       if (exerciseInserts.length > 0) {
         const { error: exInsErr } = await supabase.from("exercises").insert(exerciseInserts);
