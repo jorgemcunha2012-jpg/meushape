@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   Bell, Sparkles, ChevronRight, Trophy, Flame,
-  Clock, Calendar, Zap, Dumbbell, TrendingUp, Users, Target, Heart, Search
+  Clock, Calendar, Zap, Dumbbell, TrendingUp, Users, Target, Heart
 } from "lucide-react";
 import { SolarBottomNav, useSolar, type SolarPalette } from "@/components/SolarLayout";
 import useEmblaCarousel from "embla-carousel-react";
