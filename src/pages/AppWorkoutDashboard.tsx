@@ -47,11 +47,11 @@ interface StretchSession {
 
 type TabId = "plano" | "cardio" | "casa" | "along";
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: "plano", label: "Meu Plano", icon: "📋" },
-  { id: "cardio", label: "Cardio", icon: "🏃‍♀️" },
-  { id: "casa", label: "Em Casa", icon: "🏠" },
-  { id: "along", label: "Alongamento", icon: "🧘‍♀️" },
+const TABS: { id: TabId; label: string; icon: typeof ClipboardList; illustration: string }[] = [
+  { id: "plano", label: "Meu Plano", icon: ClipboardList, illustration: illustrationTreino },
+  { id: "cardio", label: "Cardio", icon: Zap, illustration: illustrationCardio },
+  { id: "casa", label: "Em Casa", icon: Home, illustration: illustrationCasa },
+  { id: "along", label: "Alongamento", icon: StretchHorizontal, illustration: illustrationAlong },
 ];
 
 const levelLabel = (level: number) => {
