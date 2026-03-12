@@ -420,8 +420,11 @@ const AppDashboard = () => {
             </div>
 
             <div className="flex items-center gap-5 relative z-10">
-              <div className="flex-shrink-0">
-                <BodyMap muscleMap={muscleMap} statusColor={muscleStatusColor} />
+              <div className="flex-shrink-0 w-[120px]">
+                <MuscleMap
+                  trainedMuscles={Object.entries(muscleMap).filter(([_, s]) => s !== "none").map(([m]) => m)}
+                  onMuscleClick={(m) => navigate("/app/workouts")}
+                />
               </div>
 
               <div className="flex-1 space-y-2.5">
