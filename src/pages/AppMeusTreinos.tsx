@@ -134,11 +134,10 @@ const AppMeusTreinos = () => {
       setPurchaseModal(type);
       return;
     }
-    // Navigate to appropriate generation flow
     if (type === "plan") {
       navigate("/app/workouts");
     } else {
-      toast.info("Em breve! Geração de " + typeConfig[type].label + " está sendo implementada.");
+      setGeneratingType(type);
     }
   };
 

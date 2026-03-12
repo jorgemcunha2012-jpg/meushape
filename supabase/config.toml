@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.musclewiki-media]
 verify_jwt = false
+
+[functions.create-extra-purchase]
+verify_jwt = false
+
+[functions.generate-challenge]
+verify_jwt = false
