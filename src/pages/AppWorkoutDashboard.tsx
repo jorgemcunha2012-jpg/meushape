@@ -5,11 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, Plus, Zap, Home, StretchHorizontal,
-  Compass, Star, Dumbbell, BookmarkPlus, X,
+  Compass, Star, Dumbbell, BookmarkPlus, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { toast } from "sonner";
+import AIWorkoutWizard from "@/components/AIWorkoutWizard";
 
 /* ─── Types ─── */
 interface Program {
@@ -56,6 +57,7 @@ const AppWorkoutDashboard = () => {
 
   const [tab, setTab] = useState<TabId>("meus");
   const [showExplorer, setShowExplorer] = useState(false);
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   // User's programs with their workouts
   const [programsWithWorkouts, setProgramsWithWorkouts] = useState<
@@ -204,7 +206,7 @@ const AppWorkoutDashboard = () => {
       </section>
 
       {/* ─── TAB: Meus Treinos ─── */}
-      {tab === "meus" && !showExplorer && (
+      {tab === "meus" && !showExplorer && !showAIWizard && (
         <section className="px-5">
           <div className="max-w-lg mx-auto">
             {cyclePhase && programsWithWorkouts.length > 0 && (
@@ -214,7 +216,7 @@ const AppWorkoutDashboard = () => {
             )}
 
             {programsWithWorkouts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-20 h-20 flex items-center justify-center mb-4"
                   style={{ borderRadius: "1.5rem", background: `linear-gradient(135deg, ${S.orange}12, ${S.amber}12)` }}>
                   <Dumbbell size={40} style={{ color: S.orange }} />
@@ -223,12 +225,17 @@ const AppWorkoutDashboard = () => {
                   Nenhum treino ainda
                 </p>
                 <p className="text-sm mb-6" style={{ color: S.textMuted, maxWidth: 260 }}>
-                  Explore os programas disponíveis e adicione o primeiro ao seu plano
+                  Gere um plano personalizado com IA ou explore programas prontos
                 </p>
-                <Button onClick={() => setShowExplorer(true)} className="rounded-xl px-6"
-                  style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
-                  <Compass size={16} className="mr-1" /> Explorar Programas
-                </Button>
+                <div className="flex flex-col gap-2.5 w-full max-w-[260px]">
+                  <Button onClick={() => setShowAIWizard(true)} className="rounded-xl w-full"
+                    style={{ background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`, boxShadow: `0 4px 16px ${S.glowStrong}` }}>
+                    <Sparkles size={16} className="mr-1" /> Gerar com IA
+                  </Button>
+                  <Button onClick={() => setShowExplorer(true)} variant="outline" className="rounded-xl w-full">
+                    <Compass size={16} className="mr-1" /> Explorar Programas
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-5">
@@ -298,17 +305,36 @@ const AppWorkoutDashboard = () => {
                   );
                 })}
 
-                {/* Explorar button at bottom */}
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowExplorer(true)}
-                  className="w-full p-3.5 flex items-center justify-center gap-2 text-sm font-semibold transition-all"
-                  style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}
-                >
-                  <Compass size={16} /> Explorar mais programas
-                </motion.button>
+                {/* Bottom actions */}
+                <div className="flex gap-2">
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowAIWizard(true)}
+                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}>
+                    <Sparkles size={14} /> Gerar com IA
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowExplorer(true)}
+                    className="flex-1 p-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.textMuted }}>
+                    <Compass size={14} /> Explorar
+                  </motion.button>
+                </div>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── AI Wizard ─── */}
+      {tab === "meus" && showAIWizard && (
+        <section className="px-5">
+          <div className="max-w-lg mx-auto">
+            <AIWorkoutWizard
+              userId={user!.id}
+              onComplete={() => { setShowAIWizard(false); fetchAllData(); }}
+              onCancel={() => setShowAIWizard(false)}
+            />
           </div>
         </section>
       )}

@@ -10,8 +10,9 @@ import type { ExerciseDB } from "@/types/exercise";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Plus, Trash2, Search, Dumbbell, ChevronRight, Pencil, Check, X,
+  Plus, Trash2, Search, Dumbbell, ChevronRight, Pencil, Check, X, Sparkles,
 } from "lucide-react";
+import AIWorkoutWizard from "@/components/AIWorkoutWizard";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose,
@@ -57,6 +58,7 @@ const AppManageWorkouts = () => {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [showBrowser, setShowBrowser] = useState(false);
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   // Drawer states
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -237,20 +239,27 @@ const AppManageWorkouts = () => {
       <div className="max-w-lg mx-auto px-5 py-4 overflow-hidden">
         <AnimatePresence mode="wait" custom={direction}>
           {/* ─── STEP 1: Programs ─── */}
-          {step === "programs" && (
+          {step === "programs" && !showAIWizard && (
             <motion.div key="programs" custom={direction} variants={slideVariants}
               initial="enter" animate="center" exit="exit"
               transition={{ type: "tween", duration: 0.25 }}>
 
               {programs.length === 0 ? (
-                <EmptyState
-                  icon={<Dumbbell size={40} style={{ color: S.orange }} />}
-                  title="Nenhum programa criado"
-                  subtitle="Crie o primeiro programa de treino para seus alunos"
-                  buttonLabel="Criar Primeiro Programa"
-                  onAction={openProgramDrawer}
-                  S={S}
-                />
+                <div className="space-y-4">
+                  <EmptyState
+                    icon={<Dumbbell size={40} style={{ color: S.orange }} />}
+                    title="Nenhum programa criado"
+                    subtitle="Gere um programa completo com IA ou crie manualmente"
+                    buttonLabel="Gerar com IA"
+                    onAction={() => setShowAIWizard(true)}
+                    S={S}
+                  />
+                  <div className="text-center">
+                    <button onClick={openProgramDrawer} className="text-xs font-medium" style={{ color: S.textMuted }}>
+                      ou criar manualmente
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-2.5">
                   {programs.map((prog, i) => (
@@ -294,8 +303,27 @@ const AppManageWorkouts = () => {
                       </div>
                     </motion.button>
                   ))}
+
+                  {/* AI generate button */}
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowAIWizard(true)}
+                    className="w-full p-3.5 flex items-center justify-center gap-2 text-xs font-semibold transition-all"
+                    style={{ ...cardStyle, border: `2px dashed ${S.cardBorder}`, color: S.orange }}>
+                    <Sparkles size={14} /> Gerar programa com IA
+                  </motion.button>
                 </div>
               )}
+            </motion.div>
+          )}
+
+          {/* ─── AI Wizard (inline in programs step) ─── */}
+          {step === "programs" && showAIWizard && (
+            <motion.div key="ai-wizard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <AIWorkoutWizard
+                userId={user!.id}
+                onComplete={() => { setShowAIWizard(false); fetchPrograms(); }}
+                onCancel={() => setShowAIWizard(false)}
+              />
             </motion.div>
           )}
 
