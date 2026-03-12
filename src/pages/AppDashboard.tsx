@@ -250,7 +250,7 @@ const AppDashboard = () => {
             >
               MEUSHAPE
             </span>
-            <Sparkles size={14} style={{ color: S.orange }} strokeWidth={2.5} />
+            
           </div>
           {/* Actions */}
           <div className="flex items-center gap-2.5">
