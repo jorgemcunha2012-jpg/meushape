@@ -197,7 +197,7 @@ const AppExerciseDetail = () => {
   const mw = exercise ? mwMedia[exercise.name] : undefined;
   const isMediaPending = mediaLoading && !mw;
   const videoUrl = mw?.video;
-  const mediaUrl = mw?.image || exercise?.image_url;
+  const mediaUrl = mw?.image || proxyImageUrl(exercise?.image_url);
   const displayName = exercise ? stripParentheses(exercise.name) : "";
 
   return (

@@ -312,7 +312,7 @@ const AppWorkout = () => {
     const curated = curatedMap[currentEx.name];
     const mw = mwMedia[currentEx.name];
     const videoUrl = mw?.video;
-    const imageUrl = mw?.image || currentEx.image_url;
+    const imageUrl = mw?.image || proxyImageUrl(currentEx.image_url);
 
     const handleCompleteSet = () => {
       const newCompleted = { ...setsCompleted };
