@@ -546,7 +546,13 @@ Monte o treino. Retorne um JSON com esta estrutura exata:
       }
     }
 
-    // 7. Update profile with scores if provided
+    // 7. Add program to user_programs so it shows in "Meus Treinos"
+    await supabase.from("user_programs").upsert({
+      user_id,
+      program_id: program.id,
+    }, { onConflict: "user_id,program_id" });
+
+    // 8. Update profile with scores if provided
     if (scores) {
       await supabase
         .from("profiles")
