@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "next-themes";
-import { Home, Dumbbell, Users, TrendingUp, User } from "lucide-react";
+import { Home, Dumbbell, Users, TrendingUp, User, ArrowLeft } from "lucide-react";
 
 /* ─── Solar palette — light & dark variants ─── */
 const LIGHT = {
