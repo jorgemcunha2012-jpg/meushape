@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface Workout {
