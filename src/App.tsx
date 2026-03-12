@@ -30,6 +30,7 @@ import AppProfile from "./pages/AppProfile";
 import AppProgramDetail from "./pages/AppProgramDetail";
 import AppExploreMuscleWiki from "./pages/AppExploreMuscleWiki";
 import AppMuscleWikiDetail from "./pages/AppMuscleWikiDetail";
+import AppMeusTreinos from "./pages/AppMeusTreinos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
