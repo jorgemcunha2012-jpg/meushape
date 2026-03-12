@@ -61,7 +61,7 @@ const AppStretching = () => {
 
   const current = stretches[currentIndex];
   const stretchNames = useMemo(() => stretches.map(s => s.name_pt), [stretches]);
-  const { media: mwMedia } = useMuscleWikiMedia(stretchNames);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(stretchNames);
   const currentMedia = current ? mwMedia[current.name_pt] : undefined;
 
   const tick = useCallback(() => {
@@ -176,7 +176,9 @@ const AppStretching = () => {
         </p>
 
         {/* MuscleWiki media */}
-        {currentMedia?.video ? (
+        {mediaLoading && !currentMedia ? (
+          <div className="h-36 w-48 rounded-2xl mb-4 bg-muted shimmer-loading" />
+        ) : currentMedia?.video ? (
           <video src={currentMedia.video} autoPlay loop muted playsInline className="h-36 rounded-2xl object-contain mb-4" />
         ) : currentMedia?.image ? (
           <img src={currentMedia.image} alt={current.name_pt} className="h-36 rounded-2xl object-contain mb-4" />
