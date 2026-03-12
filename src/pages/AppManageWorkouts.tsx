@@ -394,7 +394,7 @@ const AppManageWorkouts = () => {
                 <EmptyState
                   icon={<Search size={40} style={{ color: S.orange }} />}
                   title="Nenhum exercício"
-                  subtitle="Busque exercícios com GIF animado na ExerciseDB"
+                  subtitle="Busque exercícios do MuscleWiki"
                   buttonLabel="Buscar Exercícios"
                   onAction={() => setShowBrowser(true)}
                   S={S}
