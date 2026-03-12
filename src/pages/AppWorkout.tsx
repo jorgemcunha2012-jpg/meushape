@@ -110,7 +110,7 @@ const DEFAULT_COOLDOWN: CooldownStretch[] = [
 // ==========================================
 // MAIN WORKOUT COMPONENT
 // ==========================================
-const AppWorkout = () => {
+const AppWorkout = forwardRef<HTMLDivElement>((_, ref) => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
