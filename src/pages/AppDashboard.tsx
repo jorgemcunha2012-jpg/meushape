@@ -552,7 +552,7 @@ const AppDashboard = () => {
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Jorge";
 
   const menuItems = [
-    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos personalizados", route: "/app/workouts", illustration: illustrationTreino },
+    { icon: Dumbbell, title: "Meus Treinos", sub: "Planos & desafios ativos", route: "/app/meus-treinos", illustration: illustrationTreino },
     { icon: TrendingUp, title: "Minha Evolução", sub: "Progresso & métricas", route: "/app/history", illustration: illustrationEvolucao },
     { icon: Users, title: "Comunidade", sub: "Inspire & seja inspirado", route: "/app/community", illustration: illustrationComunidade },
     { icon: Trophy, title: "Conquistas", sub: `${streak} dias de fogo`, route: "/app/history", illustration: illustrationConquistas },
