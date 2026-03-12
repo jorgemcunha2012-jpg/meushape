@@ -592,7 +592,9 @@ const AppDashboard = () => {
                 Protocolo avançado de glúteos & posterior. 45 min de pura intensidade.
               </p>
               <button
-                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 transition-all active:scale-95"
+                onClick={acceptChallenge}
+                disabled={challengeAccepted}
+                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 transition-all active:scale-95 disabled:opacity-60"
                 style={{
                   borderRadius: "1.25rem",
                   background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
@@ -600,7 +602,7 @@ const AppDashboard = () => {
                   boxShadow: `0 4px 20px ${S.glowStrong}`,
                 }}
               >
-                Aceitar Desafio
+                {challengeAccepted ? "Desafio Aceito ✓" : "Aceitar Desafio"}
                 <Sparkles size={12} />
               </button>
             </div>
