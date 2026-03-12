@@ -60,6 +60,9 @@ const AppStretching = () => {
   };
 
   const current = stretches[currentIndex];
+  const stretchNames = useMemo(() => stretches.map(s => s.name_pt), [stretches]);
+  const { media: mwMedia } = useMuscleWikiMedia(stretchNames);
+  const currentMedia = current ? mwMedia[current.name_pt] : undefined;
 
   const tick = useCallback(() => {
     setTimeLeft((prev) => {
