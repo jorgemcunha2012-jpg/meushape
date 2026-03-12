@@ -213,7 +213,7 @@ const AppExerciseDetail = () => {
         </button>
 
         <div className="flex items-center justify-center py-6" style={{ background: S.bg }}>
-          <div className="w-[55%] aspect-square rounded-2xl overflow-hidden"
+          <div className="w-full max-w-md rounded-2xl overflow-hidden mx-auto aspect-video"
             style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
             {isMediaPending ? (
               <div className="w-full h-full"
