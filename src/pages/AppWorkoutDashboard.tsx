@@ -125,7 +125,24 @@ const AppWorkoutDashboard = () => {
 
   return (
     <SolarPage>
-      <SolarHeader title="Treinos" showBack />
+      <SolarHeader
+        title="Treinos"
+        showBack
+        rightContent={
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => navigate("/app/manage")}
+            className="w-9 h-9 flex items-center justify-center transition-all"
+            style={{
+              borderRadius: "0.75rem",
+              background: `linear-gradient(135deg, ${S.orange}, ${S.amber})`,
+              boxShadow: `0 2px 12px ${S.glowStrong}`,
+            }}
+          >
+            <Plus size={18} style={{ color: "#fff" }} strokeWidth={2.5} />
+          </motion.button>
+        }
+      />
 
       {/* Tab Bar */}
       <section className="px-5 py-3">
