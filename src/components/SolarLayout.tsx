@@ -145,7 +145,7 @@ export const SolarHeader: React.FC<SolarHeaderProps> = ({ title, showBack = fals
         <div className="flex items-center gap-3">
           {showBack && (
             <button
-              onClick={() => navigate("/app")}
+              onClick={() => onBack ? onBack() : navigate(-1)}
               className="w-9 h-9 flex items-center justify-center transition-all active:scale-95"
               style={{
                 borderRadius: "0.75rem",
