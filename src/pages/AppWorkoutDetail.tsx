@@ -93,13 +93,16 @@ const AppWorkoutDetail = () => {
       <section className="px-5 py-3">
         <div className="max-w-lg mx-auto grid grid-cols-4 gap-2">
           {stats.map((stat, i) => (
-            <div key={i} className="flex flex-col items-center py-2.5 px-1 rounded-xl"
+            <div key={i} className="flex flex-col items-center justify-center py-3 px-1 rounded-xl gap-1.5"
               style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-              <stat.icon className="w-4 h-4 mb-1" style={{ color: stat.color }} />
-              <span className="font-display text-sm leading-none" style={{ fontWeight: 800, color: S.text }}>
-                {stat.value}{stat.unit && <span className="text-[9px] font-semibold" style={{ color: S.textMuted }}> {stat.unit}</span>}
-              </span>
-              <span className="text-[9px] mt-0.5 font-semibold" style={{ color: S.textMuted }}>{stat.label}</span>
+              <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+              <div className="flex flex-col items-center">
+                <span className="font-display text-[15px] leading-tight tracking-tight" style={{ fontWeight: 800, color: S.text }}>
+                  {stat.value}
+                  {stat.unit && <span className="text-[10px] font-semibold ml-0.5" style={{ color: S.textMuted }}>{stat.unit}</span>}
+                </span>
+                <span className="text-[10px] font-semibold leading-tight" style={{ color: S.textMuted }}>{stat.label}</span>
+              </div>
             </div>
           ))}
         </div>
