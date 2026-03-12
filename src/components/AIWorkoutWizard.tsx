@@ -100,6 +100,7 @@ const AIWorkoutWizard = ({ userId, onComplete, onCancel }: AIWorkoutWizardProps)
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      setPlanGenerated();
       setDone(true);
       toast.success("Treino gerado com sucesso! 🎉");
       setTimeout(() => onComplete(), 1500);
