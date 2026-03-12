@@ -89,18 +89,22 @@ const AppWorkoutDetail = () => {
       <SolarHeader title={workout?.title || "Treino"} showBack />
 
       {/* Stats Strip */}
-      <section className="px-5 py-3">
-        <div className="max-w-lg mx-auto grid grid-cols-3 gap-2">
+      <section className="px-5 py-4">
+        <div className="max-w-lg mx-auto grid grid-cols-3 gap-3">
           {stats.map((stat, i) => (
-            <div key={i} className="flex flex-col items-center justify-center py-3 px-1 rounded-xl gap-1.5"
-              style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-              <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
-              <div className="flex flex-col items-center">
-                <span className="font-display text-[15px] leading-tight tracking-tight" style={{ fontWeight: 800, color: S.text }}>
+            <div key={i} className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl gap-2"
+              style={{
+                background: S.card,
+                border: `1px solid ${S.cardBorder}`,
+                boxShadow: `0 2px 12px ${S.glow}`,
+              }}>
+              <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="font-display text-lg leading-tight tracking-tight" style={{ fontWeight: 800, color: S.text }}>
                   {stat.value}
-                  {stat.unit && <span className="text-[10px] font-semibold ml-0.5" style={{ color: S.textMuted }}>{stat.unit}</span>}
+                  {stat.unit && <span className="text-xs font-semibold ml-0.5" style={{ color: S.textMuted }}>{stat.unit}</span>}
                 </span>
-                <span className="text-[10px] font-semibold leading-tight" style={{ color: S.textMuted }}>{stat.label}</span>
+                <span className="text-[11px] font-semibold leading-tight" style={{ color: S.textMuted }}>{stat.label}</span>
               </div>
             </div>
           ))}
