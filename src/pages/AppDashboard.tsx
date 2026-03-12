@@ -50,6 +50,8 @@ const AppDashboard = () => {
   const [lastWorkoutDate, setLastWorkoutDate] = useState<string>("");
   const [weekStats, setWeekStats] = useState({ done: 0, totalMin: 0, goal: 5 });
   const [recentLogs, setRecentLogs] = useState<WeekLog[]>([]);
+  const [prevWeekStats, setPrevWeekStats] = useState<{ done: number; totalMin: number } | null>(null);
+  const [lastWorkoutTitle, setLastWorkoutTitle] = useState<string>("");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
 
@@ -148,11 +150,39 @@ const AppDashboard = () => {
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     weekStart.setHours(0, 0, 0, 0);
 
-    const { data: weekLogs } = await supabase
-      .from("workout_logs").select("id, completed_at, duration_minutes, workout_id")
-      .eq("user_id", user!.id)
-      .gte("completed_at", weekStart.toISOString())
-      .order("completed_at", { ascending: false });
+    // Previous week stats
+    const prevWeekStart = new Date(weekStart);
+    prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+    const prevWeekEnd = new Date(weekStart);
+
+    const [weekLogsRes, prevWeekLogsRes] = await Promise.all([
+      supabase
+        .from("workout_logs").select("id, completed_at, duration_minutes, workout_id")
+        .eq("user_id", user!.id)
+        .gte("completed_at", weekStart.toISOString())
+        .order("completed_at", { ascending: false }),
+      supabase
+        .from("workout_logs").select("id, completed_at, duration_minutes, workout_id")
+        .eq("user_id", user!.id)
+        .gte("completed_at", prevWeekStart.toISOString())
+        .lt("completed_at", prevWeekEnd.toISOString())
+        .order("completed_at", { ascending: false }),
+    ]);
+
+    const weekLogs = weekLogsRes.data;
+    const prevWeekLogs = prevWeekLogsRes.data;
+
+    if (prevWeekLogs && prevWeekLogs.length > 0) {
+      const prevDone = prevWeekLogs.length;
+      const prevTotalMin = prevWeekLogs.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+      setPrevWeekStats({ done: prevDone, totalMin: prevTotalMin });
+
+      // Get last workout title from prev week
+      const lastLog = prevWeekLogs[0];
+      const { data: lastW } = await supabase
+        .from("workouts").select("title").eq("id", lastLog.workout_id).single();
+      if (lastW) setLastWorkoutTitle(lastW.title);
+    }
 
     const done = weekLogs?.length || 0;
     const totalMin = weekLogs?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
@@ -437,7 +467,14 @@ const AppDashboard = () => {
 
               {recentLogs.length === 0 && (
                 <p className="text-[12px] text-center py-2" style={{ color: S.textMuted }}>
-                  Nenhum treino esta semana ainda — bora começar! 💪
+                  {prevWeekStats
+                    ? prevWeekStats.done >= 3
+                      ? `Semana passada você mandou ${prevWeekStats.done} treinos em ${prevWeekStats.totalMin} min — bora superar! 🔥`
+                      : lastWorkoutTitle
+                        ? `Seu último treino foi "${lastWorkoutTitle}" — hora de voltar com tudo! 💪`
+                        : `Você treinou ${prevWeekStats.done}x na semana passada — essa semana vai ser melhor! 🚀`
+                    : "Nova semana, novas conquistas — bora começar! 💪"
+                  }
                 </p>
               )}
             </div>
