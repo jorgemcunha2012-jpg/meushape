@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ArrowLeft, Dumbbell, Clock, Flame } from "lucide-react";
-import { SolarPage, useSolar } from "@/components/SolarLayout";
+import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 
 interface WorkoutLog {
   id: string;
