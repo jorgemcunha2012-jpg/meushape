@@ -7,6 +7,7 @@ import { X, ArrowRight, Play, Pause, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateStreak, checkAndAwardBadges } from "@/lib/streaksAndBadges";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import { proxyImageUrl } from "@/lib/mediaUtils";
 import { setHasNewWorkout } from "@/services/cacheService";
 
 // ==========================================
