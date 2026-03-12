@@ -60,35 +60,30 @@ interface MWListResponse {
   results: MWExerciseMinimal[];
 }
 
-// ─── Caches ───
-let musclesCache: MWMuscle[] | null = null;
-let categoriesCache: MWCategory[] | null = null;
-let filtersCache: MWFilters | null = null;
-
-// ─── API Functions ───
+// ─── API Functions (with cache) ───
 
 export const fetchMuscles = async (): Promise<MWMuscle[]> => {
-  if (musclesCache) return musclesCache;
-  const res = await fetch(`${BASE}/muscles`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki muscles error: ${res.status}`);
-  musclesCache = await res.json();
-  return musclesCache!;
+  return cache.fetchWithCache("mw:muscles", async () => {
+    const res = await fetch(`${BASE}/muscles`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki muscles error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const fetchCategories = async (): Promise<MWCategory[]> => {
-  if (categoriesCache) return categoriesCache;
-  const res = await fetch(`${BASE}/categories`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki categories error: ${res.status}`);
-  categoriesCache = await res.json();
-  return categoriesCache!;
+  return cache.fetchWithCache("mw:categories", async () => {
+    const res = await fetch(`${BASE}/categories`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki categories error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const fetchFilters = async (): Promise<MWFilters> => {
-  if (filtersCache) return filtersCache;
-  const res = await fetch(`${BASE}/filters`, { headers });
-  if (!res.ok) throw new Error(`MuscleWiki filters error: ${res.status}`);
-  filtersCache = await res.json();
-  return filtersCache!;
+  return cache.fetchWithCache("mw:filters", async () => {
+    const res = await fetch(`${BASE}/filters`, { headers });
+    if (!res.ok) throw new Error(`MuscleWiki filters error: ${res.status}`);
+    return res.json();
+  }, cache.TTL.LONG);
 };
 
 export const listExercises = async (params: {
