@@ -40,9 +40,9 @@ const ProgressRing = () => {
 };
 
 const timelineSteps = [
-  { day: "Hoje", title: "Pague R$ 19,90 e comece agora", description: "Acesso imediato a todos os treinos, programas e funcionalidades.", active: true },
-  { day: "30 dias", title: "Teste tudo com garantia total", description: "Se não gostar, cancele e receba seu dinheiro de volta. Sem perguntas.", active: false },
-  { day: "Dia 31", title: "Renovação automática", description: "Se continuou, próxima cobrança de R$ 19,90. Cancele quando quiser.", active: false },
+  { day: "Hoje", title: "Comece agora — Grátis", description: "Acesso imediato a todos os treinos, programas e funcionalidades.", active: true },
+  { day: "30 dias", title: "Teste tudo com garantia total", description: "Explore todas as funcionalidades sem compromisso.", active: false },
+  { day: "Dia 31", title: "Renovação automática", description: "Plano gratuito por tempo limitado. Aproveite!", active: false },
 ];
 
 const QuizCheckout = () => {
