@@ -155,8 +155,21 @@ const AppWorkoutDetail = () => {
                   {/* Thumbnail or Number */}
                   {thumbUrl ? (
                     <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"
-                      style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-                      <img src={thumbUrl} alt={exercise.name} className="w-full h-full object-cover" />
+                      style={{ background: `${S.orange}12`, border: `1px solid ${S.cardBorder}` }}>
+                      <img
+                        src={thumbUrl}
+                        alt={exercise.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = "none";
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.classList.add("flex", "items-center", "justify-center");
+                            parent.innerHTML = `<span style="font-weight:800;color:${S.orange}" class="font-display text-sm">${index + 1}</span>`;
+                          }
+                        }}
+                      />
                     </div>
                   ) : (
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sm shrink-0 font-display"
