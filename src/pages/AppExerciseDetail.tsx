@@ -190,7 +190,11 @@ const AppExerciseDetail = () => {
     );
   }
 
-  const mediaUrl = curatedExercise?.gif_url || exercise?.image_url;
+  const exerciseNames = useMemo(() => exercise ? [exercise.name] : [], [exercise]);
+  const { media: mwMedia } = useMuscleWikiMedia(exerciseNames);
+  const mw = exercise ? mwMedia[exercise.name] : undefined;
+  const videoUrl = mw?.video;
+  const mediaUrl = mw?.image || exercise?.image_url;
   const displayName = exercise ? stripParentheses(exercise.name) : "";
 
   return (
