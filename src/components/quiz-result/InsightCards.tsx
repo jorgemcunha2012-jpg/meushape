@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, TrendingUp, User } from "lucide-react";
 import type { InsightCard } from "@/lib/quizResultUtils";
