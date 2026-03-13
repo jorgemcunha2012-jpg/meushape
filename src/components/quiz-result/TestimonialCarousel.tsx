@@ -7,7 +7,7 @@ interface TestimonialCarouselProps {
   testimonials: Testimonial[];
 }
 
-const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
+const TestimonialCarousel = memo(({ testimonials }: TestimonialCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
