@@ -24,6 +24,9 @@ const QuizSuccess = () => {
         supabase.from("checkout_events").insert({ email, status: "completed" }).then();
       }
     });
+
+    // Prefetch app dashboard
+    import("./AppDashboard");
   }, []);
 
   return (
