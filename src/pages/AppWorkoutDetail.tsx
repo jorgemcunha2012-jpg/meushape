@@ -119,8 +119,6 @@ const AppWorkoutDetail = () => {
           <div className="space-y-2">
             {exercises.map((exercise, index) => {
               const mw = mwMedia[exercise.name];
-              const thumbUrl = mw?.image || proxyImageUrl(exercise.image_url);
-              const isMediaPending = mediaLoading && !mw && !exercise.image_url;
 
               return (
                 <motion.button
@@ -132,40 +130,13 @@ const AppWorkoutDetail = () => {
                   className="w-full flex items-center gap-3 p-3 text-left group transition-colors"
                   style={{ ...cardStyle, cursor: "pointer" }}
                 >
-                  {/* Thumbnail / Shimmer / Number */}
-                  {isMediaPending ? (
-                    <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden"
-                      style={{ background: S.card, border: `1px solid ${S.cardBorder}` }}>
-                      <div className="w-full h-full animate-pulse"
-                        style={{ background: `linear-gradient(90deg, ${S.cardBorder}00 0%, ${S.cardBorder}80 50%, ${S.cardBorder}00 100%)`, backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
-                    </div>
-                  ) : thumbUrl ? (
-                    <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"
-                      style={{ background: `${S.orange}12`, border: `1px solid ${S.cardBorder}` }}>
-                      <img
-                        src={thumbUrl}
-                        alt={exercise.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.currentTarget;
-                          target.style.display = "none";
-                          const parent = target.parentElement;
-                          if (parent) {
-                            parent.classList.add("flex", "items-center", "justify-center");
-                            parent.innerHTML = `<span style="font-weight:800;color:${S.orange}" class="font-display text-sm">${index + 1}</span>`;
-                          }
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sm shrink-0 font-display"
-                      style={{
-                        fontWeight: 800, background: `${S.orange}12`, color: S.orange,
-                        border: `1px solid ${S.cardBorder}`,
-                      }}>
-                      {index + 1}
-                    </div>
-                  )}
+                  <ExerciseThumbnail
+                    name={exercise.name}
+                    index={index}
+                    media={mw}
+                    imageUrl={exercise.image_url}
+                    mediaLoading={mediaLoading}
+                  />
 
                   {/* Info */}
                    <div className="flex-1 min-w-0">
