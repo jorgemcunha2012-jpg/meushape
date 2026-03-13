@@ -1,5 +1,6 @@
 import { memo, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Waves, Flame, Zap, Home } from "lucide-react";
 
 interface ModuleCardsProps {
   profileScores?: Record<string, any>;
