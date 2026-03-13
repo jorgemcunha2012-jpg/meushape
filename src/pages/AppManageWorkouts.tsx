@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,8 @@ import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose,
 } from "@/components/ui/drawer";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import ExerciseThumbnail from "@/components/ExerciseThumbnail";
 
 /* ─── Types ─── */
 interface Program {
