@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Timer, Target, Users } from "lucide-react";
 
-const Index = () => {
-  const navigate = useNavigate();
+const trackVisit = (step: string) => {
+  const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
+  sessionStorage.setItem("funnel_session", sessionId);
+  supabase.from("funnel_visits").insert({ step, session_id: sessionId }).then();
+};
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
