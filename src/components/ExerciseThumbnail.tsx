@@ -18,7 +18,7 @@ interface ExerciseThumbnailProps {
  * Reusable exercise thumbnail with shimmer loading, image/video-poster fallback,
  * and graceful degradation to exercise number.
  */
-const ExerciseThumbnail = ({
+const ExerciseThumbnail = memo(({
   name,
   index,
   media,
