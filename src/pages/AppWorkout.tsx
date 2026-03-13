@@ -47,6 +47,7 @@ interface CuratedExercise {
   name_pt: string;
   target: string;
   body_part: string;
+  common_mistakes_pt: string | null;
 }
 
 type Phase = "warmup" | "exercise" | "rest" | "cooldown" | "feedback" | "complete";
