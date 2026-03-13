@@ -210,7 +210,7 @@ export async function resolveExerciseMedia(
   const key = normalizeName(name);
   const cacheKey = `mw:media:v2:${key}`;
 
-  // Check persistent cache first — but skip empty cached results
+  // Check IndexedDB cache first (7 days TTL for hits)
   const cached = await cache.get<{ video?: string; image?: string }>(cacheKey);
   if (cached !== null && (cached.video || cached.image)) return cached;
 
