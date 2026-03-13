@@ -4,6 +4,7 @@ import { CheckCircle2, ArrowRight, Dumbbell, TrendingUp, Users, Sparkles } from 
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { invalidateSubscriptionCache } from "@/hooks/useAuth";
 
 const nextSteps = [
   { icon: Dumbbell, title: "Seu primeiro treino", desc: "Comece agora com um treino personalizado para seu nível." },
