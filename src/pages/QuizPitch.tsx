@@ -145,6 +145,8 @@ const QuizPitch = () => {
       return;
     }
     setCheckingOut(true);
+    // Track checkout event
+    supabase.from("checkout_events").insert({ email, status: "initiated" }).then();
     try {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email, password,
