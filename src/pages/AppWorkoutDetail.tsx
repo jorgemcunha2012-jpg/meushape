@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,11 +95,14 @@ const AppWorkoutDetail = () => {
     setTips(tipsMap);
   };
 
-  const estimatedTime = exercises.length > 0
-    ? Math.round(exercises.reduce((acc, ex) => acc + ex.sets * 1.5 + (ex.sets - 1) * (ex.rest_seconds / 60), 0) + 10)
-    : 0;
+  const estimatedTime = useMemo(() =>
+    exercises.length > 0
+      ? Math.round(exercises.reduce((acc, ex) => acc + ex.sets * 1.5 + (ex.sets - 1) * (ex.rest_seconds / 60), 0) + 10)
+      : 0,
+    [exercises]
+  );
 
-  const totalSets = exercises.reduce((a, e) => a + e.sets, 0);
+  const totalSets = useMemo(() => exercises.reduce((a, e) => a + e.sets, 0), [exercises]);
 
   const cardStyle = {
     backgroundColor: S.card,

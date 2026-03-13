@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { searchExercisesMW, type MWExerciseDetail } from "@/services/muscleWikiService";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,13 @@ interface ExerciseBrowserProps {
   onClose: () => void;
 }
 
-const ExerciseBrowser = ({ onSelect, onClose }: ExerciseBrowserProps) => {
+const ExerciseBrowser = memo(({ onSelect, onClose }: ExerciseBrowserProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MWExerciseDetail[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
     setLoading(true);
     setSearched(true);
@@ -30,21 +30,20 @@ const ExerciseBrowser = ({ onSelect, onClose }: ExerciseBrowserProps) => {
       const data = await searchExercisesMW(query, 20);
       setResults(data);
     } catch (err) {
-      console.error("Search failed:", err);
       setResults([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [query]);
 
-  const handleSelect = (ex: MWExerciseDetail) => {
+  const handleSelect = useCallback((ex: MWExerciseDetail) => {
     onSelect({
       name: ex.name,
       instructions: ex.steps?.join(" ") || "",
       category: ex.category || "",
       muscles: ex.primary_muscles || [],
     });
-  };
+  }, [onSelect]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-y-auto">
@@ -122,6 +121,8 @@ const ExerciseBrowser = ({ onSelect, onClose }: ExerciseBrowserProps) => {
       </div>
     </div>
   );
-};
+});
+
+ExerciseBrowser.displayName = "ExerciseBrowser";
 
 export default ExerciseBrowser;

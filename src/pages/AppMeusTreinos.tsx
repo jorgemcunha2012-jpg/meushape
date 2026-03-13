@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -138,7 +138,7 @@ const AppMeusTreinos = () => {
     }
   };
 
-  const handlePurchaseExtra = async (type: GenerationType) => {
+  const handlePurchaseExtra = useCallback(async (type: GenerationType) => {
     if (!user) return;
     setPurchasing(true);
     try {
@@ -156,9 +156,9 @@ const AppMeusTreinos = () => {
       setPurchasing(false);
       setPurchaseModal(null);
     }
-  };
+  }, [user]);
 
-  const handleGenerateNew = (type: GenerationType) => {
+  const handleGenerateNew = useCallback((type: GenerationType) => {
     const program = activePrograms[type];
     // If there's already an active program, go to purchase flow
     if (program) {
@@ -171,7 +171,7 @@ const AppMeusTreinos = () => {
     } else {
       setGeneratingType(type);
     }
-  };
+  }, [activePrograms, navigate]);
 
   const cardStyle = {
     backgroundColor: S.card,
