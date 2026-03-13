@@ -49,6 +49,17 @@ serve(async (req) => {
         headers: { "X-API-Key": apiKey },
       });
 
+      // If API returns 403 (tier restriction), return empty results gracefully
+      if (response.status === 403) {
+        const emptyResult = endpointBase === "search" ? "[]" 
+          : endpointBase === "exercises" ? JSON.stringify({ total: 0, limit: 20, offset: 0, count: 0, results: [] })
+          : "[]";
+        return new Response(emptyResult, {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=300" },
+        });
+      }
+
       const body = await response.text();
       return new Response(body, {
         status: response.status,
