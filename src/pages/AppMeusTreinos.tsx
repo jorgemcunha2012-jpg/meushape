@@ -89,8 +89,8 @@ const AppMeusTreinos = () => {
     // 2. For any type still missing, check user_programs + workout_programs
     const missingTypes = (["plan", "challenge", "project"] as GenerationType[]).filter(t => !map[t]);
     if (missingTypes.length > 0) {
-      const programTypeMap: Record<GenerationType, string> = {
-        plan: "gym", challenge: "challenge", project: "project",
+      const programTypeMap: Record<GenerationType, string[]> = {
+        plan: ["plan", "gym"], challenge: ["challenge"], project: ["project"],
       };
       const { data: userProgs } = await supabase
         .from("user_programs")
@@ -107,7 +107,7 @@ const AppMeusTreinos = () => {
 
         if (wps) {
           for (const type of missingTypes) {
-            const match = wps.find(p => p.program_type === programTypeMap[type]);
+            const match = wps.find(p => programTypeMap[type].includes(p.program_type));
             if (match) map[type] = match as ActiveProgram;
           }
         }
