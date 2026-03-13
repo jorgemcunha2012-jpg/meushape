@@ -71,6 +71,8 @@ const InsightCards = memo(({ insights }: InsightCardsProps) => {
       })}
     </div>
   );
-};
+});
+
+InsightCards.displayName = "InsightCards";
 
 export default InsightCards;

@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { Radar, RadarChart as RechartsRadar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from "recharts";
 import { dimensionLabels, type SixDimensions } from "@/lib/quizResultUtils";
 import { motion } from "framer-motion";
@@ -7,12 +8,16 @@ interface RadarChartProps {
   potential: SixDimensions;
 }
 
-const RadarChartComponent = ({ current, potential }: RadarChartProps) => {
-  const data = (Object.keys(current) as (keyof SixDimensions)[]).map((key) => ({
-    dimension: dimensionLabels[key],
-    Atual: current[key],
-    "Em 12 Semanas": potential[key],
-  }));
+const RadarChartComponent = memo(({ current, potential }: RadarChartProps) => {
+  const data = useMemo(
+    () =>
+      (Object.keys(current) as (keyof SixDimensions)[]).map((key) => ({
+        dimension: dimensionLabels[key],
+        Atual: current[key],
+        "Em 12 Semanas": potential[key],
+      })),
+    [current, potential]
+  );
 
   return (
     <motion.div
@@ -57,6 +62,8 @@ const RadarChartComponent = ({ current, potential }: RadarChartProps) => {
       </ResponsiveContainer>
     </motion.div>
   );
-};
+});
+
+RadarChartComponent.displayName = "RadarChartComponent";
 
 export default RadarChartComponent;
