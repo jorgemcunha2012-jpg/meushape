@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,8 @@ import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose,
 } from "@/components/ui/drawer";
+import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
+import ExerciseThumbnail from "@/components/ExerciseThumbnail";
 
 /* ─── Types ─── */
 interface Program {
@@ -58,6 +60,9 @@ const AppManageWorkouts = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [showBrowser, setShowBrowser] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
+
+  const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
 
   // Drawer states
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -408,16 +413,18 @@ const AppManageWorkouts = () => {
                       transition={{ delay: i * 0.04 }}
                       className="p-4" style={cardStyle}>
                       <div className="flex gap-3">
-                        {ex.image_url && (
-                          <img src={ex.image_url} alt={ex.name}
-                            className="w-16 h-16 rounded-xl object-cover shrink-0"
-                            style={{ backgroundColor: S.card, border: `1px solid ${S.cardBorder}` }}
-                            loading="lazy" />
-                        )}
+                        <ExerciseThumbnail
+                          name={ex.name}
+                          index={i}
+                          media={mwMedia[ex.name]}
+                          imageUrl={ex.image_url}
+                          mediaLoading={mediaLoading}
+                          size="14"
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-1">
                             <p className="font-display text-xs capitalize" style={{ fontWeight: 700, color: S.text }}>
-                              {i + 1}. {ex.name}
+                              {ex.name}
                             </p>
                             <button onClick={() => deleteExercise(ex.id)} className="p-1 shrink-0 hover:text-destructive" style={{ color: S.textMuted }}>
                               <Trash2 size={13} />
