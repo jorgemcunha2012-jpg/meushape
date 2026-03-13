@@ -214,11 +214,26 @@ export async function resolveExerciseMedia(
   const cached = await cache.get<{ video?: string; image?: string }>(cacheKey);
   if (cached !== null && (cached.video || cached.image)) return cached;
 
+  /**
+   * Check if a MuscleWiki result name is relevant to the search query.
+   * Compares normalized words to ensure meaningful overlap.
+   */
+  const isRelevantResult = (resultName: string, query: string): boolean => {
+    const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, "").trim();
+    const resultWords = new Set(normalize(resultName).split(/\s+/).filter(w => w.length > 2));
+    const queryWords = normalize(query).split(/\s+/).filter(w => w.length > 2);
+    if (queryWords.length === 0) return true;
+    // At least one significant query word must appear in the result
+    const matchCount = queryWords.filter(w => resultWords.has(w)).length;
+    return matchCount >= 1 && matchCount >= Math.ceil(queryWords.length * 0.4);
+  };
+
   const trySearch = async (query: string): Promise<{ video?: string; image?: string } | null> => {
     try {
-      const results = await searchExercisesMW(query, 1);
-      if (results.length > 0) {
-        const ex = results[0];
+      const results = await searchExercisesMW(query, 5);
+      // Find the first result that actually matches the query
+      for (const ex of results) {
+        if (!isRelevantResult(ex.name, query)) continue;
         const video = ex.videos?.find((v) => v.gender === "female") || ex.videos?.[0];
         const result: { video?: string; image?: string } = {};
         if (video?.url) result.video = getProxiedMediaUrl(video.url);
