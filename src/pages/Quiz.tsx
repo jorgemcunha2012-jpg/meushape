@@ -1,5 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -13,6 +14,13 @@ const Quiz = () => {
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [numericValue, setNumericValue] = useState("");
   const [animating, setAnimating] = useState(false);
+
+  // Track quiz start
+  useEffect(() => {
+    const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
+    sessionStorage.setItem("funnel_session", sessionId);
+    supabase.from("funnel_visits").insert({ step: "quiz_start", session_id: sessionId }).then();
+  }, []);
 
   const screen = quizScreens[currentStep];
   const totalSteps = quizScreens.length;

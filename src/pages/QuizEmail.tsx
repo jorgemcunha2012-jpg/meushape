@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -35,7 +36,24 @@ const QuizEmail = () => {
     setLoading(true);
     setError("");
     try {
-      // TODO: Save to database
+      // Calculate profile scores from answers
+      const { calculateAxisScores } = await import("@/lib/quizData");
+      const scores = calculateAxisScores(answers || {});
+
+      // Save lead to database
+      await supabase.from("leads").insert({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        opted_in: optedIn,
+        quiz_answers: answers || {},
+        profile_scores: scores || {},
+      });
+
+      // Track funnel step
+      const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
+      sessionStorage.setItem("funnel_session", sessionId);
+      await supabase.from("funnel_visits").insert({ step: "lead_captured", session_id: sessionId });
+
       navigate("/quiz/analise-corporal", {
         state: { name, email, answers, optedIn },
       });
