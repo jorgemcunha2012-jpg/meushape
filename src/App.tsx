@@ -34,6 +34,7 @@ import AppProgramDetail from "./pages/AppProgramDetail";
 import AppExploreMuscleWiki from "./pages/AppExploreMuscleWiki";
 import AppMuscleWikiDetail from "./pages/AppMuscleWikiDetail";
 import AppMeusTreinos from "./pages/AppMeusTreinos";
+import AppInstall from "./pages/AppInstall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,10 @@ const App = () => (
             <Route path="/app/home-workout" element={<AppHomeWorkout />} />
             <Route path="/app/home-workout/:templateId" element={<AppHomeWorkout />} />
             <Route path="/app/profile" element={<AppProfile />} />
+            <Route path="/app/install" element={<AppInstall />} />
+            {/* MuscleWiki */}
+            <Route path="/app/explore" element={<AppExploreMuscleWiki />} />
+            <Route path="/app/explore/:muscleId" element={<AppMuscleWikiDetail />} />
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
