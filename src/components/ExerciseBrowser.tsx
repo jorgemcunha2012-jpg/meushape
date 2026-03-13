@@ -121,6 +121,8 @@ const ExerciseBrowser = memo(({ onSelect, onClose }: ExerciseBrowserProps) => {
       </div>
     </div>
   );
-};
+});
+
+ExerciseBrowser.displayName = "ExerciseBrowser";
 
 export default ExerciseBrowser;

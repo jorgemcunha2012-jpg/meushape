@@ -95,11 +95,14 @@ const AppWorkoutDetail = () => {
     setTips(tipsMap);
   };
 
-  const estimatedTime = exercises.length > 0
-    ? Math.round(exercises.reduce((acc, ex) => acc + ex.sets * 1.5 + (ex.sets - 1) * (ex.rest_seconds / 60), 0) + 10)
-    : 0;
+  const estimatedTime = useMemo(() =>
+    exercises.length > 0
+      ? Math.round(exercises.reduce((acc, ex) => acc + ex.sets * 1.5 + (ex.sets - 1) * (ex.rest_seconds / 60), 0) + 10)
+      : 0,
+    [exercises]
+  );
 
-  const totalSets = exercises.reduce((a, e) => a + e.sets, 0);
+  const totalSets = useMemo(() => exercises.reduce((a, e) => a + e.sets, 0), [exercises]);
 
   const cardStyle = {
     backgroundColor: S.card,
