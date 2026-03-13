@@ -36,7 +36,6 @@ const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
                 alt={t.name}
                 loading="lazy"
                 className="w-10 h-10 rounded-full object-cover"
-                loading="lazy"
               />
               <div>
                 <p className="text-sm font-bold text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>
