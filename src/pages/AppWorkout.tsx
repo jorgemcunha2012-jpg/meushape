@@ -168,7 +168,7 @@ const AppWorkout = () => {
       if (names.length > 0) {
         const { data: curated } = await supabase
           .from("curated_exercises")
-          .select("name_pt, target, body_part")
+          .select("name_pt, target, body_part, common_mistakes_pt")
           .in("name_pt", names);
         if (curated) {
           const map: Record<string, CuratedExercise> = {};
