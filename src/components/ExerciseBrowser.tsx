@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { searchExercisesMW, type MWExerciseDetail } from "@/services/muscleWikiService";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
