@@ -210,7 +210,7 @@ export async function resolveExerciseMedia(
   const key = normalizeName(name);
   const cacheKey = `mw:media:v2:${key}`;
 
-  // Check persistent cache first — but skip empty cached results
+  // Check IndexedDB cache first (7 days TTL for hits)
   const cached = await cache.get<{ video?: string; image?: string }>(cacheKey);
   if (cached !== null && (cached.video || cached.image)) return cached;
 
@@ -268,8 +268,8 @@ export async function resolveExerciseMedia(
   }
 
   const final = result || {};
-  // Only cache for a long time if we found something; short cache for misses
-  const ttl = (final.video || final.image) ? cache.TTL.LONG : cache.TTL.SHORT;
+  // 7 days for hits, 5 min for misses (retry sooner)
+  const ttl = (final.video || final.image) ? cache.TTL.VERY_LONG : cache.TTL.SHORT;
   await cache.set(cacheKey, final, ttl);
   return final;
 }

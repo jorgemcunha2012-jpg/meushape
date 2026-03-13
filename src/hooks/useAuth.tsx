@@ -1,6 +1,45 @@
-import { useState, useEffect, createContext, useContext, useCallback } from "react";
+import { useState, useEffect, createContext, useContext, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+
+// ─── Subscription Cache (5 min TTL, deduplication) ───
+const SUB_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let subCacheResult: boolean | null = null;
+let subCacheTimestamp = 0;
+let subInflight: Promise<boolean> | null = null;
+
+export function invalidateSubscriptionCache() {
+  subCacheResult = null;
+  subCacheTimestamp = 0;
+  subInflight = null;
+}
+
+async function fetchSubscriptionWithCache(force = false): Promise<boolean> {
+  // Return cached if valid
+  if (!force && subCacheResult !== null && Date.now() - subCacheTimestamp < SUB_CACHE_TTL) {
+    return subCacheResult;
+  }
+  // Deduplicate concurrent calls
+  if (subInflight) return subInflight;
+
+  subInflight = (async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) throw error;
+      const result = data?.subscribed === true;
+      subCacheResult = result;
+      subCacheTimestamp = Date.now();
+      return result;
+    } catch (err) {
+      console.error("Check subscription error:", err);
+      return false;
+    } finally {
+      subInflight = null;
+    }
+  })();
+
+  return subInflight;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -37,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return !!localStorage.getItem("admin_session");
   };
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (force = false) => {
     // Admin is always "subscribed"
     if (isAdminSession()) {
       setSubscribed(true);
@@ -54,11 +93,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      setSubscribed(data?.subscribed === true);
-    } catch (err) {
-      console.error("Check subscription error:", err);
+      const result = await fetchSubscriptionWithCache(force);
+      setSubscribed(result);
+    } catch {
       setSubscribed(false);
     } finally {
       setSubscriptionLoading(false);

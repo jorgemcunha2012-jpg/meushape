@@ -4,6 +4,7 @@ import { CheckCircle2, ArrowRight, Dumbbell, TrendingUp, Users, Sparkles } from 
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { invalidateSubscriptionCache } from "@/hooks/useAuth";
 
 const nextSteps = [
   { icon: Dumbbell, title: "Seu primeiro treino", desc: "Comece agora com um treino personalizado para seu nível." },
@@ -15,6 +16,8 @@ const QuizSuccess = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Invalidate subscription cache so fresh check happens
+    invalidateSubscriptionCache();
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.4 }, colors: ["#FF6B2B", "#F59E0B", "#10B981"] });
 
     // Track checkout completed
