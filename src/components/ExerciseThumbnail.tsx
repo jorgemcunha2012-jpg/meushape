@@ -60,6 +60,7 @@ const ExerciseThumbnail = ({
             alt={name}
             className="w-full h-full object-cover"
             loading="lazy"
+            decoding="async"
             onError={() => setImgError(true)}
           />
         ) : videoSrc ? (
