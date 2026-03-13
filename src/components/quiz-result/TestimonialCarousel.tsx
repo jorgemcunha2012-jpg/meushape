@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, memo } from "react";
 import { motion } from "framer-motion";
 import type { Testimonial } from "@/lib/quizResultUtils";
 import { Star } from "lucide-react";
