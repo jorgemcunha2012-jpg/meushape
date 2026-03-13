@@ -156,7 +156,7 @@ const AppMeusTreinos = () => {
       setPurchasing(false);
       setPurchaseModal(null);
     }
-  };
+  }, [user]);
 
   const handleGenerateNew = (type: GenerationType) => {
     const program = activePrograms[type];
