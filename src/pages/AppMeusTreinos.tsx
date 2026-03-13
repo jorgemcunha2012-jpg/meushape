@@ -158,7 +158,7 @@ const AppMeusTreinos = () => {
     }
   }, [user]);
 
-  const handleGenerateNew = (type: GenerationType) => {
+  const handleGenerateNew = useCallback((type: GenerationType) => {
     const program = activePrograms[type];
     // If there's already an active program, go to purchase flow
     if (program) {
