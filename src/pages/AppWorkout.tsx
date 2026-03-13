@@ -374,6 +374,19 @@ const AppWorkout = () => {
             )}
           </div>
 
+          {(() => {
+            const tip = curated?.common_mistakes_pt || findFallbackTip(currentEx.name);
+            if (!tip) return null;
+            return (
+              <div className="flex items-start gap-2 p-3 rounded-xl mb-4 bg-warning/10 border border-warning/20">
+                <Lightbulb className="w-4 h-4 mt-0.5 shrink-0 text-warning" />
+                <p className="text-xs text-foreground leading-relaxed">
+                  <span className="font-bold text-warning">Dica: </span>{tip}
+                </p>
+              </div>
+            );
+          })()}
+
           <div className="flex justify-center gap-2 mb-4">
             {Array.from({ length: currentEx.sets }, (_, i) => (
               <div
