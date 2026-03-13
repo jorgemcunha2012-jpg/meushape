@@ -24,9 +24,9 @@ serve(async (req) => {
     if (!authHeader?.startsWith("Bearer ")) throw new Error("No authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) throw new Error("User not authenticated");
-    const email = claimsData.claims.email as string;
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData?.user) throw new Error("User not authenticated");
+    const email = userData.user.email as string;
     if (!email) throw new Error("User email not available");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
