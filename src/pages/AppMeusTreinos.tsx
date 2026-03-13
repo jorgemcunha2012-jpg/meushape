@@ -171,7 +171,7 @@ const AppMeusTreinos = () => {
     } else {
       setGeneratingType(type);
     }
-  };
+  }, [activePrograms, navigate]);
 
   const cardStyle = {
     backgroundColor: S.card,
