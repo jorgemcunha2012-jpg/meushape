@@ -7,6 +7,7 @@ import { Play, Clock, Dumbbell, Flame, ChevronRight, Lightbulb } from "lucide-re
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 import ExerciseThumbnail from "@/components/ExerciseThumbnail";
+import { findFallbackTip } from "@/lib/exerciseTips";
 
 interface Exercise {
   id: string;
