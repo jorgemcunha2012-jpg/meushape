@@ -119,7 +119,9 @@ const AppWorkoutDashboard = () => {
         .select("phase, current_week")
         .eq("user_id", user.id)
         .eq("program_id", programIds[0])
-        .single();
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
       if (cycleData) { setCyclePhase(cycleData.phase); setCycleWeek(cycleData.current_week); }
     } else {
       setAddedProgramIds(new Set());

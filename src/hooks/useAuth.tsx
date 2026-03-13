@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return !!localStorage.getItem("admin_session");
   };
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (force = false) => {
     // Admin is always "subscribed"
     if (isAdminSession()) {
       setSubscribed(true);
@@ -93,11 +93,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      setSubscribed(data?.subscribed === true);
-    } catch (err) {
-      console.error("Check subscription error:", err);
+      const result = await fetchSubscriptionWithCache(force);
+      setSubscribed(result);
+    } catch {
       setSubscribed(false);
     } finally {
       setSubscriptionLoading(false);

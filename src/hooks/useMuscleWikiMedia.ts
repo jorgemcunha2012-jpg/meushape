@@ -268,8 +268,8 @@ export async function resolveExerciseMedia(
   }
 
   const final = result || {};
-  // Only cache for a long time if we found something; short cache for misses
-  const ttl = (final.video || final.image) ? cache.TTL.LONG : cache.TTL.SHORT;
+  // 7 days for hits, 5 min for misses (retry sooner)
+  const ttl = (final.video || final.image) ? cache.TTL.VERY_LONG : cache.TTL.SHORT;
   await cache.set(cacheKey, final, ttl);
   return final;
 }
