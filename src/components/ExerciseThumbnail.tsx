@@ -91,6 +91,8 @@ const ExerciseThumbnail = memo(({
       {index + 1}
     </div>
   );
-};
+});
+
+ExerciseThumbnail.displayName = "ExerciseThumbnail";
 
 export default ExerciseThumbnail;
