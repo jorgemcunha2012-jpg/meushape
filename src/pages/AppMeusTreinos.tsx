@@ -62,19 +62,20 @@ const AppMeusTreinos = () => {
   const fetchData = async () => {
     if (!user || limits.loading) return;
 
-    // Fetch active programs for each type
-    const programIds = (["plan", "challenge", "project"] as GenerationType[])
+    const map: Record<GenerationType, ActiveProgram | null> = { plan: null, challenge: null, project: null };
+
+    // 1. Try to get programs from generation limits (activeProgramId)
+    const limitProgramIds = (["plan", "challenge", "project"] as GenerationType[])
       .map(t => limits[t].activeProgramId)
       .filter(Boolean) as string[];
 
-    if (programIds.length > 0) {
+    if (limitProgramIds.length > 0) {
       const { data: programs } = await supabase
         .from("workout_programs")
         .select("*")
-        .in("id", programIds);
+        .in("id", limitProgramIds);
 
       if (programs) {
-        const map: Record<GenerationType, ActiveProgram | null> = { plan: null, challenge: null, project: null };
         for (const type of ["plan", "challenge", "project"] as GenerationType[]) {
           const pid = limits[type].activeProgramId;
           if (pid) {
@@ -82,9 +83,38 @@ const AppMeusTreinos = () => {
             if (prog) map[type] = prog as ActiveProgram;
           }
         }
-        setActivePrograms(map);
       }
     }
+
+    // 2. For any type still missing, check user_programs + workout_programs
+    const missingTypes = (["plan", "challenge", "project"] as GenerationType[]).filter(t => !map[t]);
+    if (missingTypes.length > 0) {
+      const programTypeMap: Record<GenerationType, string> = {
+        plan: "gym", challenge: "challenge", project: "project",
+      };
+      const { data: userProgs } = await supabase
+        .from("user_programs")
+        .select("program_id")
+        .eq("user_id", user.id);
+
+      if (userProgs && userProgs.length > 0) {
+        const upIds = userProgs.map(up => up.program_id);
+        const { data: wps } = await supabase
+          .from("workout_programs")
+          .select("*")
+          .in("id", upIds)
+          .eq("is_active", true);
+
+        if (wps) {
+          for (const type of missingTypes) {
+            const match = wps.find(p => p.program_type === programTypeMap[type]);
+            if (match) map[type] = match as ActiveProgram;
+          }
+        }
+      }
+    }
+
+    setActivePrograms(map);
 
     // Fetch extras
     const { data: purchases } = await supabase
