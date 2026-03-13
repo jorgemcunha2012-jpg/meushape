@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useSolar } from "@/components/SolarLayout";
 
 interface ExerciseThumbnailProps {
