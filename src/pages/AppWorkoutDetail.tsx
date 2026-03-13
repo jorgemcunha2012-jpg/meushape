@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Play, Clock, Dumbbell, Flame, ChevronRight } from "lucide-react";
 import { SolarPage, SolarHeader, useSolar } from "@/components/SolarLayout";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
-import { proxyImageUrl } from "@/lib/mediaUtils";
+import ExerciseThumbnail from "@/components/ExerciseThumbnail";
 
 interface Exercise {
   id: string;
