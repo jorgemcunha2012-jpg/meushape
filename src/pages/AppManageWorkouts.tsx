@@ -61,6 +61,9 @@ const AppManageWorkouts = () => {
   const [showBrowser, setShowBrowser] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
 
+  const exerciseNames = useMemo(() => exercises.map(e => e.name), [exercises]);
+  const { media: mwMedia, loading: mediaLoading } = useMuscleWikiMedia(exerciseNames);
+
   // Drawer states
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<"program" | "workout">("program");
