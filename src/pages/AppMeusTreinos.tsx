@@ -138,7 +138,7 @@ const AppMeusTreinos = () => {
     }
   };
 
-  const handlePurchaseExtra = async (type: GenerationType) => {
+  const handlePurchaseExtra = useCallback(async (type: GenerationType) => {
     if (!user) return;
     setPurchasing(true);
     try {
