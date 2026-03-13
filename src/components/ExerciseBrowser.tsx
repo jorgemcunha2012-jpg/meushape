@@ -16,7 +16,7 @@ interface ExerciseBrowserProps {
   onClose: () => void;
 }
 
-const ExerciseBrowser = ({ onSelect, onClose }: ExerciseBrowserProps) => {
+const ExerciseBrowser = memo(({ onSelect, onClose }: ExerciseBrowserProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MWExerciseDetail[]>([]);
   const [loading, setLoading] = useState(false);
