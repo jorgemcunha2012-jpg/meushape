@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, Dumbbell, TrendingUp, Users, Sparkles } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const nextSteps = [
   { icon: Dumbbell, title: "Seu primeiro treino", desc: "Comece agora com um treino personalizado para seu nível." },
@@ -15,6 +16,14 @@ const QuizSuccess = () => {
 
   useEffect(() => {
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.4 }, colors: ["#FF6B2B", "#F59E0B", "#10B981"] });
+
+    // Track checkout completed
+    supabase.auth.getUser().then(({ data }) => {
+      const email = data.user?.email;
+      if (email) {
+        supabase.from("checkout_events").insert({ email, status: "completed" }).then();
+      }
+    });
   }, []);
 
   return (
