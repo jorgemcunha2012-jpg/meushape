@@ -34,6 +34,7 @@ import AppProgramDetail from "./pages/AppProgramDetail";
 import AppExploreMuscleWiki from "./pages/AppExploreMuscleWiki";
 import AppMuscleWikiDetail from "./pages/AppMuscleWikiDetail";
 import AppMeusTreinos from "./pages/AppMeusTreinos";
+import AppInstall from "./pages/AppInstall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
