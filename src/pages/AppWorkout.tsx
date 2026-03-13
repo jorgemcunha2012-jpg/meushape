@@ -9,6 +9,7 @@ import { updateStreak, checkAndAwardBadges } from "@/lib/streaksAndBadges";
 import { useMuscleWikiMedia } from "@/hooks/useMuscleWikiMedia";
 import { proxyImageUrl } from "@/lib/mediaUtils";
 import { setHasNewWorkout } from "@/services/cacheService";
+import { findFallbackTip } from "@/lib/exerciseTips";
 
 // ==========================================
 // TYPES
