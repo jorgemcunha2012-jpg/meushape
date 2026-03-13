@@ -107,7 +107,7 @@ const AppMeusTreinos = () => {
 
         if (wps) {
           for (const type of missingTypes) {
-            const match = wps.find(p => p.program_type === programTypeMap[type]);
+            const match = wps.find(p => programTypeMap[type].includes(p.program_type));
             if (match) map[type] = match as ActiveProgram;
           }
         }
