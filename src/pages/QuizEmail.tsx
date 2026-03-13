@@ -17,6 +17,11 @@ const QuizEmail = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Prefetch resultado route
+  useEffect(() => {
+    import("./QuizResult");
+  }, []);
+
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isNameValid = name.trim().length > 1;
 
