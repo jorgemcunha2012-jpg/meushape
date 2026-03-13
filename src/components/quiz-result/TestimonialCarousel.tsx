@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, memo } from "react";
 import { motion } from "framer-motion";
 import type { Testimonial } from "@/lib/quizResultUtils";
 import { Star } from "lucide-react";
@@ -7,7 +7,7 @@ interface TestimonialCarouselProps {
   testimonials: Testimonial[];
 }
 
-const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
+const TestimonialCarousel = memo(({ testimonials }: TestimonialCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -76,6 +76,8 @@ const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
       </div>
     </div>
   );
-};
+});
+
+TestimonialCarousel.displayName = "TestimonialCarousel";
 
 export default TestimonialCarousel;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useSolar } from "@/components/SolarLayout";
 
 interface ExerciseThumbnailProps {
@@ -18,7 +18,7 @@ interface ExerciseThumbnailProps {
  * Reusable exercise thumbnail with shimmer loading, image/video-poster fallback,
  * and graceful degradation to exercise number.
  */
-const ExerciseThumbnail = ({
+const ExerciseThumbnail = memo(({
   name,
   index,
   media,
@@ -91,6 +91,8 @@ const ExerciseThumbnail = ({
       {index + 1}
     </div>
   );
-};
+});
+
+ExerciseThumbnail.displayName = "ExerciseThumbnail";
 
 export default ExerciseThumbnail;

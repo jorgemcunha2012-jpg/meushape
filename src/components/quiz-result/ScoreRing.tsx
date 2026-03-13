@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { motion } from "framer-motion";
 
 interface ScoreRingProps {
@@ -6,7 +6,7 @@ interface ScoreRingProps {
   label?: string;
 }
 
-const ScoreRing = ({ score, label }: ScoreRingProps) => {
+const ScoreRing = memo(({ score, label }: ScoreRingProps) => {
   const [animated, setAnimated] = useState(0);
   const size = 180;
   const stroke = 10;
@@ -26,7 +26,6 @@ const ScoreRing = ({ score, label }: ScoreRingProps) => {
     <div className="flex flex-col items-center">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          {/* Background ring */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -35,7 +34,6 @@ const ScoreRing = ({ score, label }: ScoreRingProps) => {
             stroke="rgba(255,255,255,0.08)"
             strokeWidth={stroke}
           />
-          {/* Score ring */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -49,7 +47,6 @@ const ScoreRing = ({ score, label }: ScoreRingProps) => {
             style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)" }}
           />
         </svg>
-        {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span
             className="text-4xl font-black tabular-nums"
@@ -75,6 +72,8 @@ const ScoreRing = ({ score, label }: ScoreRingProps) => {
       )}
     </div>
   );
-};
+});
+
+ScoreRing.displayName = "ScoreRing";
 
 export default ScoreRing;

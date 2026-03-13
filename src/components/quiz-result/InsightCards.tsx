@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, TrendingUp, User } from "lucide-react";
 import type { InsightCard } from "@/lib/quizResultUtils";
@@ -18,7 +19,7 @@ const colorMap = {
   profile: { bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.3)", icon: "#3B82F6", text: "#93C5FD" },
 };
 
-const InsightCards = ({ insights }: InsightCardsProps) => {
+const InsightCards = memo(({ insights }: InsightCardsProps) => {
   return (
     <div className="space-y-3">
       {insights.map((insight, i) => {
@@ -70,6 +71,8 @@ const InsightCards = ({ insights }: InsightCardsProps) => {
       })}
     </div>
   );
-};
+});
+
+InsightCards.displayName = "InsightCards";
 
 export default InsightCards;
