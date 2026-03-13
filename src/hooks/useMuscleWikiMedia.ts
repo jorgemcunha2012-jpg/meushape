@@ -237,7 +237,7 @@ export async function resolveExerciseMedia(
         const video = ex.videos?.find((v) => v.gender === "female") || ex.videos?.[0];
         const result: { video?: string; image?: string } = {};
         if (video?.url) result.video = getProxiedMediaUrl(video.url);
-        if (video?.og_image) result.image = video.og_image;
+        if (video?.og_image) result.image = getProxiedMediaUrl(video.og_image);
         if (result.video || result.image) return result;
       }
     } catch {
