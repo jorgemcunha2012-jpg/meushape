@@ -76,6 +76,8 @@ const TestimonialCarousel = memo(({ testimonials }: TestimonialCarouselProps) =>
       </div>
     </div>
   );
-};
+});
+
+TestimonialCarousel.displayName = "TestimonialCarousel";
 
 export default TestimonialCarousel;
