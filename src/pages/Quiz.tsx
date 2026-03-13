@@ -15,6 +15,13 @@ const Quiz = () => {
   const [numericValue, setNumericValue] = useState("");
   const [animating, setAnimating] = useState(false);
 
+  // Track quiz start
+  useEffect(() => {
+    const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
+    sessionStorage.setItem("funnel_session", sessionId);
+    supabase.from("funnel_visits").insert({ step: "quiz_start", session_id: sessionId }).then();
+  }, []);
+
   const screen = quizScreens[currentStep];
   const totalSteps = quizScreens.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
