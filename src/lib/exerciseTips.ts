@@ -48,6 +48,22 @@ export const FALLBACK_TIPS: Record<string, string> = {
   "cross": "Cruze as mãos à frente mantendo leve flexão nos cotovelos.",
   "triceps": "Mantenha os cotovelos próximos ao corpo. Não use impulso.",
   "passada": "Mantenha o tronco ereto e o joelho da frente alinhado com o tornozelo.",
+  // Elástico (resistance band)
+  "elastico": "Mantenha tensão constante no elástico durante todo o movimento.",
+  "clamshell": "Não gire o quadril para trás ao abrir. Mantenha os pés juntos.",
+  "monster walk": "Mantenha os joelhos abertos e o tronco levemente inclinado. Passos curtos.",
+  "pull apart": "Braços estendidos na altura dos ombros. Aperte as escápulas ao abrir.",
+  "pallof": "Não deixe o tronco girar. Core 100% contraído contra a resistência lateral.",
+  // Kettlebell
+  "swing": "Não agache — é um movimento de quadril. Projete o quadril para frente com força.",
+  "goblet": "Mantenha o kettlebell próximo ao peito e os cotovelos entre os joelhos.",
+  "turkish": "Mantenha o braço estendido e olhe para o kettlebell. Vá devagar.",
+  "get-up": "Mantenha o braço estendido e olhe para o kettlebell durante todo o movimento.",
+  "clean": "Não bata o kettlebell no antebraço. Guie com o cotovelo e receba suavemente.",
+  "snatch": "Use a força do quadril, não do braço. Receba o kettlebell suavemente acima da cabeça.",
+  "farmer": "Ombros para trás, core firme. Não incline para os lados.",
+  "halo": "Core contraído, gire apenas os braços ao redor da cabeça, não o tronco.",
+  "windmill": "Mantenha o braço de cima travado e olhe para o kettlebell. Desça pelo quadril.",
 };
 
 /** Find a fallback tip by matching exercise name keywords */
