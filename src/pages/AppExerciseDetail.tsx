@@ -233,6 +233,7 @@ const AppExerciseDetail = () => {
                 <img
                   src={mediaUrl}
                   alt={displayName}
+                  loading="eager"
                   className="absolute inset-0 w-full h-full object-contain"
                   style={{ background: S.card }}
                 />

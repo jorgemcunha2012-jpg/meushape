@@ -309,7 +309,7 @@ const QuizResult = () => {
           <div className="flex items-center gap-2 mb-3">
             <div className="flex -space-x-2">
               {allTestimonials.slice(0, 4).map((t, i) => (
-                <img key={i} src={t.photo} alt={t.name} className="w-7 h-7 rounded-full border-2 object-cover" style={{ borderColor: "#0a0a0a" }} />
+                <img key={i} src={t.photo} alt={t.name} loading="lazy" className="w-7 h-7 rounded-full border-2 object-cover" style={{ borderColor: "#0a0a0a" }} />
               ))}
             </div>
             <div className="flex items-center gap-0.5">

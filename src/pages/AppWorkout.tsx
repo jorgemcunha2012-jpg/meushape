@@ -357,6 +357,7 @@ const AppWorkout = () => {
               <img
                 src={imageUrl}
                 alt={currentEx.name}
+                loading="eager"
                 className="w-full h-full object-contain relative z-10"
               />
             ) : (

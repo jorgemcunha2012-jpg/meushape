@@ -34,8 +34,8 @@ const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
               <img
                 src={t.photo}
                 alt={t.name}
-                className="w-10 h-10 rounded-full object-cover"
                 loading="lazy"
+                className="w-10 h-10 rounded-full object-cover"
               />
               <div>
                 <p className="text-sm font-bold text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>
