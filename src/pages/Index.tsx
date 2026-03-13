@@ -10,6 +10,13 @@ const trackVisit = (step: string) => {
   supabase.from("funnel_visits").insert({ step, session_id: sessionId }).then();
 };
 
+const Index = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    trackVisit("landing");
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Hero */}
