@@ -102,7 +102,7 @@ export const quizScreens: QuizScreen[] = [
     type: "multi-select",
     question: "O que já te fez desistir de treinar antes?",
     options: [
-      { id: "t16a", label: "Não sabia o que fazer na academia", scores: { mente: -1 } },
+      { id: "t16a", label: "Não sabia o que fazer", scores: { mente: -1 } },
       { id: "t16b", label: "Perdi a motivação", scores: { mente: -1 } },
       { id: "t16c", label: "Não via resultado", scores: { mente: -1 } },
       { id: "t16d", label: "Não tinha tempo", scores: { mente: -1 } },
