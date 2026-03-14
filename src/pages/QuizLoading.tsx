@@ -42,21 +42,20 @@ const QuizLoading = () => {
 
   const phase = progress < 40 ? 1 : progress < 75 ? 2 : 3;
 
-  // Progress ticker
+  // Progress ticker (3.5 seconds total)
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
         const next = prev + 2;
         if (next >= 100) {
           clearInterval(interval);
-          setTimeout(() => navigate("/quiz/email", { state: { answers } }), 600);
           return 100;
         }
         return next;
       });
-    }, 50);
+    }, 70);
     return () => clearInterval(interval);
-  }, [navigate, answers]);
+  }, []);
 
   // Messages
   useEffect(() => {
