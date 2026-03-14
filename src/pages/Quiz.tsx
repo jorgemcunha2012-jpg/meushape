@@ -209,28 +209,34 @@ function SingleSelectScreen({
   screen,
   selected,
   onSelect,
+  compact = false,
 }: {
   screen: QuizScreen;
   selected: string;
   onSelect: (id: string) => void;
+  compact?: boolean;
 }) {
   return (
     <div className="animate-fade-in">
-      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 text-center">
+      <h2 className={cn(
+        "font-display font-bold text-foreground text-center",
+        compact ? "text-xl md:text-2xl mb-1" : "text-2xl md:text-3xl mb-2"
+      )}>
         {screen.question}
       </h2>
       {screen.subtitle && (
-        <p className="text-muted-foreground text-center mb-8">{screen.subtitle}</p>
+        <p className={cn("text-muted-foreground text-center", compact ? "mb-4 text-sm" : "mb-8")}>{screen.subtitle}</p>
       )}
-      {!screen.subtitle && <div className="mb-8" />}
+      {!screen.subtitle && <div className={compact ? "mb-4" : "mb-8"} />}
 
-      <div className="space-y-3">
+      <div className={compact ? "space-y-2" : "space-y-3"}>
         {screen.options?.map((option) => (
           <button
             key={option.id}
             onClick={() => onSelect(option.id)}
             className={cn(
-              "w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium",
+              "w-full text-left rounded-xl border-2 transition-all font-medium",
+              compact ? "px-4 py-3 text-sm" : "px-5 py-4",
               selected === option.id
                 ? "border-primary bg-rose-soft text-foreground shadow-sm"
                 : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent"
