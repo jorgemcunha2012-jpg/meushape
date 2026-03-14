@@ -160,6 +160,9 @@ const QuizPitch = () => {
         if (signInError) throw signInError;
       } else if (signUpError) {
         throw signUpError;
+      } else if (!signUpData?.session) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
       }
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
