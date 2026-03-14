@@ -71,19 +71,32 @@ const QuizResult = () => {
   };
 
   const handleCheckout = async () => {
-    if (!email) {
-      toast.error("Email não encontrado. Refaça o quiz.");
-      return;
-    }
-    if (!password || password.length < 6) {
-      toast.error("Crie uma senha com pelo menos 6 caracteres.");
-      return;
-    }
+    if (!canCheckout) return;
     setCheckingOut(true);
+
+    const email = ctaEmail.trim().toLowerCase();
+    const name = ctaName.trim();
+
     // Track checkout event
     supabase.from("checkout_events").insert({ email, status: "initiated" }).then();
+
     try {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Insert lead
+      await supabase.from("leads").insert({
+        name,
+        email,
+        opted_in: true,
+        quiz_answers: answers || {},
+        profile_scores: scores || {},
+      });
+
+      // Track funnel
+      const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
+      sessionStorage.setItem("funnel_session", sessionId);
+      await supabase.from("funnel_visits").insert({ step: "lead_captured", session_id: sessionId });
+
+      // Create account
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
@@ -94,6 +107,7 @@ const QuizResult = () => {
       } else if (signUpError) {
         throw signUpError;
       }
+
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
