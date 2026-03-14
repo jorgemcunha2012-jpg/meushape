@@ -12,7 +12,7 @@ import {
   testimonials as allTestimonials,
   dimensionLabels,
 } from "@/lib/quizResultUtils";
-import { ArrowRight, Lock, Loader2, Shield, Star, User, Mail } from "lucide-react";
+import { ArrowRight, Lock, Loader2, Shield, Star, User, Mail, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ScoreRing from "@/components/quiz-result/ScoreRing";
