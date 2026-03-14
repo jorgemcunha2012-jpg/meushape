@@ -252,6 +252,17 @@ const QuizLoading = () => {
                 </div>
               ))}
             </div>
+
+            {/* Continue button */}
+            <Button
+              onClick={() => {
+                setPhase2Done(true);
+                setPhase2Paused(false);
+              }}
+              className="w-full h-12 text-base font-bold mt-4"
+            >
+              Continuar
+            </Button>
           </div>
         )}
 
