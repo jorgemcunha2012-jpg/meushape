@@ -314,7 +314,7 @@ const QuizResult = () => {
           </Button>
 
           <p className="text-[10px] text-white/30 text-center mt-3">
-            Garantia de 30 dias • Cancele quando quiser
+            Garantia 30 dias • Acesso imediato • Cancele quando quiser
           </p>
         </div>
       </section>
