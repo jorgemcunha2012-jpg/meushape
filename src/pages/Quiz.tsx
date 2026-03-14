@@ -69,12 +69,16 @@ const Quiz = () => {
     });
   };
 
+  const handleNumericChange = (val: number) => {
+    setNumericValue(String(val));
+    setAnswers((prev) => ({ ...prev, [screen.id]: String(val) }));
+  };
+
   const handleNumericSubmit = () => {
     const val = parseFloat(numericValue);
     if (isNaN(val)) return;
     if (screen.inputMin && val < screen.inputMin) return;
     if (screen.inputMax && val > screen.inputMax) return;
-    setAnswers((prev) => ({ ...prev, [screen.id]: numericValue }));
     goNext();
   };
 
