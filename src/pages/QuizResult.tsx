@@ -96,8 +96,8 @@ const QuizResult = () => {
       sessionStorage.setItem("funnel_session", sessionId);
       await supabase.from("funnel_visits").insert({ step: "lead_captured", session_id: sessionId });
 
-      // Create account
-      const { error: signUpError } = await supabase.auth.signUp({
+      // Create account or sign in
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
@@ -107,6 +107,10 @@ const QuizResult = () => {
         if (signInError) throw signInError;
       } else if (signUpError) {
         throw signUpError;
+      } else if (!signUpData?.session) {
+        // If no session after signup, sign in immediately
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
       }
 
       const { data, error } = await supabase.functions.invoke("create-checkout");
