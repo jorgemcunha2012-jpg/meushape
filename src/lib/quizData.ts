@@ -58,7 +58,7 @@ export const quizScreens: QuizScreen[] = [
     id: "social1",
     type: "intermediate",
     headline: "Mais de 5.000 mulheres já descobriram o treino certo pro seu corpo",
-    body: "Junte-se a milhares de mulheres que transformaram sua relação com o treino.",
+    body: "Suas respostas vão criar um plano feito só pra você.",
     buttonText: "Continuar",
   },
   // P2: Corpo hoje
@@ -93,7 +93,7 @@ export const quizScreens: QuizScreen[] = [
     options: [
       { id: "t04a", label: "Nunca treinei", scores: { experiencia: 0, mente: 0 } },
       { id: "t04b", label: "Já treinei, mas parei", scores: { experiencia: 1, mente: 1 } },
-      { id: "t04d", label: "Treino regularmente", scores: { experiencia: 3, mente: 1 } },
+      { id: "t04d", label: "Treino atualmente", scores: { experiencia: 3, mente: 1 } },
     ],
   },
   // P5: O que fez desistir (multi-select, 5 options)
@@ -102,7 +102,7 @@ export const quizScreens: QuizScreen[] = [
     type: "multi-select",
     question: "O que já te fez desistir de treinar antes?",
     options: [
-      { id: "t16a", label: "Não sabia o que fazer na academia", scores: { mente: -1 } },
+      { id: "t16a", label: "Não sabia o que fazer", scores: { mente: -1 } },
       { id: "t16b", label: "Perdi a motivação", scores: { mente: -1 } },
       { id: "t16c", label: "Não via resultado", scores: { mente: -1 } },
       { id: "t16d", label: "Não tinha tempo", scores: { mente: -1 } },
@@ -114,8 +114,8 @@ export const quizScreens: QuizScreen[] = [
     id: "objection1",
     type: "intermediate",
     headline: "O problema nunca foi falta de vontade",
-    body: "A maioria das mulheres desiste de treinar por um motivo simples: não tinham ninguém pra guiar. Não é preguiça. É falta de direção.\n\nCom o plano certo e alguém te mostrando cada passo, você não vai precisar de força de vontade — só de abrir o app.",
-    buttonText: "Entendi",
+    body: "A maioria desiste por um motivo simples: não tinha o plano certo. Com alguém te mostrando cada passo, você não precisa de motivação — só de abrir o app.",
+    buttonText: "Continuar",
   },
   // P6: Onde treinar
   {

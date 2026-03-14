@@ -59,7 +59,7 @@ const QuizSuccess = () => {
           Parabéns{userName ? `, ${userName}` : ""}! Seu acesso foi ativado 🎉
         </h1>
         <p className="text-sm text-white/50">
-          Tudo pronto. Vamos começar sua transformação!
+          Seu plano personalizado tá pronto. Seu primeiro treino está esperando.
         </p>
       </motion.div>
 
@@ -145,11 +145,11 @@ const QuizSuccess = () => {
         whileTap={{ scale: 0.98 }}
         onClick={() => navigate("/app")}
       >
-        Acessar meu app <ArrowRight className="w-4 h-4" />
+        Ir para meu dashboard <ArrowRight className="w-4 h-4" />
       </motion.button>
 
       <p className="text-[10px] mt-3 text-center" style={{ color: "#555" }}>
-        Você pode gerenciar sua assinatura a qualquer momento no perfil.
+        Dúvidas? Nosso suporte via chat está aqui pra você.
       </p>
     </div>
   );

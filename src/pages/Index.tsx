@@ -28,12 +28,12 @@ const Index = () => {
           </div>
 
           <h1 className="font-display text-3xl font-bold text-foreground leading-tight mb-4">
-            Descubra por que você
-            <span className="text-primary"> não tá tendo resultado</span> no treino
+            Mulheres com seu biotipo
+            <span className="text-primary"> transformam o corpo em 12 semanas</span> com o treino certo.
           </h1>
 
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed max-w-xs mx-auto">
-            Faça o teste e receba seu diagnóstico fitness personalizado com um plano feito pra você.
+            Descubra o seu em 2 minutos.
           </p>
 
           <Button

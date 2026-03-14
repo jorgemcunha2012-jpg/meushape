@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Check, Shield, Sparkles, Star, Lock, Loader2,
-  Eye, EyeOff, User, Mail, CreditCard,
+  Eye, EyeOff, User, Mail, CreditCard, Smartphone,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -14,40 +14,53 @@ const PLANS = [
     id: "monthly",
     label: "Mensal",
     price: "R$ 19,90",
+    priceSuffix: "/mês",
     perDay: "R$ 0,66/dia",
     priceId: "price_1TB0kLLKftklAHDEb6exuIBD",
-    badge: null,
+    badge: "⭐ Mais Popular",
+    badgeStyle: "linear-gradient(135deg, #FF6B2B, #FF8C55)",
+    highlighted: true,
   },
   {
     id: "quarterly",
     label: "Trimestral",
     price: "R$ 49,90",
+    priceSuffix: "/3 meses",
     perDay: "R$ 0,55/dia",
     priceId: "price_1TB0jhLKftklAHDE317bdGDb",
-    badge: "Popular",
+    badge: "Economize R$ 10",
+    badgeStyle: "linear-gradient(135deg, #10B981, #34D399)",
+    highlighted: false,
   },
   {
     id: "annual",
     label: "Anual",
     price: "R$ 99,90",
+    priceSuffix: "/ano",
     perDay: "R$ 0,27/dia",
     priceId: "price_1TB0kfLKftklAHDETj60Kbhp",
-    badge: "Melhor oferta",
+    badge: "Melhor preço",
+    badgeStyle: "linear-gradient(135deg, #8B5CF6, #A78BFA)",
+    highlighted: false,
   },
 ];
 
-const features = [
-  "Treinos personalizados com IA",
-  "Programas completos de academia e casa",
-  "Cardio, alongamento e aquecimento",
-  "Comunidade exclusiva",
+const planFeatures = [
+  "Acesso imediato",
+  "Treinos personalizados",
+  "Progressão automática",
+  "Suporte via chat",
+  "Garantia 30 dias",
 ];
+
+type PaymentMethod = "card" | "pix";
 
 const QuizCheckout = () => {
   const location = useLocation();
   const { name: passedName, answers, scores } = (location.state as any) || {};
 
-  const [selectedPlan, setSelectedPlan] = useState("annual");
+  const [selectedPlan, setSelectedPlan] = useState("monthly");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [ctaName, setCtaName] = useState(passedName || "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -68,7 +81,6 @@ const QuizCheckout = () => {
     const trimmedName = ctaName.trim();
 
     try {
-      // Insert lead
       await supabase.from("leads").insert({
         name: trimmedName,
         email: trimmedEmail,
@@ -77,13 +89,11 @@ const QuizCheckout = () => {
         profile_scores: scores || {},
       });
 
-      // Track
       const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
       sessionStorage.setItem("funnel_session", sessionId);
       await supabase.from("funnel_visits").insert({ step: "checkout_initiated", session_id: sessionId });
       await supabase.from("checkout_events").insert({ email: trimmedEmail, status: "initiated" });
 
-      // Auth + checkout
       const { signUpAndCheckout } = await import("@/lib/authCheckout");
       const url = await signUpAndCheckout({
         email: trimmedEmail,
@@ -125,7 +135,7 @@ const QuizCheckout = () => {
         <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
           {firstName ? `Escolha seu plano, ${firstName}` : "Escolha seu plano"}
         </h1>
-        <p className="text-xs mt-2" style={{ color: "#666" }}>Garantia de 30 dias • Cancele quando quiser</p>
+        <p className="text-xs mt-2" style={{ color: "#888" }}>Acesso imediato ao seu plano personalizado.</p>
       </motion.div>
 
       {/* Plan Cards */}
@@ -150,13 +160,7 @@ const QuizCheckout = () => {
               {p.badge && (
                 <span
                   className="absolute -top-2.5 right-4 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                  style={{
-                    background: p.id === "annual"
-                      ? "linear-gradient(135deg, #FF6B2B, #FF8C55)"
-                      : "linear-gradient(135deg, #10B981, #34D399)",
-                    color: "#fff",
-                    fontFamily: "'Manrope', sans-serif",
-                  }}
+                  style={{ background: p.badgeStyle, color: "#fff", fontFamily: "'Manrope', sans-serif" }}
                 >
                   {p.badge}
                 </span>
@@ -166,10 +170,11 @@ const QuizCheckout = () => {
                   <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
                     {p.label}
                   </span>
-                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <div className="flex items-baseline gap-1 mt-0.5">
                     <span className="text-xl font-extrabold" style={{ color: isSelected ? "#FF6B2B" : "#ccc", fontFamily: "'Manrope', sans-serif" }}>
                       {p.price}
                     </span>
+                    <span className="text-xs" style={{ color: "#888" }}>{p.priceSuffix}</span>
                   </div>
                   <span className="text-[10px]" style={{ color: "#888" }}>{p.perDay}</span>
                 </div>
@@ -183,35 +188,64 @@ const QuizCheckout = () => {
                   {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                 </div>
               </div>
+
+              {/* Features inside selected card */}
+              {isSelected && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="mt-3 pt-3 space-y-1.5"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  {planFeatures.map((feat) => (
+                    <div key={feat} className="flex items-center gap-2">
+                      <Check className="w-3 h-3 flex-shrink-0" style={{ color: "#FF6B2B" }} />
+                      <span className="text-[11px]" style={{ color: "#ccc" }}>{feat}</span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
             </button>
           );
         })}
       </motion.div>
 
-      {/* Features */}
+      {/* Payment Method */}
       <motion.div className="w-full max-w-md mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-        <div className="space-y-2">
-          {features.map((item) => (
-            <div key={item} className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#FF6B2B" }} />
-              <span className="text-xs" style={{ color: "#ccc" }}>{item}</span>
-            </div>
-          ))}
+        <h3 className="text-sm font-bold text-white mb-3" style={{ fontFamily: "'Manrope', sans-serif" }}>
+          Como você quer pagar?
+        </h3>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPaymentMethod("pix")}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: paymentMethod === "pix" ? "rgba(255,107,43,0.1)" : "#1a1a1a",
+              border: `2px solid ${paymentMethod === "pix" ? "#FF6B2B" : "rgba(255,255,255,0.08)"}`,
+              color: paymentMethod === "pix" ? "#FF6B2B" : "#888",
+            }}
+          >
+            <Smartphone className="w-4 h-4" />
+            PIX
+          </button>
+          <button
+            onClick={() => setPaymentMethod("card")}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: paymentMethod === "card" ? "rgba(255,107,43,0.1)" : "#1a1a1a",
+              border: `2px solid ${paymentMethod === "card" ? "#FF6B2B" : "rgba(255,255,255,0.08)"}`,
+              color: paymentMethod === "card" ? "#FF6B2B" : "#888",
+            }}
+          >
+            <CreditCard className="w-4 h-4" />
+            Cartão
+          </button>
         </div>
-      </motion.div>
-
-      {/* Rating */}
-      <motion.div className="w-full max-w-md mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-        <div className="flex items-center justify-center gap-2">
-          <div className="flex gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-4 h-4" fill="#F59E0B" color="#F59E0B" />
-            ))}
-          </div>
-          <span className="text-sm font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>4.8</span>
-          <span className="text-xs" style={{ color: "#888" }}>de 5</span>
-          <span className="text-xs" style={{ color: "#666" }}>(2.3k reviews)</span>
-        </div>
+        {paymentMethod === "pix" && (
+          <p className="text-[10px] mt-2" style={{ color: "#888" }}>
+            Pagamento instantâneo via PIX. Acesso liberado assim que o pagamento for confirmado.
+          </p>
+        )}
       </motion.div>
 
       {/* Signup Form */}
@@ -225,7 +259,7 @@ const QuizCheckout = () => {
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
             <Input
-              placeholder="Seu nome"
+              placeholder="Seu primeiro nome"
               value={ctaName}
               onChange={(e) => setCtaName(e.target.value)}
               className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
@@ -240,7 +274,7 @@ const QuizCheckout = () => {
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
             <Input
               type="email"
-              placeholder="seu@email.com"
+              placeholder="Seu melhor email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
@@ -292,11 +326,30 @@ const QuizCheckout = () => {
           )}
         </motion.button>
 
-        {/* Trust */}
-        <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-white/30">
-          <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Garantia 30 dias</span>
-          <span>•</span>
-          <span className="flex items-center gap-1"><CreditCard className="w-3 h-3" /> Pagamento seguro</span>
+        {/* Trust signals */}
+        <div className="mt-5 space-y-2">
+          {[
+            { icon: Lock, text: "Pagamento 100% seguro" },
+            { icon: Shield, text: "Garantia de 30 dias ou seu dinheiro de volta" },
+            { icon: Smartphone, text: "Acesso imediato após o pagamento" },
+            { icon: CreditCard, text: "Sem renovação automática • Cancele quando quiser" },
+          ].map(({ icon: Icon, text }) => (
+            <div key={text} className="flex items-center gap-2">
+              <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#FF6B2B" }} />
+              <span className="text-[11px]" style={{ color: "#888" }}>{text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Social proof */}
+        <div className="flex items-center justify-center gap-2 mt-5">
+          <div className="flex gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-3.5 h-3.5" fill="#F59E0B" color="#F59E0B" />
+            ))}
+          </div>
+          <span className="text-xs font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>4.8/5</span>
+          <span className="text-[10px]" style={{ color: "#888" }}>— Mais de 5.000 mulheres já fizeram o teste</span>
         </div>
       </motion.div>
 

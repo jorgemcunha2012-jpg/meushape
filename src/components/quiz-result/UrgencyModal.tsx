@@ -54,7 +54,7 @@ const UrgencyModal = ({ firstName, bottleneck, onCTA }: UrgencyModalProps) => {
               </h3>
 
               <p className="text-sm text-white/60 leading-relaxed mb-5">
-                Seu diagnóstico identificou que <strong className="text-white/80">{bottleneck}</strong> é o que mais tá te travando. O plano personalizado resolve isso direto — mas só funciona se você começar.
+                Seu gargalo em <strong className="text-white/80">{bottleneck}</strong> tende a piorar sem ação. Com o plano personalizado, os primeiros resultados aparecem nas primeiras 4 semanas.
               </p>
 
               {/* CTA */}
