@@ -53,11 +53,9 @@ const Index = () => {
 
       {/* Trust badges */}
       <section className="px-5 pb-6 shrink-0">
-        <div className="max-w-lg mx-auto grid grid-cols-3 gap-2">
+        <div className="max-w-lg mx-auto flex justify-center">
           {[
             { icon: Timer, label: "Apenas 3 min" },
-            { icon: Target, label: "Diagnóstico real" },
-            { icon: Users, label: "87 mil+ mulheres" },
           ].map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-1.5 p-3 bg-card rounded-xl border border-border">
               <Icon className="w-4 h-4 text-primary" />
