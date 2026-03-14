@@ -149,7 +149,7 @@ const QuizSuccess = () => {
       </motion.button>
 
       <p className="text-[10px] mt-3 text-center" style={{ color: "#555" }}>
-        Você pode gerenciar sua assinatura a qualquer momento no perfil.
+        Dúvidas? Nosso suporte via chat está aqui pra você.
       </p>
     </div>
   );

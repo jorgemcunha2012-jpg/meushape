@@ -114,8 +114,8 @@ export const quizScreens: QuizScreen[] = [
     id: "objection1",
     type: "intermediate",
     headline: "O problema nunca foi falta de vontade",
-    body: "A maioria das mulheres desiste de treinar por um motivo simples: não tinham ninguém pra guiar. Não é preguiça. É falta de direção.\n\nCom o plano certo e alguém te mostrando cada passo, você não vai precisar de força de vontade — só de abrir o app.",
-    buttonText: "Entendi",
+    body: "A maioria desiste por um motivo simples: não tinha o plano certo. Com alguém te mostrando cada passo, você não precisa de motivação — só de abrir o app.",
+    buttonText: "Continuar",
   },
   // P6: Onde treinar
   {
