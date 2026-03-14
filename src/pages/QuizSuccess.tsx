@@ -59,7 +59,7 @@ const QuizSuccess = () => {
           Parabéns{userName ? `, ${userName}` : ""}! Seu acesso foi ativado 🎉
         </h1>
         <p className="text-sm text-white/50">
-          Tudo pronto. Vamos começar sua transformação!
+          Seu plano personalizado tá pronto. Seu primeiro treino está esperando.
         </p>
       </motion.div>
 
