@@ -145,48 +145,80 @@ const Quiz = () => {
       {/* Content */}
       <div className={cn(
         "flex items-center justify-center px-4",
-        canFitSingleScreen ? "flex-1 min-h-0 py-2" : "flex-1 py-8"
+        canFitSingleScreen || showNameStep ? "flex-1 min-h-0 py-2" : "flex-1 py-8"
       )}>
-        <div
-          className={cn(
-            "max-w-lg mx-auto w-full transition-all duration-300",
-            animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-          )}
-          key={screen.id}
-        >
-          {screen.type === "intermediate" && (
-            <IntermediateScreen screen={screen} onContinue={goNext} />
-          )}
-
-          {screen.type === "single-select" && (
-            <SingleSelectScreen
-              screen={screen}
-              selected={answers[screen.id] as string}
-              onSelect={handleSingleSelect}
-              compact={canFitSingleScreen}
+        {showNameStep ? (
+          <div className="max-w-lg mx-auto w-full animate-fade-in text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-soft rounded-full mb-6">
+              <Sparkles className="w-7 h-7 text-primary" />
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+              Qual seu primeiro nome?
+            </h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              Pra gente personalizar seu diagnóstico 😊
+            </p>
+            <Input
+              placeholder="Ex: Maria"
+              value={leadName}
+              onChange={(e) => setLeadName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
+              className="h-12 rounded-xl bg-card text-base text-center mb-6"
+              maxLength={100}
+              autoFocus
             />
-          )}
+            <Button
+              size="lg"
+              disabled={leadName.trim().length < 2}
+              onClick={handleNameSubmit}
+              className="rounded-full px-10 py-6 text-base font-semibold"
+            >
+              Continuar
+              <ArrowRight className="w-5 h-5 ml-1" />
+            </Button>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "max-w-lg mx-auto w-full transition-all duration-300",
+              animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+            )}
+            key={screen.id}
+          >
+            {screen.type === "intermediate" && (
+              <IntermediateScreen screen={screen} onContinue={goNext} />
+            )}
 
-          {screen.type === "multi-select" && (
-            <MultiSelectScreen
-              screen={screen}
-              selected={(answers[screen.id] as string[]) || []}
-              onToggle={handleMultiToggle}
-              onContinue={goNext}
-              canContinue={canContinueMulti()}
-            />
-          )}
+            {screen.type === "single-select" && (
+              <SingleSelectScreen
+                screen={screen}
+                selected={answers[screen.id] as string}
+                onSelect={handleSingleSelect}
+                compact={canFitSingleScreen}
+              />
+            )}
 
-          {screen.type === "numeric-input" && (
-            <NumericInputScreen
-              screen={screen}
-              value={numericValue}
-              onNumericChange={handleNumericChange}
-              onSubmit={handleNumericSubmit}
-              canSubmit={canContinueNumeric()}
-            />
-          )}
-        </div>
+            {screen.type === "multi-select" && (
+              <MultiSelectScreen
+                screen={screen}
+                selected={(answers[screen.id] as string[]) || []}
+                onToggle={handleMultiToggle}
+                onContinue={goNext}
+                canContinue={canContinueMulti()}
+              />
+            )}
+
+            {screen.type === "numeric-input" && (
+              <NumericInputScreen
+                screen={screen}
+                value={numericValue}
+                onNumericChange={handleNumericChange}
+                onSubmit={handleNumericSubmit}
+                canSubmit={canContinueNumeric()}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
