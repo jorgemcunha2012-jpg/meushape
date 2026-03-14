@@ -65,7 +65,7 @@ const QuizBodyAnalysis = () => {
       const analysis = data.analysis;
 
       navigate("/quiz/resultado", {
-        state: { answers, bodyAnalysis: analysis },
+        state: { answers, name, bodyAnalysis: analysis },
       });
     } catch (err: any) {
       console.error("Analysis error:", err);
