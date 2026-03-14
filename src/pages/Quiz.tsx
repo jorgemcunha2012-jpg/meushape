@@ -398,9 +398,11 @@ function NumericInputScreen({
   onSubmit: () => void;
   canSubmit: boolean;
 }) {
-  const defaultValue = screen.inputMin && screen.inputMax
-    ? Math.round((screen.inputMin + screen.inputMax) / 2)
-    : screen.inputMin ?? 0;
+  const defaultValue = screen.inputDefault ?? (
+    screen.inputMin && screen.inputMax
+      ? Math.round((screen.inputMin + screen.inputMax) / 2)
+      : screen.inputMin ?? 0
+  );
   const currentValue = value ? parseInt(value) : defaultValue;
 
   return (
