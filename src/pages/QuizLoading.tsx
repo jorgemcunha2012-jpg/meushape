@@ -40,8 +40,10 @@ const QuizLoading = () => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [visibleChecks, setVisibleChecks] = useState(0);
+  const [phase2Paused, setPhase2Paused] = useState(false);
+  const [phase2Done, setPhase2Done] = useState(false);
 
-  const phase = progress < 40 ? 1 : progress < 75 ? 2 : 3;
+  const phase = progress < 40 ? 1 : (progress < 75 && !phase2Done) ? 2 : 3;
 
   // Progress ticker (~7s total, slower on phase 2 for testimonials)
   useEffect(() => {
