@@ -424,10 +424,10 @@ const QuizResult = () => {
             disabled={checkingOut || !canCheckout}
             className="w-full rounded-full py-6 text-sm font-bold"
             style={{
-              background: password.length >= 6
+              background: canCheckout
                 ? "linear-gradient(135deg, #FF6B2B, #F59E0B)"
                 : "rgba(255,255,255,0.1)",
-              color: password.length >= 6 ? "#fff" : "rgba(255,255,255,0.3)",
+              color: canCheckout ? "#fff" : "rgba(255,255,255,0.3)",
             }}
           >
             {checkingOut ? (
