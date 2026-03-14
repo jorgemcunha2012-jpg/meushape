@@ -30,7 +30,11 @@ const Quiz = () => {
 
   const screen = quizScreens[currentStep];
   const totalSteps = quizScreens.length;
-  const progress = showNameStep ? 100 : ((currentStep + 1) / totalSteps) * 100;
+  // MD spec: 15 etapas (14 perguntas + nome). Exclude intermediate screens from progress count.
+  const questionSteps = quizScreens.filter(s => s.type !== "intermediate").length; // 14
+  const totalProgressSteps = questionSteps + 1; // +1 for name = 15
+  const currentQuestionIndex = quizScreens.slice(0, currentStep + 1).filter(s => s.type !== "intermediate").length;
+  const progress = showNameStep ? 100 : (currentQuestionIndex / totalProgressSteps) * 100;
 
   const goNext = useCallback(() => {
     if (animating) return;
