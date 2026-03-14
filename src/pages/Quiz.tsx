@@ -16,6 +16,8 @@ const Quiz = () => {
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [numericValue, setNumericValue] = useState("");
   const [animating, setAnimating] = useState(false);
+  const [showNameStep, setShowNameStep] = useState(false);
+  const [leadName, setLeadName] = useState("");
 
   // Track quiz start
   useEffect(() => {
@@ -26,7 +28,7 @@ const Quiz = () => {
 
   const screen = quizScreens[currentStep];
   const totalSteps = quizScreens.length;
-  const progress = ((currentStep + 1) / totalSteps) * 100;
+  const progress = showNameStep ? 100 : ((currentStep + 1) / totalSteps) * 100;
 
   const goNext = useCallback(() => {
     if (animating) return;
@@ -36,11 +38,11 @@ const Quiz = () => {
         setCurrentStep((s) => s + 1);
         setNumericValue("");
       } else {
-        navigate("/quiz/loading", { state: { answers } });
+        setShowNameStep(true);
       }
       setAnimating(false);
     }, 300);
-  }, [currentStep, totalSteps, navigate, answers, animating]);
+  }, [currentStep, totalSteps, animating]);
 
   const handleSingleSelect = (optionId: string) => {
     setAnswers((prev) => ({ ...prev, [screen.id]: optionId }));
