@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 import { quizScreens, type QuizScreen } from "@/lib/quizData";
 import { cn } from "@/lib/utils";
 import logoMeushape from "@/assets/logo-meushape.png";
+import ScrollPicker from "@/components/ScrollPicker";
 
 const Quiz = () => {
   const navigate = useNavigate();
