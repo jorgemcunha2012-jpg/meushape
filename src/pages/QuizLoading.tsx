@@ -40,15 +40,23 @@ const QuizLoading = () => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [visibleChecks, setVisibleChecks] = useState(0);
+  const [phase2Paused, setPhase2Paused] = useState(false);
+  const [phase2Done, setPhase2Done] = useState(false);
 
-  const phase = progress < 40 ? 1 : progress < 75 ? 2 : 3;
+  const phase = progress < 40 ? 1 : (progress < 75 && !phase2Done) ? 2 : 3;
 
-  // Progress ticker (~7s total, slower on phase 2 for testimonials)
+  // Progress ticker - pauses at 40% waiting for user to continue
   useEffect(() => {
+    if (phase2Paused) return;
     const interval = setInterval(() => {
       setProgress((prev) => {
-        // Slow down during testimonial phase (40-75%)
-        const speed = prev >= 40 && prev < 75 ? 0.8 : 1.5;
+        // Pause at 40% for testimonials until user clicks continue
+        if (prev >= 40 && !phase2Done) {
+          clearInterval(interval);
+          setPhase2Paused(true);
+          return 40;
+        }
+        const speed = 1.5;
         const next = prev + speed;
         if (next >= 100) {
           clearInterval(interval);
@@ -58,7 +66,7 @@ const QuizLoading = () => {
       });
     }, 70);
     return () => clearInterval(interval);
-  }, []);
+  }, [phase2Paused, phase2Done]);
 
   // Messages
   useEffect(() => {
@@ -244,6 +252,17 @@ const QuizLoading = () => {
                 </div>
               ))}
             </div>
+
+            {/* Continue button */}
+            <Button
+              onClick={() => {
+                setPhase2Done(true);
+                setPhase2Paused(false);
+              }}
+              className="w-full h-12 text-base font-bold mt-4"
+            >
+              Continuar
+            </Button>
           </div>
         )}
 
