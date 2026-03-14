@@ -249,7 +249,7 @@ const QuizLoading = () => {
         {phase === 3 && (
           <div className="w-full max-w-xs space-y-2.5 animate-fade-in">
             <h3 className="text-center text-sm font-bold text-foreground mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              Tudo pronto! Seu plano ficou assim:
+              Tudo pronto!<br />Seu plano ficou assim:
             </h3>
             {checkItems.map((item, i) => (
               <div
