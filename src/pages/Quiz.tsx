@@ -149,34 +149,65 @@ const Quiz = () => {
         canFitSingleScreen || showNameStep ? "flex-1 min-h-0 py-2" : "flex-1 py-8"
       )}>
         {showNameStep ? (
-          <div className="max-w-lg mx-auto w-full animate-fade-in text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-soft rounded-full mb-6">
-              <Sparkles className="w-7 h-7 text-primary" />
-            </div>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
-              Qual seu primeiro nome?
-            </h2>
-            <p className="text-muted-foreground text-sm mb-6">
-              Pra gente personalizar seu diagnóstico 😊
-            </p>
-            <Input
-              placeholder="Ex: Maria"
-              value={leadName}
-              onChange={(e) => setLeadName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
-              className="h-12 rounded-xl bg-card text-base text-center mb-6"
-              maxLength={100}
-              autoFocus
-            />
-            <Button
-              size="lg"
-              disabled={leadName.trim().length < 2}
-              onClick={handleNameSubmit}
-              className="rounded-full px-10 py-6 text-base font-semibold"
+          <div className="max-w-lg mx-auto w-full text-center">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
+              className="inline-flex items-center justify-center w-20 h-20 bg-rose-soft rounded-full mb-6"
             >
-              Continuar
-              <ArrowRight className="w-5 h-5 ml-1" />
-            </Button>
+              <Heart className="w-9 h-9 text-primary" fill="hsl(var(--primary))" />
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2"
+            >
+              Qual seu primeiro nome?
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="text-muted-foreground text-sm mb-6"
+            >
+              Pra gente personalizar seu diagnóstico 😊
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.65, duration: 0.4 }}
+            >
+              <Input
+                placeholder="Ex: Maria"
+                value={leadName}
+                onChange={(e) => setLeadName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
+                className="h-14 rounded-2xl bg-card text-lg text-center mb-6 border-2 border-primary/20 focus:border-primary transition-colors"
+                maxLength={100}
+                autoFocus
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.4 }}
+            >
+              <Button
+                size="lg"
+                disabled={leadName.trim().length < 2}
+                onClick={handleNameSubmit}
+                className="rounded-full px-10 py-6 text-base font-semibold"
+              >
+                Continuar
+                <ArrowRight className="w-5 h-5 ml-1" />
+              </Button>
+            </motion.div>
           </div>
         ) : (
           <div
