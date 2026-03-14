@@ -6,14 +6,14 @@ import logoMeuShape from "@/assets/logo-meushape.png";
 import { Button } from "@/components/ui/button";
 
 const analysisMessages = [
-  "Analisando seu diagnóstico...",
-  "Mapeando pontos fortes e fracos...",
-  "Selecionando exercícios pro seu nível...",
+  "Cruzando suas respostas com nosso método...",
+  "Avaliando seu nível e histórico...",
+  "Identificando o que vai funcionar pra você...",
 ];
 
 const finalizationMessages = [
-  "Ajustando pro seu tempo disponível...",
-  "Finalizando seu plano personalizado...",
+  "Encaixando no seu tempo disponível...",
+  "Montando sua rotina de treinos...",
 ];
 
 const dimensionIcons = [
@@ -26,10 +26,10 @@ const dimensionIcons = [
 ];
 
 const checkItems = [
-  "Exercícios selecionados",
-  "Nível ajustado",
-  "Tempo personalizado",
-  "Plano montado",
+  "Treinos adaptados ao seu nível",
+  "Exercícios pro seu objetivo",
+  "Duração ajustada à sua rotina",
+  "Progressão inteligente ativada",
 ];
 
 const QuizLoading = () => {
