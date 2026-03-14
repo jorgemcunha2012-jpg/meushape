@@ -50,6 +50,7 @@ const QuizCheckout = () => {
   const { name, email } = (location.state as any) || {};
 
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
 
   const handleCheckout = async () => {
