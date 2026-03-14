@@ -251,7 +251,6 @@ const QuizLoading = () => {
             <h3 className="text-center text-sm font-bold text-foreground mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
               Tudo pronto! Seu plano ficou assim:
             </h3>
-            </h3>
             {checkItems.map((item, i) => (
               <div
                 key={item}
