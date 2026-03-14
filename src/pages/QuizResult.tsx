@@ -43,7 +43,7 @@ const QuizResult = () => {
   }, [answers, navigate]);
 
   const scores = calculateAxisScores(answers || {});
-  const firstName = "linda";
+  const firstName = ctaName.trim().split(" ")[0] || "linda";
   const dims = deriveSixDimensions(scores);
   const potential = computePotential(dims);
   const overallScore = computeOverallScore(dims);
