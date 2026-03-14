@@ -58,6 +58,7 @@ const QuizResult = () => {
   const [ctaName, setCtaName] = useState(leadName || "");
   const [ctaEmail, setCtaEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
 
