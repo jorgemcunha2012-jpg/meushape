@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 import { quizScreens, type QuizScreen } from "@/lib/quizData";
 import { cn } from "@/lib/utils";
+import logoMeushape from "@/assets/logo-meushape.png";
 
 const Quiz = () => {
   const navigate = useNavigate();
@@ -42,14 +43,12 @@ const Quiz = () => {
 
   const handleSingleSelect = (optionId: string) => {
     setAnswers((prev) => ({ ...prev, [screen.id]: optionId }));
-    // Auto-advance after short delay
     setTimeout(goNext, 400);
   };
 
   const handleMultiToggle = (optionId: string) => {
     setAnswers((prev) => {
       const current = (prev[screen.id] as string[]) || [];
-      // Special case: "Não tenho dor" / "Nunca desisti" clears others
       const option = screen.options?.find((o) => o.id === optionId);
       if (option && (optionId.endsWith("a") || optionId.endsWith("f")) && screen.id === "t14") {
         return { ...prev, [screen.id]: current.includes(optionId) ? [] : [optionId] };
@@ -57,7 +56,6 @@ const Quiz = () => {
       if (option && optionId === "t16f") {
         return { ...prev, [screen.id]: current.includes(optionId) ? [] : [optionId] };
       }
-      // Remove "no pain" / "never quit" option if selecting others
       const filtered = current.filter((id) => {
         if (screen.id === "t14" && id === "t14a") return false;
         if (screen.id === "t16" && id === "t16f") return false;
@@ -101,32 +99,39 @@ const Quiz = () => {
     return true;
   };
 
-  // Count only actual questions for the step counter
-  const questionScreens = quizScreens.filter((s) => s.type !== "intermediate");
-  const currentQuestionIndex = questionScreens.findIndex((s) => s.id === screen.id);
-  const isQuestion = screen.type !== "intermediate";
+  // Determine if this screen can fit without scrolling (few options)
+  const canFitSingleScreen =
+    screen.type === "single-select" && (screen.options?.length ?? 0) <= 5 ||
+    screen.type === "numeric-input" ||
+    screen.type === "intermediate";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress bar */}
-      <div className="px-4 pt-4">
+    <div className={cn(
+      "bg-background flex flex-col",
+      canFitSingleScreen ? "h-[100dvh] overflow-hidden" : "min-h-[100dvh]"
+    )}>
+      {/* Header: logo + back + progress */}
+      <div className="px-4 pt-3 pb-2 shrink-0">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <button onClick={handleBack} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+          {/* Logo */}
+          <div className="flex justify-center mb-2">
+            <img src={logoMeushape} alt="MeuShape" className="h-8 w-auto" />
+          </div>
+          {/* Back + progress */}
+          <div className="flex items-center gap-3">
+            <button onClick={handleBack} className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            {isQuestion && (
-              <span className="text-sm text-muted-foreground font-medium">
-                {currentQuestionIndex + 1} de {questionScreens.length}
-              </span>
-            )}
+            <Progress value={progress} className="h-2 bg-secondary flex-1" />
           </div>
-          <Progress value={progress} className="h-2 bg-secondary" />
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
+      <div className={cn(
+        "flex items-center justify-center px-4",
+        canFitSingleScreen ? "flex-1 min-h-0 py-2" : "flex-1 py-8"
+      )}>
         <div
           className={cn(
             "max-w-lg mx-auto w-full transition-all duration-300",
@@ -143,6 +148,7 @@ const Quiz = () => {
               screen={screen}
               selected={answers[screen.id] as string}
               onSelect={handleSingleSelect}
+              compact={canFitSingleScreen}
             />
           )}
 
