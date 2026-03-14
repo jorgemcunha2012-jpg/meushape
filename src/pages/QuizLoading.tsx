@@ -191,7 +191,7 @@ const QuizLoading = () => {
         {done && (
           <div className="w-full max-w-sm mt-5 mb-6 animate-fade-in">
             <Button
-              onClick={() => navigate("/quiz/analise-corporal", { state: { answers } })}
+              onClick={() => navigate("/quiz/analise-corporal", { state: { answers, name } })}
               className="w-full h-12 text-base font-bold"
             >
               Ver Meu Diagnóstico Completo

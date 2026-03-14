@@ -77,7 +77,7 @@ const QuizBodyAnalysis = () => {
 
   const handleSkip = () => {
     navigate("/quiz/resultado", {
-      state: { answers },
+      state: { answers, name },
     });
   };
 
