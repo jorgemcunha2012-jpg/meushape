@@ -282,7 +282,7 @@ const QuizLoading = () => {
               onClick={() => navigate("/quiz/email", { state: { answers } })}
               className="w-full h-12 text-base font-bold"
             >
-              Ver Meu Plano Personalizado
+              Ver Meu Diagnóstico Completo
             </Button>
           </div>
         )}
