@@ -93,7 +93,7 @@ export const quizScreens: QuizScreen[] = [
     options: [
       { id: "t04a", label: "Nunca treinei", scores: { experiencia: 0, mente: 0 } },
       { id: "t04b", label: "Já treinei, mas parei", scores: { experiencia: 1, mente: 1 } },
-      { id: "t04d", label: "Treino regularmente", scores: { experiencia: 3, mente: 1 } },
+      { id: "t04d", label: "Treino atualmente", scores: { experiencia: 3, mente: 1 } },
     ],
   },
   // P5: O que fez desistir (multi-select, 5 options)
