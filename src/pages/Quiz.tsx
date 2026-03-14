@@ -171,7 +171,7 @@ const Quiz = () => {
             <NumericInputScreen
               screen={screen}
               value={numericValue}
-              onChange={setNumericValue}
+              onNumericChange={handleNumericChange}
               onSubmit={handleNumericSubmit}
               canSubmit={canContinueNumeric()}
             />
