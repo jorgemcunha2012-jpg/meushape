@@ -34,6 +34,7 @@ export interface QuizScreen {
   inputUnit?: string;
   inputMin?: number;
   inputMax?: number;
+  inputDefault?: number;
   microcopy?: string;
   // For multi-select
   maxSelections?: number;
@@ -333,6 +334,7 @@ export const quizScreens: QuizScreen[] = [
     inputUnit: "kg",
     inputMin: 30,
     inputMax: 250,
+    inputDefault: 65,
   },
   // TELA 23 — Peso meta
   {
