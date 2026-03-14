@@ -56,9 +56,15 @@ const QuizResult = () => {
   const displayTestimonials = filtered.length >= 2 ? filtered : allTestimonials;
 
   const [activeTab, setActiveTab] = useState<TabKey>("score");
+  const [ctaName, setCtaName] = useState("");
+  const [ctaEmail, setCtaEmail] = useState("");
   const [password, setPassword] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ctaEmail);
+  const isNameValid = ctaName.trim().length > 1;
+  const canCheckout = isEmailValid && isNameValid && password.length >= 6;
 
   const scrollToCTA = () => {
     ctaRef.current?.scrollIntoView({ behavior: "smooth" });
