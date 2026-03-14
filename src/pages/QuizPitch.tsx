@@ -329,7 +329,7 @@ const QuizPitch = () => {
               {/* Social proof numbers */}
               <div className="grid grid-cols-3 gap-2 mb-5">
                 {[
-                  { value: "12 mil+", label: "mulheres ativas", color: "#FF6B2B" },
+                  { value: "5.200+", label: "mulheres ativas", color: "#FF6B2B" },
                   { value: "87%", label: "resultados em 30d", color: "#10B981" },
                   { value: "4.8 ⭐", label: "avaliação média", color: "#F59E0B" },
                 ].map((stat, i) => (

@@ -341,7 +341,7 @@ const QuizResult = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>12 mil+</p>
+              <p className="text-lg font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>5.200+</p>
               <p className="text-[10px] text-white/40">mulheres ativas</p>
             </div>
             <div className="text-center">
