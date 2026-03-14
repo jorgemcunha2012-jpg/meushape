@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Shield, CreditCard, Sparkles, Star, Lock, Loader2 } from "lucide-react";
+import { ArrowRight, Check, Shield, CreditCard, Sparkles, Star, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
