@@ -2,12 +2,13 @@ import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 import { quizScreens, type QuizScreen } from "@/lib/quizData";
 import { cn } from "@/lib/utils";
 import logoMeushape from "@/assets/logo-meushape.png";
+import ScrollPicker from "@/components/ScrollPicker";
 
 const Quiz = () => {
   const navigate = useNavigate();
@@ -68,12 +69,16 @@ const Quiz = () => {
     });
   };
 
+  const handleNumericChange = (val: number) => {
+    setNumericValue(String(val));
+    setAnswers((prev) => ({ ...prev, [screen.id]: String(val) }));
+  };
+
   const handleNumericSubmit = () => {
     const val = parseFloat(numericValue);
     if (isNaN(val)) return;
     if (screen.inputMin && val < screen.inputMin) return;
     if (screen.inputMax && val > screen.inputMax) return;
-    setAnswers((prev) => ({ ...prev, [screen.id]: numericValue }));
     goNext();
   };
 
@@ -166,7 +171,7 @@ const Quiz = () => {
             <NumericInputScreen
               screen={screen}
               value={numericValue}
-              onChange={setNumericValue}
+              onNumericChange={handleNumericChange}
               onSubmit={handleNumericSubmit}
               canSubmit={canContinueNumeric()}
             />
@@ -309,45 +314,40 @@ function MultiSelectScreen({
 function NumericInputScreen({
   screen,
   value,
-  onChange,
+  onNumericChange,
   onSubmit,
   canSubmit,
 }: {
   screen: QuizScreen;
   value: string;
-  onChange: (v: string) => void;
+  onNumericChange: (val: number) => void;
   onSubmit: () => void;
   canSubmit: boolean;
 }) {
+  const defaultValue = screen.inputMin && screen.inputMax
+    ? Math.round((screen.inputMin + screen.inputMax) / 2)
+    : screen.inputMin ?? 0;
+  const currentValue = value ? parseInt(value) : defaultValue;
+
   return (
     <div className="animate-fade-in">
-      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 text-center">
+      <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-1 text-center">
         {screen.question}
       </h2>
       {screen.microcopy && (
-        <p className="text-muted-foreground text-center mb-8 text-sm">{screen.microcopy}</p>
+        <p className="text-muted-foreground text-center mb-4 text-sm">{screen.microcopy}</p>
       )}
-      {!screen.microcopy && <div className="mb-8" />}
+      {!screen.microcopy && <div className="mb-4" />}
 
-      <div className="max-w-xs mx-auto">
-        <div className="relative">
-          <Input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && canSubmit && onSubmit()}
-            placeholder={screen.inputLabel}
-            className="h-14 rounded-xl bg-card text-center text-2xl font-semibold pr-14"
-            min={screen.inputMin}
-            max={screen.inputMax}
-          />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-            {screen.inputUnit}
-          </span>
-        </div>
-      </div>
+      <ScrollPicker
+        min={screen.inputMin ?? 0}
+        max={screen.inputMax ?? 100}
+        value={currentValue}
+        onChange={onNumericChange}
+        unit={screen.inputUnit}
+      />
 
-      <div className="mt-8 flex justify-center">
+      <div className="mt-6 flex justify-center">
         <Button
           size="lg"
           disabled={!canSubmit}
