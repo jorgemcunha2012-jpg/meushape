@@ -33,17 +33,17 @@ const tabs: { key: TabKey; label: string }[] = [
 const QuizResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { name, email, answers, bodyAnalysis } = (location.state as any) || {};
+  const { answers, bodyAnalysis } = (location.state as any) || {};
 
   // Redirect if no quiz data
   useEffect(() => {
-    if (!email && !answers) {
+    if (!answers) {
       navigate("/quiz", { replace: true });
     }
-  }, [email, answers, navigate]);
+  }, [answers, navigate]);
 
   const scores = calculateAxisScores(answers || {});
-  const firstName = name?.split(" ")[0] || "linda";
+  const firstName = "linda";
   const dims = deriveSixDimensions(scores);
   const potential = computePotential(dims);
   const overallScore = computeOverallScore(dims);
