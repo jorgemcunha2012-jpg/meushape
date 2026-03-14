@@ -66,7 +66,7 @@ const QuizLoading = () => {
       });
     }, 70);
     return () => clearInterval(interval);
-  }, []);
+  }, [phase2Paused, phase2Done]);
 
   // Messages
   useEffect(() => {
