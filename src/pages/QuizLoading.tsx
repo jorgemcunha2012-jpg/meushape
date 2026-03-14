@@ -268,9 +268,23 @@ const QuizLoading = () => {
         )}
 
         {/* Status message */}
-        <p className="text-muted-foreground text-xs mt-4 animate-pulse text-center min-h-[16px]">
-          {currentMessage}
-        </p>
+        {progress < 100 && (
+          <p className="text-muted-foreground text-xs mt-4 animate-pulse text-center min-h-[16px]">
+            {currentMessage}
+          </p>
+        )}
+
+        {/* CTA Button when complete */}
+        {progress >= 100 && (
+          <div className="w-full max-w-sm mt-6 animate-fade-in">
+            <Button
+              onClick={() => navigate("/quiz/email", { state: { answers } })}
+              className="w-full h-12 text-base font-bold"
+            >
+              Ver Meu Plano Personalizado
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
