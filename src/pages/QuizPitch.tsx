@@ -20,6 +20,8 @@ import {
   Zap,
   Shield,
   PartyPopper,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
