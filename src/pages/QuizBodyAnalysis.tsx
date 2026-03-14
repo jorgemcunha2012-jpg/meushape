@@ -16,7 +16,7 @@ const loadingMessages = [
 const QuizBodyAnalysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { answers } = (location.state as any) || {};
+  const { answers, name } = (location.state as any) || {};
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -65,7 +65,7 @@ const QuizBodyAnalysis = () => {
       const analysis = data.analysis;
 
       navigate("/quiz/resultado", {
-        state: { answers, bodyAnalysis: analysis },
+        state: { answers, name, bodyAnalysis: analysis },
       });
     } catch (err: any) {
       console.error("Analysis error:", err);
@@ -77,7 +77,7 @@ const QuizBodyAnalysis = () => {
 
   const handleSkip = () => {
     navigate("/quiz/resultado", {
-      state: { answers },
+      state: { answers, name },
     });
   };
 

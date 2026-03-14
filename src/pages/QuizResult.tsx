@@ -33,7 +33,7 @@ const tabs: { key: TabKey; label: string }[] = [
 const QuizResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { answers, bodyAnalysis } = (location.state as any) || {};
+  const { answers, name: leadName, bodyAnalysis } = (location.state as any) || {};
 
   // Redirect if no quiz data
   useEffect(() => {
@@ -55,7 +55,7 @@ const QuizResult = () => {
   const displayTestimonials = filtered.length >= 2 ? filtered : allTestimonials;
 
   const [activeTab, setActiveTab] = useState<TabKey>("score");
-  const [ctaName, setCtaName] = useState("");
+  const [ctaName, setCtaName] = useState(leadName || "");
   const [ctaEmail, setCtaEmail] = useState("");
   const [password, setPassword] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
