@@ -85,12 +85,19 @@ const Quiz = () => {
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
+    if (showNameStep) {
+      setShowNameStep(false);
+    } else if (currentStep > 0) {
       setCurrentStep((s) => s - 1);
       setNumericValue("");
     } else {
       navigate("/");
     }
+  };
+
+  const handleNameSubmit = () => {
+    if (leadName.trim().length < 2) return;
+    navigate("/quiz/loading", { state: { answers, name: leadName.trim() } });
   };
 
   const canContinueMulti = () => {
