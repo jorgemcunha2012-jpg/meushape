@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Star, Dumbbell, Wind, StretchHorizontal, Target, CalendarCheck, Flame, Check } from "lucide-react";
 import { testimonials } from "@/lib/quizResultUtils";
 import logoMeuShape from "@/assets/logo-meushape.png";
+import { Button } from "@/components/ui/button";
 
 const analysisMessages = [
   "Analisando seu diagnóstico...",
