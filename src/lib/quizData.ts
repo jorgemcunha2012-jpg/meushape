@@ -345,6 +345,7 @@ export const quizScreens: QuizScreen[] = [
     inputUnit: "kg",
     inputMin: 30,
     inputMax: 200,
+    inputDefault: 65,
   },
   // TELA 24 — Idade
   {
