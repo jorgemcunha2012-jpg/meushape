@@ -24,6 +24,8 @@ const QuizBodyAnalysis = lazy(() => import("./pages/QuizBodyAnalysis"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AppLogin = lazy(() => import("./pages/AppLogin"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AppDashboard = lazy(() => import("./pages/AppDashboard"));
 const AppWorkout = lazy(() => import("./pages/AppWorkout"));
 const AppWorkoutDashboard = lazy(() => import("./pages/AppWorkoutDashboard"));
@@ -70,6 +72,8 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               {/* Workout App */}
               <Route path="/app/login" element={<AppLogin />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/app" element={<AppDashboard />} />
               <Route path="/app/workouts" element={<AppWorkoutDashboard />} />
               <Route path="/app/workout-detail/:workoutId" element={<AppWorkoutDetail />} />

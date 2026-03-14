@@ -122,13 +122,18 @@ const AppLogin = () => {
           </Button>
         </form>
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-6 space-y-2">
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-primary hover:underline block mx-auto"
           >
             {isSignUp ? "Já tem conta? Entrar" : "Não tem conta? Criar agora"}
           </button>
+          {!isSignUp && (
+            <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline block">
+              Esqueceu sua senha?
+            </a>
+          )}
         </div>
       </div>
     </div>
