@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface UrgencyModalProps {
@@ -47,35 +47,15 @@ const UrgencyModal = ({ firstName, bottleneck, onCTA }: UrgencyModalProps) => {
             <div className="px-5 pb-6">
               {/* Headline */}
               <h3
-                className="text-lg font-black text-white mb-4"
+                className="text-lg font-black text-white mb-3"
                 style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
-                {firstName}, não deixe pra depois
+                {firstName}, seu plano tá pronto
               </h3>
 
-              {/* Negative stat */}
-              <div
-                className="flex items-start gap-3 rounded-xl p-3 mb-3"
-                style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}
-              >
-                <AlertTriangle size={18} className="shrink-0 mt-0.5" color="#EF4444" />
-                <p className="text-xs text-red-300 leading-relaxed">
-                  <strong>87% das mulheres</strong> que adiam o início perdem a motivação em menos de 2 semanas.
-                  Seu gargalo em <strong>{bottleneck}</strong> só tende a piorar sem ação.
-                </p>
-              </div>
-
-              {/* Positive stat */}
-              <div
-                className="flex items-start gap-3 rounded-xl p-3 mb-5"
-                style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}
-              >
-                <CheckCircle2 size={18} className="shrink-0 mt-0.5" color="#10B981" />
-                <p className="text-xs text-emerald-300 leading-relaxed">
-                  Com o plano personalizado, mulheres como você melhoram <strong>em média 40%</strong> nas
-                  primeiras 4 semanas. Treinos guiados + comunidade = consistência.
-                </p>
-              </div>
+              <p className="text-sm text-white/60 leading-relaxed mb-5">
+                Seu diagnóstico identificou que <strong className="text-white/80">{bottleneck}</strong> é o que mais tá te travando. O plano personalizado resolve isso direto — mas só funciona se você começar.
+              </p>
 
               {/* CTA */}
               <Button
@@ -89,12 +69,12 @@ const UrgencyModal = ({ firstName, bottleneck, onCTA }: UrgencyModalProps) => {
                   color: "#fff",
                 }}
               >
-                Começar agora — Grátis
+                Escolher meu plano
                 <ArrowRight size={16} className="ml-1" />
               </Button>
 
               <p className="text-[10px] text-white/30 text-center mt-3">
-                Cancele quando quiser • Garantia de 30 dias
+                Garantia de 30 dias • Cancele quando quiser
               </p>
             </div>
           </motion.div>

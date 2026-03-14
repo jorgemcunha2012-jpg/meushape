@@ -1,8 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { calculateAxisScores } from "@/lib/quizData";
 import {
   deriveSixDimensions,
@@ -12,14 +9,14 @@ import {
   testimonials as allTestimonials,
   dimensionLabels,
 } from "@/lib/quizResultUtils";
-import { ArrowRight, Lock, Loader2, Shield, Star, User, Mail, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
+import { ArrowRight, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ScoreRing from "@/components/quiz-result/ScoreRing";
 import RadarChartComponent from "@/components/quiz-result/RadarChart";
 import InsightCards from "@/components/quiz-result/InsightCards";
 import TestimonialCarousel from "@/components/quiz-result/TestimonialCarousel";
 import UrgencyModal from "@/components/quiz-result/UrgencyModal";
+import { Button } from "@/components/ui/button";
 
 type TabKey = "score" | "grafico" | "insights" | "depoimentos";
 
@@ -35,7 +32,6 @@ const QuizResult = () => {
   const navigate = useNavigate();
   const { answers, name: leadName, bodyAnalysis } = (location.state as any) || {};
 
-  // Redirect if no quiz data
   useEffect(() => {
     if (!answers) {
       navigate("/quiz", { replace: true });
@@ -49,63 +45,16 @@ const QuizResult = () => {
   const insights = generateInsights(dims, answers || {});
   const bottleneckLabel = insights[0]?.title?.split(" é ")[0] || "Consistência";
 
-  // Filter testimonials by user profile, fallback to all
   const objetivo = getObjetivo(answers);
   const filtered = allTestimonials.filter((t) => t.profile === objetivo);
   const displayTestimonials = filtered.length >= 2 ? filtered : allTestimonials;
 
   const [activeTab, setActiveTab] = useState<TabKey>("score");
-  const [ctaName, setCtaName] = useState(leadName || "");
-  const [ctaEmail, setCtaEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [checkingOut, setCheckingOut] = useState(false);
-  const ctaRef = useRef<HTMLDivElement>(null);
 
-  const firstName = ctaName.trim().split(" ")[0] || "linda";
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ctaEmail);
-  const isNameValid = ctaName.trim().length > 1;
-  const canCheckout = isEmailValid && isNameValid && password.length >= 6;
+  const firstName = (leadName || "").trim().split(" ")[0] || "linda";
 
-  const scrollToCTA = () => {
-    ctaRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const handleCheckout = async () => {
-    if (!canCheckout) return;
-    setCheckingOut(true);
-
-    const email = ctaEmail.trim().toLowerCase();
-    const name = ctaName.trim();
-
-    // Track checkout event
-    supabase.from("checkout_events").insert({ email, status: "initiated" }).then();
-
-    try {
-      // Insert lead
-      await supabase.from("leads").insert({
-        name,
-        email,
-        opted_in: true,
-        quiz_answers: answers || {},
-        profile_scores: scores || {},
-      });
-
-      // Track funnel
-      const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
-      sessionStorage.setItem("funnel_session", sessionId);
-      await supabase.from("funnel_visits").insert({ step: "lead_captured", session_id: sessionId });
-
-      // Sign up/in and checkout
-      const { signUpAndCheckout } = await import("@/lib/authCheckout");
-      const url = await signUpAndCheckout({ email, password, name });
-      window.location.href = url;
-    } catch (err: any) {
-      console.error("Checkout error:", err);
-      toast.error(err.message || "Erro ao processar. Tente novamente.");
-    } finally {
-      setCheckingOut(false);
-    }
+  const goToCheckout = () => {
+    navigate("/checkout", { state: { answers, name: leadName, scores } });
   };
 
   const scoreLabel = overallScore <= 40
@@ -175,7 +124,6 @@ const QuizResult = () => {
             >
               <ScoreRing score={overallScore} label={scoreLabel} />
 
-              {/* Dimension breakdown */}
               <div className="w-full mt-6 space-y-3">
                 {(Object.keys(dims) as (keyof typeof dims)[]).map((key, i) => (
                   <motion.div
@@ -250,7 +198,6 @@ const QuizResult = () => {
             >
               <InsightCards insights={insights} />
 
-              {/* Body analysis if available */}
               {bodyAnalysis && bodyAnalysis.body_type !== "indefinido" && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -327,21 +274,15 @@ const QuizResult = () => {
             </div>
             <span className="text-[10px] font-bold text-white/60">4.8</span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>5.200+</p>
-              <p className="text-[10px] text-white/40">mulheres ativas</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "#10B981", fontFamily: "'Montserrat', sans-serif" }}>87%</p>
-              <p className="text-[10px] text-white/40">viram resultados em 30 dias</p>
-            </div>
+          <div className="text-center">
+            <p className="text-lg font-black" style={{ color: "#FF6B2B", fontFamily: "'Montserrat', sans-serif" }}>5.000+</p>
+            <p className="text-[10px] text-white/40">mulheres já fizeram o teste</p>
           </div>
         </motion.div>
       </section>
 
-      {/* CTA Section */}
-      <section ref={ctaRef} className="px-5 pb-10">
+      {/* CTA Section — Simple, no signup form */}
+      <section className="px-5 pb-10">
         <div
           className="rounded-2xl p-5 text-center"
           style={{
@@ -353,92 +294,28 @@ const QuizResult = () => {
             className="text-xl font-black text-white mb-1"
             style={{ fontFamily: "'Montserrat', sans-serif" }}
           >
-            Acesso Imediato
+            Seu plano personalizado tá pronto.
           </h3>
           <p className="text-xs text-white/40 mb-5">
-            Grátis por tempo limitado • Garantia de 30 dias.
+            Escolha o plano ideal e comece hoje mesmo.
           </p>
-
-          {/* Name */}
-          <div className="mb-3 text-left">
-            <label className="text-[10px] text-white/30 mb-1 block">Seu primeiro nome</label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-              <Input
-                placeholder="Ex: Maria"
-                value={ctaName}
-                onChange={(e) => setCtaName(e.target.value)}
-                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
-                maxLength={100}
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div className="mb-3 text-left">
-            <label className="text-[10px] text-white/30 mb-1 block">Seu melhor email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={ctaEmail}
-                onChange={(e) => setCtaEmail(e.target.value)}
-                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
-                maxLength={255}
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="mb-4 text-left">
-            <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
 
           <Button
             size="lg"
-            onClick={handleCheckout}
-            disabled={checkingOut || !canCheckout}
+            onClick={goToCheckout}
             className="w-full rounded-full py-6 text-sm font-bold"
             style={{
-              background: canCheckout
-                ? "linear-gradient(135deg, #FF6B2B, #F59E0B)"
-                : "rgba(255,255,255,0.1)",
-              color: canCheckout ? "#fff" : "rgba(255,255,255,0.3)",
+              background: "linear-gradient(135deg, #FF6B2B, #F59E0B)",
+              color: "#fff",
             }}
           >
-            {checkingOut ? (
-              <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
-            ) : (
-              <>Começar agora — Grátis <ArrowRight className="w-4 h-4 ml-1" /></>
-            )}
+            Escolher meu plano
+            <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
 
-          <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-white/30">
-            <span className="flex items-center gap-1">
-              <Shield className="w-3 h-3" /> Garantia 30 dias
-            </span>
-            <span>•</span>
-            <span>Cancele a qualquer momento</span>
-          </div>
+          <p className="text-[10px] text-white/30 text-center mt-3">
+            Garantia de 30 dias • Cancele quando quiser
+          </p>
         </div>
       </section>
 
@@ -446,7 +323,7 @@ const QuizResult = () => {
       <UrgencyModal
         firstName={firstName}
         bottleneck={bottleneckLabel}
-        onCTA={scrollToCTA}
+        onCTA={goToCheckout}
       />
     </div>
   );

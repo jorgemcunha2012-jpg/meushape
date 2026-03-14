@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Star, Dumbbell, Wind, StretchHorizontal, Target, CalendarCheck, Flame, Check } from "lucide-react";
+import { Star, Flame, Check } from "lucide-react";
 import { testimonials } from "@/lib/quizResultUtils";
 import logoMeuShape from "@/assets/logo-meushape.png";
 import { Button } from "@/components/ui/button";
@@ -136,7 +136,7 @@ const QuizLoading = () => {
           <div className="flex justify-center mb-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
               <Flame size={10} />
-              12.000+ mulheres transformadas
+              5.000+ mulheres já fizeram o teste
             </span>
           </div>
           <div className="flex gap-2">
@@ -187,11 +187,11 @@ const QuizLoading = () => {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* CTA — go directly to results (skip body analysis) */}
         {done && (
           <div className="w-full max-w-sm mt-5 mb-6 animate-fade-in">
             <Button
-              onClick={() => navigate("/quiz/analise-corporal", { state: { answers, name } })}
+              onClick={() => navigate("/quiz/resultado", { state: { answers, name } })}
               className="w-full h-12 text-base font-bold"
             >
               Ver Meu Diagnóstico Completo

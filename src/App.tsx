@@ -65,6 +65,7 @@ const App = () => (
               <Route path="/quiz/analise-corporal" element={<QuizBodyAnalysis />} />
               <Route path="/quiz/resultado" element={<QuizResult />} />
               <Route path="/quiz/checkout" element={<QuizCheckout />} />
+              <Route path="/checkout" element={<QuizCheckout />} />
               <Route path="/quiz/success" element={<QuizSuccess />} />
               <Route path="/quiz/pitch" element={<QuizPitch />} />
               {/* Admin */}

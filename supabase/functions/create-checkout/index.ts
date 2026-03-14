@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PRICE_ID = "price_1T8l31LKftklAHDE4PyBMu0K";
+const DEFAULT_PRICE_ID = "price_1TB0kfLKftklAHDETj60Kbhp"; // Annual plan
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -29,20 +29,31 @@ Deno.serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData?.user) {
       return new Response(
         JSON.stringify({ error: "User not authenticated" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const email = claimsData.claims.email as string;
+    const email = userData.user.email;
     if (!email) {
       return new Response(
         JSON.stringify({ error: "User email not available" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Parse optional price_id from request body
+    let priceId = DEFAULT_PRICE_ID;
+    try {
+      const body = await req.json();
+      if (body?.price_id) {
+        priceId = body.price_id;
+      }
+    } catch {
+      // No body or invalid JSON — use default
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
@@ -58,11 +69,11 @@ Deno.serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : email,
-      line_items: [{ price: PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       payment_method_types: ["card"],
       success_url: `${origin}/quiz/success`,
-      cancel_url: `${origin}/quiz/checkout`,
+      cancel_url: `${origin}/checkout`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
