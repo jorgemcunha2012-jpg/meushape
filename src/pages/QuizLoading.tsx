@@ -6,14 +6,14 @@ import logoMeuShape from "@/assets/logo-meushape.png";
 import { Button } from "@/components/ui/button";
 
 const analysisMessages = [
-  "Analisando seu diagnóstico...",
-  "Mapeando pontos fortes e fracos...",
-  "Selecionando exercícios pro seu nível...",
+  "Cruzando suas respostas com nosso método...",
+  "Avaliando seu nível e histórico...",
+  "Identificando o que vai funcionar pra você...",
 ];
 
 const finalizationMessages = [
-  "Ajustando pro seu tempo disponível...",
-  "Finalizando seu plano personalizado...",
+  "Encaixando no seu tempo disponível...",
+  "Montando sua rotina de treinos...",
 ];
 
 const dimensionIcons = [
@@ -26,10 +26,10 @@ const dimensionIcons = [
 ];
 
 const checkItems = [
-  "Exercícios selecionados",
-  "Nível ajustado",
-  "Tempo personalizado",
-  "Plano montado",
+  "Treinos adaptados ao seu nível",
+  "Exercícios pro seu objetivo",
+  "Duração ajustada à sua rotina",
+  "Progressão inteligente ativada",
 ];
 
 const QuizLoading = () => {
@@ -249,7 +249,7 @@ const QuizLoading = () => {
         {phase === 3 && (
           <div className="w-full max-w-xs space-y-2.5 animate-fade-in">
             <h3 className="text-center text-sm font-bold text-foreground mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              Seu plano está quase pronto!
+              Tudo pronto! Seu plano ficou assim:
             </h3>
             {checkItems.map((item, i) => (
               <div
@@ -281,7 +281,7 @@ const QuizLoading = () => {
               onClick={() => navigate("/quiz/email", { state: { answers } })}
               className="w-full h-12 text-base font-bold"
             >
-              Ver Meu Plano Personalizado
+              Ver Meu Diagnóstico Completo
             </Button>
           </div>
         )}
