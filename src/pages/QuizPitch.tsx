@@ -108,6 +108,7 @@ const QuizPitch = () => {
 
   const [step, setStep] = useState(0);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [direction, setDirection] = useState(1); // 1=forward, -1=back
