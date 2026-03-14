@@ -16,7 +16,7 @@ const loadingMessages = [
 const QuizBodyAnalysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { answers } = (location.state as any) || {};
+  const { answers, name } = (location.state as any) || {};
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [preview, setPreview] = useState<string | null>(null);
