@@ -371,9 +371,40 @@ const QuizResult = () => {
             Grátis por tempo limitado • Garantia de 30 dias.
           </p>
 
+          {/* Name */}
+          <div className="mb-3 text-left">
+            <label className="text-[10px] text-white/30 mb-1 block">Seu primeiro nome</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Input
+                placeholder="Ex: Maria"
+                value={ctaName}
+                onChange={(e) => setCtaName(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
+                maxLength={100}
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="mb-3 text-left">
+            <label className="text-[10px] text-white/30 mb-1 block">Seu melhor email</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Input
+                type="email"
+                placeholder="seu@email.com"
+                value={ctaEmail}
+                onChange={(e) => setCtaEmail(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
+                maxLength={255}
+              />
+            </div>
+          </div>
+
           {/* Password */}
           <div className="mb-4 text-left">
-            <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha para acessar</label>
+            <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <Input
@@ -390,7 +421,7 @@ const QuizResult = () => {
           <Button
             size="lg"
             onClick={handleCheckout}
-            disabled={checkingOut || password.length < 6}
+            disabled={checkingOut || !canCheckout}
             className="w-full rounded-full py-6 text-sm font-bold"
             style={{
               background: password.length >= 6

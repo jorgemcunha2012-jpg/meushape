@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Camera, Upload, Loader2, SkipForward, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Camera, Upload, Loader2, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 
 const loadingMessages = [
@@ -16,23 +16,12 @@ const loadingMessages = [
 const QuizBodyAnalysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { name, email, answers, optedIn } = (location.state as any) || {};
+  const { answers } = (location.state as any) || {};
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [preview, setPreview] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
-  const [alreadyAnalyzed, setAlreadyAnalyzed] = useState(false);
-
-  // Check localStorage for previous analysis
-  useEffect(() => {
-    if (email) {
-      const cached = localStorage.getItem(`body_analysis_${email}`);
-      if (cached) {
-        setAlreadyAnalyzed(true);
-      }
-    }
-  }, [email]);
 
   // Rotate loading messages
   useEffect(() => {
@@ -58,14 +47,16 @@ const QuizBodyAnalysis = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!preview || !email || analyzing || alreadyAnalyzed) return;
+    if (!preview || analyzing) return;
 
     setAnalyzing(true);
     setLoadingMsgIndex(0);
 
     try {
+      // Use a temporary identifier for the edge function
+      const tempId = `anon_${crypto.randomUUID()}`;
       const { data, error } = await supabase.functions.invoke("analyze-body", {
-        body: { email, image_base64: preview },
+        body: { email: tempId, image_base64: preview },
       });
 
       if (error) throw error;
@@ -73,11 +64,8 @@ const QuizBodyAnalysis = () => {
 
       const analysis = data.analysis;
 
-      // Cache in localStorage to prevent re-submission
-      localStorage.setItem(`body_analysis_${email}`, JSON.stringify(analysis));
-
       navigate("/quiz/resultado", {
-        state: { name, email, answers, optedIn, bodyAnalysis: analysis },
+        state: { answers, bodyAnalysis: analysis },
       });
     } catch (err: any) {
       console.error("Analysis error:", err);
@@ -89,42 +77,11 @@ const QuizBodyAnalysis = () => {
 
   const handleSkip = () => {
     navigate("/quiz/resultado", {
-      state: { name, email, answers, optedIn },
+      state: { answers },
     });
   };
 
   const handleBack = () => navigate(-1);
-
-  // If already analyzed, go straight to results with cached data
-  if (alreadyAnalyzed && email) {
-    const cached = localStorage.getItem(`body_analysis_${email}`);
-    if (cached) {
-      return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-          <div className="max-w-lg mx-auto text-center animate-fade-in-up">
-            <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-              Análise já realizada!
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Sua análise corporal já foi feita. Vamos ver seu resultado completo.
-            </p>
-            <Button
-              size="lg"
-              onClick={() =>
-                navigate("/quiz/resultado", {
-                  state: { name, email, answers, optedIn, bodyAnalysis: JSON.parse(cached) },
-                })
-              }
-              className="rounded-full py-6 px-8 text-base font-semibold"
-            >
-              Ver meu resultado
-            </Button>
-          </div>
-        </div>
-      );
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -173,7 +130,6 @@ const QuizBodyAnalysis = () => {
                 </p>
               </div>
 
-              {/* Upload area */}
               <input
                 ref={fileInputRef}
                 type="file"
