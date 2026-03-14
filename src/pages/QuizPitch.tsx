@@ -148,26 +148,11 @@ const QuizPitch = () => {
       return;
     }
     setCheckingOut(true);
-    // Track checkout event
     supabase.from("checkout_events").insert({ email, status: "initiated" }).then();
     try {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email, password,
-        options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
-      });
-      if (signUpError?.message?.includes("already registered")) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-      } else if (signUpError) {
-        throw signUpError;
-      } else if (!signUpData?.session) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-      }
-      const { data, error } = await supabase.functions.invoke("create-checkout");
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) window.location.href = data.url;
+      const { signUpAndCheckout } = await import("@/lib/authCheckout");
+      const url = await signUpAndCheckout({ email, password, name });
+      window.location.href = url;
     } catch (err: any) {
       console.error("Checkout error:", err);
       toast.error(err.message || "Erro ao processar. Tente novamente.");
