@@ -145,7 +145,7 @@ const QuizSuccess = () => {
         whileTap={{ scale: 0.98 }}
         onClick={() => navigate("/app")}
       >
-        Acessar meu app <ArrowRight className="w-4 h-4" />
+        Ir para meu dashboard <ArrowRight className="w-4 h-4" />
       </motion.button>
 
       <p className="text-[10px] mt-3 text-center" style={{ color: "#555" }}>
