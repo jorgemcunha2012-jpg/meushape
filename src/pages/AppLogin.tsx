@@ -130,9 +130,9 @@ const AppLogin = () => {
             {isSignUp ? "Já tem conta? Entrar" : "Não tem conta? Criar agora"}
           </button>
           {!isSignUp && (
-            <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline block">
+            <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline block">
               Esqueceu sua senha?
-            </a>
+            </Link>
           )}
         </div>
       </div>
