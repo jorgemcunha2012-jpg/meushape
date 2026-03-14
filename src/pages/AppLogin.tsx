@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -130,9 +130,9 @@ const AppLogin = () => {
             {isSignUp ? "Já tem conta? Entrar" : "Não tem conta? Criar agora"}
           </button>
           {!isSignUp && (
-            <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline block">
+            <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline block">
               Esqueceu sua senha?
-            </a>
+            </Link>
           )}
         </div>
       </div>
