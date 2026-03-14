@@ -209,7 +209,7 @@ const QuizPitch = () => {
               </h2>
               <p className="text-xs text-white/40 text-center mb-1">Tudo personalizado pra você</p>
               <p className="text-[10px] text-center mb-4" style={{ color: "#10B981" }}>
-                ✓ Usado por mais de 12 mil mulheres • 87% viram resultados em 30 dias
+                ✓ Usado por mais de 5.200 mulheres • 87% viram resultados em 30 dias
               </p>
               <div className="space-y-3">
                 {benefits.map((b, i) => (
@@ -329,7 +329,7 @@ const QuizPitch = () => {
               {/* Social proof numbers */}
               <div className="grid grid-cols-3 gap-2 mb-5">
                 {[
-                  { value: "12 mil+", label: "mulheres ativas", color: "#FF6B2B" },
+                  { value: "5.200+", label: "mulheres ativas", color: "#FF6B2B" },
                   { value: "87%", label: "resultados em 30d", color: "#10B981" },
                   { value: "4.8 ⭐", label: "avaliação média", color: "#F59E0B" },
                 ].map((stat, i) => (

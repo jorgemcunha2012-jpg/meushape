@@ -57,7 +57,7 @@ export const quizScreens: QuizScreen[] = [
   {
     id: "social1",
     type: "intermediate",
-    headline: "Mais de 87.342 mulheres já descobriram o que faltava no treino delas",
+    headline: "Mais de 5.200 mulheres já descobriram o que faltava no treino delas",
     body: "Junte-se a milhares de mulheres que transformaram sua relação com o treino.",
     buttonText: "Continuar",
   },
