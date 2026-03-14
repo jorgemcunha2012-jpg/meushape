@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Heart } from "lucide-react";
+import { motion } from "framer-motion";
 import { quizScreens, type QuizScreen } from "@/lib/quizData";
 import { cn } from "@/lib/utils";
 import logoMeushape from "@/assets/logo-meushape.png";
