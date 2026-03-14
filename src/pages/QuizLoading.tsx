@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Star, Dumbbell, Wind, StretchHorizontal, Target, CalendarCheck, Flame, Check } from "lucide-react";
 import { testimonials } from "@/lib/quizResultUtils";
 import logoMeuShape from "@/assets/logo-meushape.png";
+import { Button } from "@/components/ui/button";
 
 const analysisMessages = [
   "Analisando seu diagnóstico...",
@@ -42,21 +43,20 @@ const QuizLoading = () => {
 
   const phase = progress < 40 ? 1 : progress < 75 ? 2 : 3;
 
-  // Progress ticker
+  // Progress ticker (3.5 seconds total)
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
         const next = prev + 2;
         if (next >= 100) {
           clearInterval(interval);
-          setTimeout(() => navigate("/quiz/email", { state: { answers } }), 600);
           return 100;
         }
         return next;
       });
-    }, 50);
+    }, 70);
     return () => clearInterval(interval);
-  }, [navigate, answers]);
+  }, []);
 
   // Messages
   useEffect(() => {
@@ -268,9 +268,23 @@ const QuizLoading = () => {
         )}
 
         {/* Status message */}
-        <p className="text-muted-foreground text-xs mt-4 animate-pulse text-center min-h-[16px]">
-          {currentMessage}
-        </p>
+        {progress < 100 && (
+          <p className="text-muted-foreground text-xs mt-4 animate-pulse text-center min-h-[16px]">
+            {currentMessage}
+          </p>
+        )}
+
+        {/* CTA Button when complete */}
+        {progress >= 100 && (
+          <div className="w-full max-w-sm mt-6 animate-fade-in">
+            <Button
+              onClick={() => navigate("/quiz/email", { state: { answers } })}
+              className="w-full h-12 text-base font-bold"
+            >
+              Ver Meu Plano Personalizado
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
