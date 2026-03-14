@@ -58,7 +58,7 @@ export const quizScreens: QuizScreen[] = [
     id: "social1",
     type: "intermediate",
     headline: "Mais de 5.000 mulheres já descobriram o treino certo pro seu corpo",
-    body: "Junte-se a milhares de mulheres que transformaram sua relação com o treino.",
+    body: "Suas respostas vão criar um plano feito só pra você.",
     buttonText: "Continuar",
   },
   // P2: Corpo hoje
