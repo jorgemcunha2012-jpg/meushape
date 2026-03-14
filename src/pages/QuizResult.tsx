@@ -12,7 +12,7 @@ import {
   testimonials as allTestimonials,
   dimensionLabels,
 } from "@/lib/quizResultUtils";
-import { ArrowRight, Lock, Loader2, Shield, Star } from "lucide-react";
+import { ArrowRight, Lock, Loader2, Shield, Star, User, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ScoreRing from "@/components/quiz-result/ScoreRing";
@@ -33,17 +33,17 @@ const tabs: { key: TabKey; label: string }[] = [
 const QuizResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { name, email, answers, bodyAnalysis } = (location.state as any) || {};
+  const { answers, bodyAnalysis } = (location.state as any) || {};
 
   // Redirect if no quiz data
   useEffect(() => {
-    if (!email && !answers) {
+    if (!answers) {
       navigate("/quiz", { replace: true });
     }
-  }, [email, answers, navigate]);
+  }, [answers, navigate]);
 
   const scores = calculateAxisScores(answers || {});
-  const firstName = name?.split(" ")[0] || "linda";
+  const firstName = "linda";
   const dims = deriveSixDimensions(scores);
   const potential = computePotential(dims);
   const overallScore = computeOverallScore(dims);
@@ -56,28 +56,47 @@ const QuizResult = () => {
   const displayTestimonials = filtered.length >= 2 ? filtered : allTestimonials;
 
   const [activeTab, setActiveTab] = useState<TabKey>("score");
+  const [ctaName, setCtaName] = useState("");
+  const [ctaEmail, setCtaEmail] = useState("");
   const [password, setPassword] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ctaEmail);
+  const isNameValid = ctaName.trim().length > 1;
+  const canCheckout = isEmailValid && isNameValid && password.length >= 6;
 
   const scrollToCTA = () => {
     ctaRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleCheckout = async () => {
-    if (!email) {
-      toast.error("Email não encontrado. Refaça o quiz.");
-      return;
-    }
-    if (!password || password.length < 6) {
-      toast.error("Crie uma senha com pelo menos 6 caracteres.");
-      return;
-    }
+    if (!canCheckout) return;
     setCheckingOut(true);
+
+    const email = ctaEmail.trim().toLowerCase();
+    const name = ctaName.trim();
+
     // Track checkout event
     supabase.from("checkout_events").insert({ email, status: "initiated" }).then();
+
     try {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Insert lead
+      await supabase.from("leads").insert({
+        name,
+        email,
+        opted_in: true,
+        quiz_answers: answers || {},
+        profile_scores: scores || {},
+      });
+
+      // Track funnel
+      const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
+      sessionStorage.setItem("funnel_session", sessionId);
+      await supabase.from("funnel_visits").insert({ step: "lead_captured", session_id: sessionId });
+
+      // Create account
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
@@ -88,6 +107,7 @@ const QuizResult = () => {
       } else if (signUpError) {
         throw signUpError;
       }
+
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -351,9 +371,40 @@ const QuizResult = () => {
             Grátis por tempo limitado • Garantia de 30 dias.
           </p>
 
+          {/* Name */}
+          <div className="mb-3 text-left">
+            <label className="text-[10px] text-white/30 mb-1 block">Seu primeiro nome</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Input
+                placeholder="Ex: Maria"
+                value={ctaName}
+                onChange={(e) => setCtaName(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
+                maxLength={100}
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="mb-3 text-left">
+            <label className="text-[10px] text-white/30 mb-1 block">Seu melhor email</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Input
+                type="email"
+                placeholder="seu@email.com"
+                value={ctaEmail}
+                onChange={(e) => setCtaEmail(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
+                maxLength={255}
+              />
+            </div>
+          </div>
+
           {/* Password */}
           <div className="mb-4 text-left">
-            <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha para acessar</label>
+            <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <Input
@@ -370,13 +421,13 @@ const QuizResult = () => {
           <Button
             size="lg"
             onClick={handleCheckout}
-            disabled={checkingOut || password.length < 6}
+            disabled={checkingOut || !canCheckout}
             className="w-full rounded-full py-6 text-sm font-bold"
             style={{
-              background: password.length >= 6
+              background: canCheckout
                 ? "linear-gradient(135deg, #FF6B2B, #F59E0B)"
                 : "rgba(255,255,255,0.1)",
-              color: password.length >= 6 ? "#fff" : "rgba(255,255,255,0.3)",
+              color: canCheckout ? "#fff" : "rgba(255,255,255,0.3)",
             }}
           >
             {checkingOut ? (
