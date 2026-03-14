@@ -43,7 +43,6 @@ const QuizResult = () => {
   }, [answers, navigate]);
 
   const scores = calculateAxisScores(answers || {});
-  const firstName = ctaName.trim().split(" ")[0] || "linda";
   const dims = deriveSixDimensions(scores);
   const potential = computePotential(dims);
   const overallScore = computeOverallScore(dims);
@@ -62,6 +61,7 @@ const QuizResult = () => {
   const [checkingOut, setCheckingOut] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
 
+  const firstName = ctaName.trim().split(" ")[0] || "linda";
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ctaEmail);
   const isNameValid = ctaName.trim().length > 1;
   const canCheckout = isEmailValid && isNameValid && password.length >= 6;
