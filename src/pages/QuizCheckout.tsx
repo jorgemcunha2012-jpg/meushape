@@ -65,26 +65,9 @@ const QuizCheckout = () => {
 
     setCheckingOut(true);
     try {
-      // Sign up or sign in
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
-      });
-      if (signUpError?.message?.includes("already registered")) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-      } else if (signUpError) {
-        throw signUpError;
-      }
-
-      // Create Stripe checkout session
-      const { data, error } = await supabase.functions.invoke("create-checkout");
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      const { signUpAndCheckout } = await import("@/lib/authCheckout");
+      const url = await signUpAndCheckout({ email, password, name: name || "" });
+      window.location.href = url;
     } catch (err: any) {
       console.error("Checkout error:", err);
       toast.error(err.message || "Erro ao processar. Tente novamente.");

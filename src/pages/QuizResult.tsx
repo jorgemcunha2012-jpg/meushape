@@ -96,27 +96,10 @@ const QuizResult = () => {
       sessionStorage.setItem("funnel_session", sessionId);
       await supabase.from("funnel_visits").insert({ step: "lead_captured", session_id: sessionId });
 
-      // Create account or sign in
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name }, emailRedirectTo: window.location.origin + "/app" },
-      });
-      if (signUpError?.message?.includes("already registered")) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-      } else if (signUpError) {
-        throw signUpError;
-      } else if (!signUpData?.session) {
-        // If no session after signup, sign in immediately
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-      }
-
-      const { data, error } = await supabase.functions.invoke("create-checkout");
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) window.location.href = data.url;
+      // Sign up/in and checkout
+      const { signUpAndCheckout } = await import("@/lib/authCheckout");
+      const url = await signUpAndCheckout({ email, password, name });
+      window.location.href = url;
     } catch (err: any) {
       console.error("Checkout error:", err);
       toast.error(err.message || "Erro ao processar. Tente novamente.");
