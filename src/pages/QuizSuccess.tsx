@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, Dumbbell, TrendingUp, Users, Sparkles } from "lucide-react";
 import confetti from "canvas-confetti";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { invalidateSubscriptionCache } from "@/hooks/useAuth";
 
@@ -14,21 +14,21 @@ const nextSteps = [
 
 const QuizSuccess = () => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    // Invalidate subscription cache so fresh check happens
     invalidateSubscriptionCache();
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.4 }, colors: ["#FF6B2B", "#F59E0B", "#10B981"] });
 
-    // Track checkout completed
     supabase.auth.getUser().then(({ data }) => {
-      const email = data.user?.email;
-      if (email) {
-        supabase.from("checkout_events").insert({ email, status: "completed" }).then();
+      const user = data.user;
+      if (user?.email) {
+        supabase.from("checkout_events").insert({ email: user.email, status: "completed" }).then();
       }
+      const name = user?.user_metadata?.name || "";
+      setUserName(name.split(" ")[0] || "");
     });
 
-    // Prefetch app dashboard
     import("./AppDashboard");
   }, []);
 
@@ -56,10 +56,10 @@ const QuizSuccess = () => {
           className="text-2xl font-black text-white mb-2"
           style={{ fontFamily: "'Montserrat', sans-serif" }}
         >
-          Pagamento confirmado! 🎉
+          Parabéns{userName ? `, ${userName}` : ""}! Seu acesso foi ativado 🎉
         </h1>
         <p className="text-sm text-white/50">
-          Seu acesso está liberado. Vamos começar sua transformação!
+          Tudo pronto. Vamos começar sua transformação!
         </p>
       </motion.div>
 
@@ -81,10 +81,6 @@ const QuizSuccess = () => {
           </span>
         </div>
         <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-white/40">Plano</span>
-            <span className="text-white font-semibold">Mensal — Grátis</span>
-          </div>
           <div className="flex justify-between">
             <span className="text-white/40">Status</span>
             <span className="font-semibold" style={{ color: "#10B981" }}>Ativo ✓</span>

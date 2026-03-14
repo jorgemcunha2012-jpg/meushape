@@ -9,10 +9,12 @@ export async function signUpAndCheckout({
   email,
   password,
   name,
+  priceId,
 }: {
   email: string;
   password: string;
   name: string;
+  priceId?: string;
 }): Promise<string> {
   // Step 1: Try to sign up
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -40,7 +42,6 @@ export async function signUpAndCheckout({
     }
   } else if (!signUpData?.session) {
     // Signup succeeded but no session (e.g. email confirmation pending)
-    // Try signing in immediately (works with auto-confirm enabled)
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -56,8 +57,10 @@ export async function signUpAndCheckout({
     throw new Error("Não foi possível autenticar. Tente novamente.");
   }
 
-  // Step 3: Call create-checkout
-  const { data, error } = await supabase.functions.invoke("create-checkout");
+  // Step 3: Call create-checkout with optional priceId
+  const { data, error } = await supabase.functions.invoke("create-checkout", {
+    body: priceId ? { price_id: priceId } : undefined,
+  });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
   if (!data?.url) throw new Error("URL de checkout não retornada.");
