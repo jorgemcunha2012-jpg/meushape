@@ -34,6 +34,7 @@ export interface QuizScreen {
   inputUnit?: string;
   inputMin?: number;
   inputMax?: number;
+  inputDefault?: number;
   microcopy?: string;
   // For multi-select
   maxSelections?: number;
