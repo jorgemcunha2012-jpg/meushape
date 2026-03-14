@@ -33,7 +33,7 @@ const tabs: { key: TabKey; label: string }[] = [
 const QuizResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { answers, bodyAnalysis } = (location.state as any) || {};
+  const { answers, name: leadName, bodyAnalysis } = (location.state as any) || {};
 
   // Redirect if no quiz data
   useEffect(() => {
