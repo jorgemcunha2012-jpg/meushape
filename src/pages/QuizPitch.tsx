@@ -209,7 +209,7 @@ const QuizPitch = () => {
               </h2>
               <p className="text-xs text-white/40 text-center mb-1">Tudo personalizado pra você</p>
               <p className="text-[10px] text-center mb-4" style={{ color: "#10B981" }}>
-                ✓ Usado por mais de 12 mil mulheres • 87% viram resultados em 30 dias
+                ✓ Usado por mais de 5.200 mulheres • 87% viram resultados em 30 dias
               </p>
               <div className="space-y-3">
                 {benefits.map((b, i) => (
