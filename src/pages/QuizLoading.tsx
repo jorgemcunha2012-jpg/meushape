@@ -163,7 +163,7 @@ const QuizLoading = () => {
               className="font-bold tabular-nums text-foreground"
               style={{ fontSize: phase === 1 ? 28 : 18, fontFamily: "'Montserrat', sans-serif" }}
             >
-              {progress}%
+              {Math.round(progress)}%
             </span>
           </div>
         </div>
