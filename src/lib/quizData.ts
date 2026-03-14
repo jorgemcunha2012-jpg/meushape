@@ -356,6 +356,7 @@ export const quizScreens: QuizScreen[] = [
     inputUnit: "anos",
     inputMin: 14,
     inputMax: 80,
+    inputDefault: 30,
     microcopy: "Sua idade ajuda a criar um plano seguro e adequado pro seu corpo.",
   },
   // TELA 25
