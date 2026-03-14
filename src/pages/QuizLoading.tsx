@@ -23,7 +23,7 @@ const checkItems = [
 const QuizLoading = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const answers = (location.state as any)?.answers || {};
+  const { answers, name } = (location.state as any) || {};
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
