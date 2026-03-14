@@ -43,16 +43,18 @@ const QuizLoading = () => {
 
   const phase = progress < 40 ? 1 : progress < 75 ? 2 : 3;
 
-  // Progress ticker (3.5 seconds total)
+  // Progress ticker (~7s total, slower on phase 2 for testimonials)
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const next = prev + 2;
+        // Slow down during testimonial phase (40-75%)
+        const speed = prev >= 40 && prev < 75 ? 0.8 : 1.5;
+        const next = prev + speed;
         if (next >= 100) {
           clearInterval(interval);
           return 100;
         }
-        return next;
+        return Math.round(next * 10) / 10;
       });
     }, 70);
     return () => clearInterval(interval);
