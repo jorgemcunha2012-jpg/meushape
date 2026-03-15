@@ -15,7 +15,7 @@ import NotFound from "./pages/NotFound";
 
 // Lazy-loaded routes
 const QuizLoading = lazy(() => import("./pages/QuizLoading"));
-const QuizEmail = lazy(() => import("./pages/QuizEmail"));
+
 const QuizResult = lazy(() => import("./pages/QuizResult"));
 const QuizPitch = lazy(() => import("./pages/QuizPitch"));
 const QuizCheckout = lazy(() => import("./pages/QuizCheckout"));
