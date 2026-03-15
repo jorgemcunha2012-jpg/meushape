@@ -103,7 +103,7 @@ const StepDots = ({ step, total, labels }: { step: number; total: number; labels
 const QuizPitch = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { name, email, answers } = (location.state as any) || {};
+  const { name, answers, scores } = (location.state as any) || {};
   const firstName = name?.split(" ")[0] || "linda";
 
   const [step, setStep] = useState(0);
