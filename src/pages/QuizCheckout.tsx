@@ -8,6 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { trackCompleteRegistration, trackInitiateCheckout } from "@/lib/tiktokPixel";
 
 const PLANS = [
   {
@@ -101,6 +102,12 @@ const QuizCheckout = () => {
         name: trimmedName,
         priceId: plan.priceId,
       });
+
+      // TikTok conversion events
+      trackCompleteRegistration(trimmedEmail);
+      const planValue = plan.id === "monthly" ? 19.9 : plan.id === "quarterly" ? 49.9 : 99.9;
+      trackInitiateCheckout(plan.id, planValue);
+
       window.location.href = url;
     } catch (err: any) {
       console.error("Checkout error:", err);

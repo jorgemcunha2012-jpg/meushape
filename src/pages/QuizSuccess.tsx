@@ -5,6 +5,7 @@ import confetti from "canvas-confetti";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { invalidateSubscriptionCache } from "@/hooks/useAuth";
+import { trackPurchase } from "@/lib/tiktokPixel";
 
 const nextSteps = [
   { icon: Dumbbell, title: "Seu primeiro treino", desc: "Comece agora com um treino personalizado para seu nível." },
@@ -19,6 +20,9 @@ const QuizSuccess = () => {
   useEffect(() => {
     invalidateSubscriptionCache();
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.4 }, colors: ["#FF6B2B", "#F59E0B", "#10B981"] });
+
+    // TikTok Purchase event
+    trackPurchase();
 
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user;
