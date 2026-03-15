@@ -116,6 +116,34 @@ Deno.serve(async (req) => {
         break;
       }
 
+      // ─── Renovação confirmada ───
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const billingReason = invoice.billing_reason;
+
+        // Only process subscription renewals/cycles, not first payments
+        if (billingReason === "subscription_cycle" || billingReason === "subscription_update") {
+          const customerId = invoice.customer as string;
+          const customer = await stripe.customers.retrieve(customerId);
+
+          if (!customer.deleted && customer.email) {
+            const email = customer.email;
+            logStep("Payment succeeded (renewal)", { email, invoiceId: invoice.id, billingReason });
+
+            const { error } = await supabase
+              .from("profiles")
+              .update({ subscription_status: "active" })
+              .eq("email", email);
+            if (error) logStep("Profile update error", error);
+
+            logStep("User reactivated", { email });
+          }
+        } else {
+          logStep("Payment succeeded (non-renewal)", { billingReason, invoiceId: invoice.id });
+        }
+        break;
+      }
+
       default:
         logStep("Unhandled event type", { type: event.type });
     }
