@@ -15,7 +15,7 @@ import NotFound from "./pages/NotFound";
 
 // Lazy-loaded routes
 const QuizLoading = lazy(() => import("./pages/QuizLoading"));
-const QuizEmail = lazy(() => import("./pages/QuizEmail"));
+
 const QuizResult = lazy(() => import("./pages/QuizResult"));
 const QuizPitch = lazy(() => import("./pages/QuizPitch"));
 const QuizCheckout = lazy(() => import("./pages/QuizCheckout"));
@@ -61,7 +61,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/quiz" element={<Quiz />} />
               <Route path="/quiz/loading" element={<QuizLoading />} />
-              <Route path="/quiz/email" element={<QuizEmail />} />
+              
               <Route path="/app/body-analysis" element={<AppBodyAnalysis />} />
               <Route path="/quiz/resultado" element={<QuizResult />} />
               <Route path="/quiz/checkout" element={<QuizCheckout />} />
