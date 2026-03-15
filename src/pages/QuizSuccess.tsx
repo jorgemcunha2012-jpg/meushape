@@ -21,6 +21,9 @@ const QuizSuccess = () => {
     invalidateSubscriptionCache();
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.4 }, colors: ["#FF6B2B", "#F59E0B", "#10B981"] });
 
+    // TikTok Purchase event
+    trackPurchase();
+
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user;
       if (user?.email) {
