@@ -1,14 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { testimonials as allTestimonials } from "@/lib/quizResultUtils";
 import {
   ArrowRight,
   ArrowLeft,
-  Lock,
-  Loader2,
   ShieldCheck,
   Dumbbell,
   TrendingUp,
@@ -20,10 +16,7 @@ import {
   Zap,
   Shield,
   PartyPopper,
-  Eye,
-  EyeOff,
 } from "lucide-react";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import TestimonialCarousel from "@/components/quiz-result/TestimonialCarousel";
 import confetti from "canvas-confetti";
