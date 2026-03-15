@@ -20,7 +20,7 @@ const QuizResult = lazy(() => import("./pages/QuizResult"));
 const QuizPitch = lazy(() => import("./pages/QuizPitch"));
 const QuizCheckout = lazy(() => import("./pages/QuizCheckout"));
 const QuizSuccess = lazy(() => import("./pages/QuizSuccess"));
-const QuizBodyAnalysis = lazy(() => import("./pages/QuizBodyAnalysis"));
+const AppBodyAnalysis = lazy(() => import("./pages/AppBodyAnalysis"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AppLogin = lazy(() => import("./pages/AppLogin"));
@@ -62,7 +62,7 @@ const App = () => (
               <Route path="/quiz" element={<Quiz />} />
               <Route path="/quiz/loading" element={<QuizLoading />} />
               <Route path="/quiz/email" element={<QuizEmail />} />
-              <Route path="/quiz/analise-corporal" element={<QuizBodyAnalysis />} />
+              <Route path="/app/body-analysis" element={<AppBodyAnalysis />} />
               <Route path="/quiz/resultado" element={<QuizResult />} />
               <Route path="/quiz/checkout" element={<QuizCheckout />} />
               <Route path="/checkout" element={<QuizCheckout />} />
