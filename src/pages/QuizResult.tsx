@@ -36,6 +36,8 @@ const QuizResult = () => {
   useEffect(() => {
     if (!answers) {
       navigate("/quiz", { replace: true });
+    } else {
+      trackViewContent("quiz_result");
     }
   }, [answers, navigate]);
 
