@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -61,13 +61,16 @@ const QuizCheckout = () => {
   const { name: passedName, answers, scores } = (location.state as any) || {};
 
   const [selectedPlan, setSelectedPlan] = useState("monthly");
+  const addToCartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSelectPlan = (planId: string) => {
+  const handleSelectPlan = useCallback((planId: string) => {
     setSelectedPlan(planId);
-    const p = PLANS.find((pl) => pl.id === planId)!;
-    const value = planId === "monthly" ? 19.9 : planId === "quarterly" ? 49.9 : 99.9;
-    trackAddToCart(p.id, value);
-  };
+    if (addToCartTimer.current) clearTimeout(addToCartTimer.current);
+    addToCartTimer.current = setTimeout(() => {
+      const value = planId === "monthly" ? 19.9 : planId === "quarterly" ? 49.9 : 99.9;
+      trackAddToCart(planId, value);
+    }, 500);
+  }, []);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [ctaName, setCtaName] = useState(passedName || "");
   const [email, setEmail] = useState("");
