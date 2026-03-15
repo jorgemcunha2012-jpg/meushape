@@ -139,23 +139,8 @@ const QuizPitch = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    if (!email || !password || password.length < 6) {
-      toast.error("Crie uma senha com pelo menos 6 caracteres.");
-      return;
-    }
-    setCheckingOut(true);
-    supabase.from("checkout_events").insert({ email, status: "initiated" }).then();
-    try {
-      const { signUpAndCheckout } = await import("@/lib/authCheckout");
-      const url = await signUpAndCheckout({ email, password, name });
-      window.location.href = url;
-    } catch (err: any) {
-      console.error("Checkout error:", err);
-      toast.error(err.message || "Erro ao processar. Tente novamente.");
-    } finally {
-      setCheckingOut(false);
-    }
+  const goToCheckout = () => {
+    navigate("/checkout", { state: { answers, name, scores } });
   };
 
   const variants = {
