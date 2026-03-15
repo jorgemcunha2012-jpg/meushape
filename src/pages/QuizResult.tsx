@@ -54,7 +54,7 @@ const QuizResult = () => {
   const firstName = (leadName || "").trim().split(" ")[0] || "linda";
 
   const goToCheckout = () => {
-    navigate("/checkout", { state: { answers, name: leadName, scores } });
+    navigate("/quiz/pitch", { state: { answers, name: leadName, scores } });
   };
 
   const scoreLabel = overallScore <= 40
