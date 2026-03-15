@@ -322,46 +322,19 @@ const QuizPitch = () => {
 
               <TestimonialCarousel testimonials={allTestimonials} />
 
-              {/* Final CTA with password */}
+              {/* Final CTA */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
-                <div className="mb-4 text-left">
-                  <label className="text-[10px] text-white/30 mb-1 block">Crie uma senha para acessar</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Mínimo 6 caracteres"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-12 rounded-xl border-white/10 bg-white/5 text-white placeholder:text-white/20"
-                      minLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
                 <Button
                   size="lg"
-                  onClick={handleCheckout}
-                  disabled={checkingOut || password.length < 6}
+                  onClick={goToCheckout}
                   className="w-full rounded-full py-6 text-sm font-bold"
                   style={{
-                    background: password.length >= 6 ? "linear-gradient(135deg, #FF6B2B, #F59E0B)" : "rgba(255,255,255,0.1)",
-                    color: password.length >= 6 ? "#fff" : "rgba(255,255,255,0.3)",
-                    boxShadow: password.length >= 6 ? "0 8px 30px rgba(255,107,43,0.3)" : "none",
+                    background: "linear-gradient(135deg, #FF6B2B, #F59E0B)",
+                    color: "#fff",
+                    boxShadow: "0 8px 30px rgba(255,107,43,0.3)",
                   }}
                 >
-                  {checkingOut ? (
-                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Processando...</>
-                  ) : (
-                    <>Começar agora — Grátis <ArrowRight className="w-4 h-4 ml-1" /></>
-                  )}
+                  Escolher meu plano <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
 
                 <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-white/30">
