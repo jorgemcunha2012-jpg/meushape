@@ -5,6 +5,7 @@ import confetti from "canvas-confetti";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { invalidateSubscriptionCache } from "@/hooks/useAuth";
+import { trackPurchase } from "@/lib/tiktokPixel";
 
 const nextSteps = [
   { icon: Dumbbell, title: "Seu primeiro treino", desc: "Comece agora com um treino personalizado para seu nível." },
