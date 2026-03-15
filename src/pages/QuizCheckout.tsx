@@ -164,7 +164,7 @@ const QuizCheckout = () => {
           return (
             <button
               key={p.id}
-              onClick={() => setSelectedPlan(p.id)}
+              onClick={() => handleSelectPlan(p.id)}
               className="w-full text-left rounded-2xl p-4 transition-all duration-200 relative"
               style={{
                 background: isSelected ? "rgba(255,107,43,0.08)" : "#1a1a1a",

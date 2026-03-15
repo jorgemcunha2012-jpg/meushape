@@ -75,6 +75,26 @@ export function trackPurchase(value?: number, currency = "BRL") {
   });
 }
 
+/** Fire when user selects a plan (AddToCart) */
+export function trackAddToCart(planId: string, value: number, currency = "BRL") {
+  const eventId = crypto.randomUUID();
+  ttq()?.track("AddToCart", {
+    content_id: planId,
+    content_type: "product",
+    value,
+    currency,
+  });
+  sendServerEvent({
+    event: "AddToCart",
+    event_id: eventId,
+    value,
+    currency,
+    content_id: planId,
+    content_type: "product",
+    user_agent: navigator.userAgent,
+  });
+}
+
 /** Fire when user views quiz result page */
 export function trackViewContent(contentName = "quiz_result") {
   const eventId = crypto.randomUUID();
