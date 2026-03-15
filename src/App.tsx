@@ -20,7 +20,7 @@ const QuizResult = lazy(() => import("./pages/QuizResult"));
 const QuizPitch = lazy(() => import("./pages/QuizPitch"));
 const QuizCheckout = lazy(() => import("./pages/QuizCheckout"));
 const QuizSuccess = lazy(() => import("./pages/QuizSuccess"));
-const QuizBodyAnalysis = lazy(() => import("./pages/QuizBodyAnalysis"));
+const AppBodyAnalysis = lazy(() => import("./pages/AppBodyAnalysis"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AppLogin = lazy(() => import("./pages/AppLogin"));
