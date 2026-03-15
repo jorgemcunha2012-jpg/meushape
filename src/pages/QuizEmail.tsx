@@ -62,8 +62,8 @@ const QuizEmail = () => {
       });
       if (signUpError) throw signUpError;
 
-      navigate("/quiz/analise-corporal", {
-        state: { name: name.trim(), email: email.trim().toLowerCase(), answers, optedIn: true },
+      navigate("/quiz/resultado", {
+        state: { name: name.trim(), answers },
       });
     } catch (err: any) {
       setError(err.message || "Algo deu errado. Tente novamente.");
