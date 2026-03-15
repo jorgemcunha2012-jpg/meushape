@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { trackCompleteRegistration, trackInitiateCheckout } from "@/lib/tiktokPixel";
+import { trackCompleteRegistration, trackInitiateCheckout, trackAddToCart } from "@/lib/tiktokPixel";
 
 const PLANS = [
   {
