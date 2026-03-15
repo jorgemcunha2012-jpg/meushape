@@ -160,7 +160,7 @@ const AppBodyAnalysis = () => {
         </div>
       </div>
 
-      <SolarBottomNav active="profile" />
+      <SolarBottomNav />
     </div>
   );
 };
