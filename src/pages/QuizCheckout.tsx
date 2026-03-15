@@ -61,6 +61,13 @@ const QuizCheckout = () => {
   const { name: passedName, answers, scores } = (location.state as any) || {};
 
   const [selectedPlan, setSelectedPlan] = useState("monthly");
+
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlan(planId);
+    const p = PLANS.find((pl) => pl.id === planId)!;
+    const value = planId === "monthly" ? 19.9 : planId === "quarterly" ? 49.9 : 99.9;
+    trackAddToCart(p.id, value);
+  };
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [ctaName, setCtaName] = useState(passedName || "");
   const [email, setEmail] = useState("");
