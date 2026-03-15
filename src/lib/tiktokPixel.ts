@@ -74,3 +74,18 @@ export function trackPurchase(value?: number, currency = "BRL") {
     user_agent: navigator.userAgent,
   });
 }
+
+/** Fire when user views quiz result page */
+export function trackViewContent(contentName = "quiz_result") {
+  const eventId = crypto.randomUUID();
+  ttq()?.track("ViewContent", {
+    content_name: contentName,
+    content_type: "product",
+  });
+  sendServerEvent({
+    event: "ViewContent",
+    event_id: eventId,
+    content_type: "product",
+    user_agent: navigator.userAgent,
+  });
+}

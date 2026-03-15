@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { trackViewContent } from "@/lib/tiktokPixel";
 import { useLocation, useNavigate } from "react-router-dom";
 import { calculateAxisScores } from "@/lib/quizData";
 import {
@@ -35,6 +36,8 @@ const QuizResult = () => {
   useEffect(() => {
     if (!answers) {
       navigate("/quiz", { replace: true });
+    } else {
+      trackViewContent("quiz_result");
     }
   }, [answers, navigate]);
 
