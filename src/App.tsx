@@ -95,6 +95,7 @@ const App = () => (
               <Route path="/app/home-workout/:templateId" element={<AppHomeWorkout />} />
               <Route path="/app/profile" element={<AppProfile />} />
               <Route path="/app/install" element={<AppInstall />} />
+              <Route path="/app/admin-exercises" element={<AppAdminExercises />} />
               {/* MuscleWiki */}
               <Route path="/app/explore" element={<AppExploreMuscleWiki />} />
               <Route path="/app/explore/:muscleId" element={<AppMuscleWikiDetail />} />
