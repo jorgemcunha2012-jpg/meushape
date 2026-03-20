@@ -5,6 +5,7 @@ import { SolarPage, SolarHeader, SolarBottomNav, useSolar } from "@/components/S
 import { Search, ChevronDown, ChevronUp, Dumbbell } from "lucide-react";
 import { searchExercisesMW, fetchExerciseDetail, MUSCLE_PT, type MWExerciseDetail } from "@/services/muscleWikiService";
 import { getProxiedMediaUrl } from "@/services/muscleWikiService";
+import { translateExerciseName } from "@/lib/exerciseTranslations";
 
 function AdminExercisesContent() {
   const s = useSolar();
@@ -91,7 +92,7 @@ function AdminExercisesContent() {
                   <Dumbbell className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{ex.name}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{translateExerciseName(ex.name)}</p>
                   {muscles && <p className="text-xs text-muted-foreground truncate">{muscles}</p>}
                   <p className="text-xs mt-0.5" style={{ color: s.orange }}>3 séries × 12 reps • 60s descanso</p>
                 </div>
