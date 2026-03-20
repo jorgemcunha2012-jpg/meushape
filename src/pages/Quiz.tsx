@@ -135,7 +135,7 @@ const Quiz = () => {
         <div className="max-w-lg mx-auto">
           {/* Logo */}
           <div className="flex justify-center mb-2">
-            <img src={logoMeushape} alt="MeuShape" className="h-8 w-auto" />
+            <img src={logoMeushape} alt="MeuShape" className="h-12 w-auto" />
           </div>
           {/* Back + progress */}
           <div className="flex items-center gap-3">
