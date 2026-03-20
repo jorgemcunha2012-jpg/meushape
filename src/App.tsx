@@ -44,6 +44,7 @@ const AppExploreMuscleWiki = lazy(() => import("./pages/AppExploreMuscleWiki"));
 const AppMuscleWikiDetail = lazy(() => import("./pages/AppMuscleWikiDetail"));
 const AppMeusTreinos = lazy(() => import("./pages/AppMeusTreinos"));
 const AppInstall = lazy(() => import("./pages/AppInstall"));
+const AppAdminExercises = lazy(() => import("./pages/AppAdminExercises"));
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,7 @@ const App = () => (
               <Route path="/app/home-workout/:templateId" element={<AppHomeWorkout />} />
               <Route path="/app/profile" element={<AppProfile />} />
               <Route path="/app/install" element={<AppInstall />} />
+              <Route path="/app/admin-exercises" element={<AppAdminExercises />} />
               {/* MuscleWiki */}
               <Route path="/app/explore" element={<AppExploreMuscleWiki />} />
               <Route path="/app/explore/:muscleId" element={<AppMuscleWikiDetail />} />
