@@ -5,6 +5,7 @@ import { SolarPage, SolarHeader, SolarBottomNav, useSolar } from "@/components/S
 import { Search, ChevronDown, ChevronUp, Dumbbell } from "lucide-react";
 import { searchExercisesMW, fetchExerciseDetail, MUSCLE_PT, type MWExerciseDetail } from "@/services/muscleWikiService";
 import { getProxiedMediaUrl } from "@/services/muscleWikiService";
+import { translateExerciseName } from "@/lib/exerciseTranslations";
 
 function AdminExercisesContent() {
   const s = useSolar();
