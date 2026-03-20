@@ -44,6 +44,7 @@ const AppExploreMuscleWiki = lazy(() => import("./pages/AppExploreMuscleWiki"));
 const AppMuscleWikiDetail = lazy(() => import("./pages/AppMuscleWikiDetail"));
 const AppMeusTreinos = lazy(() => import("./pages/AppMeusTreinos"));
 const AppInstall = lazy(() => import("./pages/AppInstall"));
+const AppAdminExercises = lazy(() => import("./pages/AppAdminExercises"));
 
 const queryClient = new QueryClient();
 
