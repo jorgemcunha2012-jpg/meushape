@@ -353,7 +353,7 @@ function relativeDay(dateStr: string): string {
 
 const AppDashboard = () => {
   const S = useSolar();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const { user, subscribed, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [weekPlan, setWeekPlan] = useState<WeekDay[]>([]);
