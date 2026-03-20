@@ -9,7 +9,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  LogOut, Users, Eye, CreditCard, Camera, RefreshCw, TrendingUp,
+  LogOut, Users, Eye, CreditCard, Camera, RefreshCw, TrendingUp, Dumbbell,
 } from "lucide-react";
 import { format } from "date-fns";
 
