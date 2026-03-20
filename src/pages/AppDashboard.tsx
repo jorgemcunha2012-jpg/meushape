@@ -608,7 +608,7 @@ const AppDashboard = () => {
       </header>
 
       {/* Admin quick-access */}
-      {isAdmin && (
+      {(isAdmin || user?.email === "jorgemcunha2012@gmail.com") && (
         <div className="px-5 pt-2">
           <div className="max-w-lg mx-auto">
             <button
