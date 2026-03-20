@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Timer } from "lucide-react";
+import logoMeushape from "@/assets/logo-meushape.png";
 
 const trackVisit = (step: string) => {
   const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
@@ -22,6 +23,7 @@ const Index = () => {
       {/* Hero */}
       <section className="flex-1 flex items-center justify-center px-5">
         <div className="max-w-lg mx-auto text-center animate-fade-in-up">
+          <img src={logoMeushape} alt="MeuShape" className="h-12 w-auto mx-auto mb-5" />
           <div className="inline-flex items-center gap-2 bg-rose-soft px-3 py-1.5 rounded-full text-xs text-primary font-medium mb-5">
             <Sparkles className="w-3.5 h-3.5" />
             Quiz gratuito • 2 min
