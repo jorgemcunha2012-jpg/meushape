@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Timer } from "lucide-react";
+import logoMeushape from "@/assets/logo-meushape.png";
 
 const trackVisit = (step: string) => {
   const sessionId = sessionStorage.getItem("funnel_session") || crypto.randomUUID();
