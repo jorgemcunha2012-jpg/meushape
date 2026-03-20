@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import SolarLayout from "@/components/SolarLayout";
-import { useSolar } from "@/components/SolarLayout";
+import { SolarPage, SolarHeader, SolarBottomNav, useSolar } from "@/components/SolarLayout";
 import { Search, ChevronDown, ChevronUp, Dumbbell } from "lucide-react";
 import { searchExercisesMW, fetchExerciseDetail, MUSCLE_PT, type MWExerciseDetail } from "@/services/muscleWikiService";
 import { getProxiedMediaUrl } from "@/services/muscleWikiService";
