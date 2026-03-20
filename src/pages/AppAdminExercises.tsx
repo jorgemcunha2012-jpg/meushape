@@ -8,7 +8,7 @@ import { getProxiedMediaUrl } from "@/services/muscleWikiService";
 
 function AdminExercisesContent() {
   const s = useSolar();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MWExerciseDetail[]>([]);
@@ -18,7 +18,7 @@ function AdminExercisesContent() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) navigate("/app");
+    if (!isAdmin && user?.email !== "jorgemcunha2012@gmail.com") navigate("/app");
   }, [isAdmin, navigate]);
 
   // Debounced search
