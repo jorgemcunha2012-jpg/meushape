@@ -9,7 +9,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  LogOut, Users, Eye, CreditCard, Camera, RefreshCw, TrendingUp,
+  LogOut, Users, Eye, CreditCard, Camera, RefreshCw, TrendingUp, Dumbbell,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -119,6 +119,10 @@ const AdminDashboard = () => {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="font-display text-xl font-bold text-foreground">Painel Admin</h1>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/app/admin-exercises")}>
+              <Dumbbell className="w-4 h-4 mr-2" />
+              Exercícios
+            </Button>
             <Button variant="outline" size="sm" onClick={fetchAll} disabled={refreshing}>
               <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
               Atualizar
