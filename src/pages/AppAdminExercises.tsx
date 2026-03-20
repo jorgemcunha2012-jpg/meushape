@@ -8,7 +8,7 @@ import { getProxiedMediaUrl } from "@/services/muscleWikiService";
 
 function AdminExercisesContent() {
   const s = useSolar();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MWExerciseDetail[]>([]);
