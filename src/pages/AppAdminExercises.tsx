@@ -143,8 +143,10 @@ function AdminExercisesContent() {
 
 export default function AppAdminExercises() {
   return (
-    <SolarLayout title="Biblioteca de Exercícios" showBack>
+    <SolarPage>
+      <SolarHeader title="Biblioteca de Exercícios" showBack />
       <AdminExercisesContent />
-    </SolarLayout>
+      <SolarBottomNav />
+    </SolarPage>
   );
 }
