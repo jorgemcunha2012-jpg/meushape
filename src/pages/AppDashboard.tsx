@@ -353,7 +353,7 @@ function relativeDay(dateStr: string): string {
 
 const AppDashboard = () => {
   const S = useSolar();
-  const { user, subscribed, subscriptionLoading } = useAuth();
+  const { user, subscribed, subscriptionLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [weekPlan, setWeekPlan] = useState<WeekDay[]>([]);
@@ -606,6 +606,26 @@ const AppDashboard = () => {
           </div>
         </div>
       </header>
+
+      {/* Admin quick-access */}
+      {isAdmin && (
+        <div className="px-5 pt-2">
+          <div className="max-w-lg mx-auto">
+            <button
+              onClick={() => navigate("/app/admin-exercises")}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform"
+              style={{
+                background: `${S.orange}15`,
+                color: S.orange,
+                border: `1px solid ${S.orange}30`,
+              }}
+            >
+              <Dumbbell size={14} />
+              Biblioteca de Exercícios
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══ HERO GREETING ═══ */}
       <section className="px-5 pt-4 pb-3">
